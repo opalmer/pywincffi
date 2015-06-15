@@ -20,10 +20,17 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
+exclude = ("pywincffi.build*", )
+if "PYWINCFFI_INSTALL_BUILD" in os.environ:
+    exclude = ()
+
 setup(
     name="pywincffi",
     version="0.1.0",
-    packages=find_packages(include=("pywincffi*", )),
+    packages=find_packages(
+        include=("pywincffi*", ),
+        exclude=exclude
+    ),
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
