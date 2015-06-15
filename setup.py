@@ -1,3 +1,4 @@
+import os
 from errno import ENOENT
 from setuptools import setup, find_packages
 
@@ -15,6 +16,10 @@ except (OSError, IOError, WindowsError) as error:
     else:
         raise
 
+install_requires_extras = []
+if "READTHEDOCS" in os.environ:
+    install_requires_extras = ["sphinx"]
+
 setup(
     name="pywincffi",
     version="0.1.0",
@@ -25,7 +30,7 @@ setup(
     install_requires=[
         "cffi>=1.1.0",
         "six"
-    ],
+    ] + install_requires_extras,
     tests_require=[
         "nose"
     ],
