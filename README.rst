@@ -1,6 +1,8 @@
 Python Windows Wrapper Using CFFI
 =================================
 
+.. NOTE: The README should be kept in sync with doc/source/index.rst
+
 This library is a wrapper around some Windows functions using Python 
 and CFFI.  The repository was originally created to assit the Twisted
 project in moving away from pywin32 so install requirements don't
@@ -8,8 +10,6 @@ require a manual install or compile step.
 
 Contributions to this project to expand on the features it provides
 or to add new ones is always welcome.
-
-
 
 
 Development
