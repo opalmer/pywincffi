@@ -54,7 +54,7 @@ clean:
 	rm -rf $(BUILDDIR)/*
 
 apidoc:
-	@rm -f $(DOCS_ROOT)source/modules/*.rst
+	@rm -f $(DOCS_ROOT)/source/modules/*.rst
 	@$(SPHINXAPIDOC) $(DOCS_ROOT)/../pywincffi --output-dir source/modules --separate --force
 
 html:
