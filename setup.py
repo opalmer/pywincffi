@@ -23,6 +23,7 @@ if "READTHEDOCS" in os.environ:
 exclude = ("pywincffi.build*", )
 if "PYWINCFFI_INSTALL_BUILD" in os.environ:
     exclude = ()
+    install_requires_extras += ["boto"]
 
 setup(
     name="pywincffi",
