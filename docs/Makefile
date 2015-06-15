@@ -4,6 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
+SPHINXAPIDOC  = sphinx-apidoc
 PAPER         =
 BUILDDIR      = build
 
@@ -18,6 +19,7 @@ PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
+DOCS_ROOT      := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest coverage gettext
 
@@ -50,6 +52,12 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+
+apidoc:
+ifndef NO_APIDOCS
+	rm -f $(DOCS_ROOT)source/modules/*.rst
+	@$(SPHINXAPIDOC) $(DOCS_ROOT)/../pywincffi --output-dir source/modules --separate --force
+endif
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

@@ -5,6 +5,11 @@ REM Command file for Sphinx documentation
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
+
+if "%SPHINXAPIDOC%" == "" (
+	set SPHINXAPIDOC=sphinx-apidoc
+)
+
 set BUILDDIR=build
 set ALLSPHINXOPTS=-d %BUILDDIR%/doctrees %SPHINXOPTS% source
 set I18NSPHINXOPTS=%SPHINXOPTS% source
@@ -70,6 +75,14 @@ if errorlevel 9009 (
 )
 
 :sphinx_ok
+
+if "%1" == "apidoc" (
+	%SPHINXAPIDOC% ../pywincffi --output-dir sources/modules --separate --force
+	if errorlevel 1 exit /b 1
+	echo.
+	echo.API docs generated
+	goto end
+)
 
 
 if "%1" == "html" (
