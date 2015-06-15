@@ -9,11 +9,6 @@ require a manual install or compile step.
 Contributions to this project to expand on the features it provides
 or to add new ones is always welcome.
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
 Development
 ===========
 
@@ -30,18 +25,6 @@ Python 3.  PRs, patches, tests etc that don't include
 support for both 2.x and 3.x will not be merged.  The
 aim is also the support both major versions of Python within
 the same code base rather than rely on tools such as 2to3.
-
-Documentation
--------------
-
-Documentation should be provided as reStructuredText both for
-inline documentation and documentation that lives under ``doc/``
-directory.
-
-The built documentation for this project will lives here:
-
-    https://pywincffi.readthedocs.org
-
 
 Testing
 -------
