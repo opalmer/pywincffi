@@ -53,7 +53,7 @@ Because this is a Windows based project all tests must pass
 on Windows.  Some tests may work on non-Windows platforms but
 no tests may be exclusivly for non-windows platforms.
 
-.. todo::
+.. note::
 
    A commit hook will be setup so that all PRs are tested
    and run before they are marked as 'green'.  This is 
