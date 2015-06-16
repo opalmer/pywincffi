@@ -2,8 +2,8 @@
 Logger
 ======
 
-This module contains pywincffi's logger, formatter and other related
-utilities.
+This module contains pywincffi's logger and provides functions to
+configure the logger at runtime.
 """
 
 import logging
