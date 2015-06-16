@@ -1,24 +1,17 @@
 Python Windows Wrapper Using CFFI
 =================================
 
-.. NOTE: The README should be kept in sync with doc/source/index.rst
-
 This library is a wrapper around some Windows functions using Python 
-and CFFI.  The repository was originally created to assit the Twisted
-project in moving away from pywin32 so install requirements don't
-require a manual install or compile step.
+and CFFI.  The repository was originally created to assist the Twisted
+project in moving away from pywin32 so installation does not require a compile
+step.
 
-Contributions to this project to expand on the features it provides
-or to add new ones is always welcome.
+That said, contributions to this project to expand on the functionality are
+always welcome.
 
 
 Development
 ===========
-
-.. note::
-
-    This section is under development and may not 
-    represent the current state of the repository.
 
 Python Version Support
 ----------------------
@@ -32,30 +25,25 @@ the same code base rather than rely on tools such as 2to3.
 Documentation
 -------------
 
-Documentation should be provided as reStructuredText both for
-inline documentation and documentation that lives under ``doc/``
-directory.  
+The documentation for this this library is hosted on
+`Read The Docs <https://pywincffi.readthedocs.org/>`_.
+It's generated directly from this library using sphinx::
 
-The built documentation for this project will lives here:
-
-    https://pywincffi.readthedocs.org
+    virtualenv env
+    env/bin/activate
+    PYWINCFFI_INSTALL_BUILD=1 pip install -e .
+    cd docs
+    make html
 
 
 Testing
 -------
 
 Tests are located in the ``tests/`` directory.  The tests
-themselves are run using ``nosetests``.  Although, you could
-use other runners too as the only library used by the tests 
-is ``unittests``.
+themselves are run using ``nosetests`` either manually or using
+the ``setup.py`` file::
 
-Because this is a Windows based project all tests must pass
-on Windows.  Some tests may work on non-Windows platforms but
-no tests may be exclusivly for non-windows platforms.
-
-.. note::
-
-   A commit hook will be setup so that all PRs are tested
-   and run before they are marked as 'green'.  This is 
-   similiar to the approach used by Travis to sign off
-   on a PR based on the results of a test run.
+    virtualenv env
+    env/bin/activate
+    PYWINCFFI_INSTALL_BUILD=1 pip install -e .
+    python setup.py test
