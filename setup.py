@@ -1,4 +1,5 @@
 import os
+import sys
 from errno import ENOENT
 from setuptools import setup, find_packages
 
@@ -20,10 +21,22 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
-exclude = ("pywincffi.build*", )
-if "PYWINCFFI_INSTALL_BUILD" in os.environ:
+INSTALL_BUILD_MODULE = "PYWINCFFI_INSTALL_BUILD" in os.environ
+if len(sys.argv) >= 2 and sys.argv[1] == "test":
+    INSTALL_BUILD_MODULE = True
+
+if INSTALL_BUILD_MODULE:
     exclude = ()
     install_requires_extras += ["boto"]
+    if sys.version_info[0] == 2:
+        install_requires_extras.append("configparser")
+    include_package_data = True
+    package_data = {"pywincffi": ["build/.pywincffi"]}
+else:
+    exclude = ("pywincffi.build*", )
+    include_package_data = False
+    package_data = {}
+
 
 setup(
     name="pywincffi",
@@ -32,6 +45,8 @@ setup(
         include=("pywincffi*", ),
         exclude=exclude
     ),
+    include_package_data=include_package_data,
+    package_data=package_data,
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
