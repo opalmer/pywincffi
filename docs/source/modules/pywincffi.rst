@@ -8,6 +8,13 @@ Subpackages
 
     pywincffi.build
 
+Submodules
+----------
+
+.. toctree::
+
+   pywincffi.logger
+
 Module contents
 ---------------
 
