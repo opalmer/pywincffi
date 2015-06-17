@@ -2,7 +2,10 @@ from __future__ import print_function
 
 import os
 import tempfile
-from unittest import TestCase, skipIf
+try:
+    from unittest import TestCase, skipIf
+except ImportError:
+    from unittest2 import TestCase, skipIf
 
 get_config = None
 try:
