@@ -1,6 +1,12 @@
 import logging
 import os
-from unittest import TestCase
+import sys
+
+if sys.version_info[0:2] == (2, 6):
+    from unittest2 import TestCase
+else:
+    from unittest import TestCase
+
 
 from pywincffi.logger import NullHandler, logger, configure
 
