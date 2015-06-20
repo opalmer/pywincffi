@@ -45,5 +45,5 @@ the ``setup.py`` file::
 
     virtualenv env
     env/bin/activate
-    PYWINCFFI_INSTALL_BUILD=1 pip install -e .
+    pip install -e .
     python setup.py test

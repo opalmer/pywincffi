@@ -1,13 +1,6 @@
 pywincffi package
 =================
 
-Subpackages
------------
-
-.. toctree::
-
-    pywincffi.build
-
 Submodules
 ----------
 
