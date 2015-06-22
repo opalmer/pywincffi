@@ -47,3 +47,5 @@ the ``setup.py`` file::
     env/bin/activate
     pip install -e .
     python setup.py test
+
+Every build is also executed on https://build.opalmer.com
