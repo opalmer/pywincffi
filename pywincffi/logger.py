@@ -11,7 +11,8 @@ import logging
 try:
     NullHandler = logging.NullHandler
 
-except AttributeError:  # Python 2.6
+except AttributeError:  # pragma: no cover
+    # Python 2.6 does not have a NullHandler
     class NullHandler(logging.Handler):
         def handle(self, record):
             pass
