@@ -1,0 +1,14 @@
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    log.*\.debug.*
+    log.*\.info.*
+    log.*\.warning.*
+    log.*\.error.*
+    log.*\.critical.*
+    log.*\.fatal.*
+    log.*\.log.*
