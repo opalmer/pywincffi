@@ -48,4 +48,7 @@ the ``setup.py`` file::
     pip install -e .
     python setup.py test
 
-Every build is also executed on https://build.opalmer.com/
+Every build is also executed on https://build.opalmer.com/ and you could
+use ``nosetests`` directly if you wish as well::
+
+    nosetests -v --with-coverage

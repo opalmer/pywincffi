@@ -21,7 +21,7 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
-tests_require = ["nose"]
+tests_require = ["nose", "coverage"]
 if sys.version_info[0:2] == (2, 6):
     tests_require.append("unittest2")
 
