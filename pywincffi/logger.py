@@ -26,6 +26,7 @@ except AttributeError:  # Python 2.6
 logger = logging.getLogger("pywincffi")
 logger.addHandler(NullHandler())
 
+
 def configure(level, handler=None, formatter=None):
     """
     Enables pywincffi's logger, add formatting, handling and set
