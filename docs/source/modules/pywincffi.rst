@@ -14,6 +14,7 @@ Submodules
 .. toctree::
 
    pywincffi.logger
+   pywincffi.testutil
 
 Module contents
 ---------------
