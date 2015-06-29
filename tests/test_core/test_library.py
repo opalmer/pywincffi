@@ -34,4 +34,4 @@ class TestBind(TestCase):
             temp_stream.write(data.encode())
 
         kernel32 = library.bind("kernel32", path, ffi_=ffi)
-        print(dir(kernel32))
+        self.assertEqual(kernel32.PROCESS_QUERY_INFORMATION, 0x0400)
