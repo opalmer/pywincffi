@@ -1,15 +1,18 @@
 """
-Library
--------
+Core
+----
 
-This module is responsible for loading and configuraing
-:mod:`cffi`.
+This module is responsible for loading and configuring access
+to the Windows API.
 """
 
+from pkg_resources import resource_filename
 from cffi import FFI
 
-ffi = FFI()
-ffi.set_unicode(True)
+
+def find_header(header_name):
+    """Finds a given header for this package by name"""
+    return resource_filename("pywincffi", "headers/%s.h" % header_name)
 
 
 def bind(library_name, header_path, ffi_=None):
@@ -38,3 +41,5 @@ def bind(library_name, header_path, ffi_=None):
     return ffi_.dlopen(library_name)
 
 
+ffi = FFI()
+ffi.set_unicode(True)

@@ -1,15 +1,5 @@
-pywincffi.core package
-======================
-
-Submodules
-----------
-
-.. toctree::
-
-   pywincffi.core.library
-
-Module contents
----------------
+pywincffi.core module
+=====================
 
 .. automodule:: pywincffi.core
     :members:

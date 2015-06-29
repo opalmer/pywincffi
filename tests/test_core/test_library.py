@@ -4,7 +4,7 @@ from textwrap import dedent
 
 from cffi import FFI
 
-from pywincffi.core import library
+from pywincffi import core
 from pywincffi.testutil import TestCase
 
 
@@ -13,10 +13,10 @@ class TestFFI(TestCase):
     Tests the ``pywinffi.core.library.ffi`` global.
     """
     def test_unicode(self):
-        self.assertTrue(library.ffi._windows_unicode)
+        self.assertTrue(core.ffi._windows_unicode)
 
     def test_instance(self):
-        self.assertIsInstance(library.ffi, FFI)
+        self.assertIsInstance(core.ffi, FFI)
 
 
 class TestBind(TestCase):
@@ -33,5 +33,5 @@ class TestBind(TestCase):
             """)
             temp_stream.write(data.encode())
 
-        kernel32 = library.bind("kernel32", path, ffi_=ffi)
+        kernel32 = core.bind("kernel32", path, ffi_=ffi)
         self.assertEqual(kernel32.PROCESS_QUERY_INFORMATION, 0x0400)
