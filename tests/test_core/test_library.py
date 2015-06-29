@@ -21,8 +21,6 @@ class TestFFI(TestCase):
 
 class TestBind(TestCase):
     def test_bind(self):
-        print(core)
-        print(dir(core))
         ffi = FFI()
         ffi.set_unicode(True)
 
