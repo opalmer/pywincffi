@@ -4,7 +4,7 @@ from textwrap import dedent
 
 from cffi import FFI
 
-from pywincffi import core2
+from pywincffi import core2 as core
 from pywincffi.testutil import TestCase
 
 
