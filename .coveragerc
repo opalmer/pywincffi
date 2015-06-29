@@ -1,3 +1,6 @@
+[source]
+source = pywincffi
+
 [report]
 exclude_lines =
     pragma: no cover
