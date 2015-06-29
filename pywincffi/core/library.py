@@ -33,7 +33,7 @@ def bind(library_name, header_path, ffi_=None):
         ffi_ = ffi
 
     with open(header_path, "rb") as header:
-        ffi_.cdef(header.read())
+        ffi_.cdef(header.read().decode())
 
     return ffi_.dlopen(library_name)
 
