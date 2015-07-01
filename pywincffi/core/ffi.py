@@ -22,7 +22,7 @@ def find_header(header_name):
     return resource_filename("pywincffi", header_name)
 
 
-def bind(library_name, header=None, ffi_=None):
+def bind(ffi_instance, library_name, header=None):
     """
     A wrapper for :meth:`FFI.dlopen` :meth:`FFI.cdef` that
     this module uses to bin a variable to a Windows module.
@@ -39,16 +39,13 @@ def bind(library_name, header=None, ffi_=None):
 
     :rtype: :class:`cffi.api.FFILibrary`
     """
-    if ffi_ is None:  # pragma: no cover
-        ffi_ = ffi
-
     if header is None:
         header_path = find_header(library_name)
         with open(header_path, "rb") as header:
             header = header.read().decode()
 
-    ffi_.cdef(header)
-    return ffi_.dlopen(library_name)
+    ffi_instance.cdef(header)
+    return ffi_instance.dlopen(library_name)
 
 
 def error_check(api_function, code=None, expected=0):
@@ -101,5 +98,13 @@ def input_check(name, value, allowed_types):
     if not isinstance(value, allowed_types):
         raise InputError(name, value, allowed_types)
 
-ffi = FFI()
-ffi.set_unicode(True)
+
+def new_ffi():
+    """
+    Returns an instance of :class:`FFI`
+    """
+    ffi_instance = FFI()
+    ffi_instance.set_unicode(True)
+    return ffi_instance
+
+ffi = new_ffi()

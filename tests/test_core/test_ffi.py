@@ -7,6 +7,7 @@ from cffi import FFI
 from mock import patch
 
 from pywincffi.core import ffi
+from pywincffi.core.ffi import new_ffi
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError, InputError
 
@@ -27,8 +28,7 @@ class TestBind(TestCase):
     Tests for :func:`pywincffi.core.ffi.bind`
     """
     def test_no_header_provided(self):
-        ffi_instance = FFI()
-        ffi_instance.set_unicode(True)
+        ffi_instance = new_ffi()
 
         fd, path = tempfile.mkstemp()
         self.addCleanup(self.remove, path)
@@ -40,7 +40,7 @@ class TestBind(TestCase):
             temp_stream.write(data.encode())
 
         with patch.object(ffi, "find_header", return_value=path) as mocked:
-            kernel32 = ffi.bind("kernel32", ffi_=ffi_instance)
+            kernel32 = ffi.bind(ffi_instance, "kernel32")
 
         mocked.assert_called_with("kernel32")
         self.assertEqual(kernel32.HELLO_WORLD, 42)
@@ -52,7 +52,7 @@ class TestBind(TestCase):
         header = dedent("""
         #define HELLO_WORLD 43
         """)
-        kernel32 = ffi.bind("kernel32", header, ffi_=ffi_instance)
+        kernel32 = ffi.bind(ffi_instance, "kernel32", header)
         self.assertEqual(kernel32.HELLO_WORLD, 43)
 
 
