@@ -64,9 +64,9 @@ def check_result(api_function, code=None, expected=0):
         Raised if we receive an unexpected result from a Windows API call
     """
     if code is None:
-        code, error_message = ffi.getwinerror()
+        code, api_error_message = ffi.getwinerror()
     else:
-        code, error_message = ffi.getwinerror(code)
+        code, api_error_message = ffi.getwinerror(code)
 
     logger.debug(
         "check_code(%r, expected=%r, function=%r)",
@@ -74,7 +74,7 @@ def check_result(api_function, code=None, expected=0):
     )
 
     if code != expected:
-        raise WindowsAPIError(api_function, code, expected, error_message)
+        raise WindowsAPIError(api_function, api_error_message, code, expected)
 
 
 def input_check(name, value, allowed_types):
