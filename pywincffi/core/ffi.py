@@ -51,7 +51,7 @@ def bind(library_name, header=None, ffi_=None):
     return ffi_.dlopen(library_name)
 
 
-def check_result(api_function, code=None, expected=0):
+def error_check(api_function, code=None, expected=0):
     """
     Checks the results of a return code against an expected result.  If
     a code is not provided we'll use :func:`ffi.getwinerror` to retrieve
@@ -69,7 +69,7 @@ def check_result(api_function, code=None, expected=0):
         code, api_error_message = ffi.getwinerror(code)
 
     logger.debug(
-        "check_code(%r, expected=%r, function=%r)",
+        "error_check(%r, code=%r, expected=%r)",
         api_function, code, expected
     )
 

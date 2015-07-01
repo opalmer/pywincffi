@@ -73,12 +73,12 @@ class TestCheckErrorCode(TestCase):
     """
     def test_default_code_does_match_expected(self):
         with patch.object(ffi.ffi, "getwinerror", return_value=(0, "GTG")):
-            ffi.check_result("Foobar")
+            ffi.error_check("Foobar")
 
     def test_default_code_does_not_match_expected(self):
         with patch.object(ffi.ffi, "getwinerror", return_value=(0, "NGTG")):
             with self.assertRaises(WindowsAPIError):
-                ffi.check_result("Foobar", expected=2)
+                ffi.error_check("Foobar", expected=2)
 
 
 class TestTypeCheck(TestCase):
