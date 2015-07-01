@@ -8,6 +8,7 @@ from mock import patch
 
 from pywincffi.core import ffi
 from pywincffi.core.testutil import TestCase
+from pywincffi.exceptions import WindowsAPIError, InputError
 
 
 class TestFFI(TestCase):
@@ -76,7 +77,8 @@ class TestCheckErrorCode(TestCase):
 
     def test_default_code_does_not_match_expected(self):
         with patch.object(ffi.ffi, "getwinerror", return_value=(0, "NGTG")):
-            ffi.check_result("Foobar", expected=2)
+            with self.assertRaises(WindowsAPIError):
+                ffi.check_result("Foobar", expected=2)
 
 
 class TestTypeCheck(TestCase):
@@ -84,17 +86,6 @@ class TestTypeCheck(TestCase):
     Tests for :func:`pywincffi.core.types.input_check`
     """
     def test_type_error(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(InputError):
             ffi.input_check("foobar", 1, str)
 
-    def test_error_text(self):
-        try:
-            ffi.input_check("foobar", 1, str)
-        except TypeError as error:
-            self.assertEqual(
-                error.args[0],
-                "Expected type(s) <class 'str'> for foobar.  Got "
-                "<class 'int'> instead."
-            )
-        else:
-            self.fail("TypeError not raised")
