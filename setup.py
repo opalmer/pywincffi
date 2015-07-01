@@ -21,7 +21,7 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
-tests_require = ["nose", "coverage"]
+tests_require = ["nose", "coverage", "mock"]
 if sys.version_info[0:2] == (2, 6):
     tests_require.append("unittest2")
 
@@ -29,18 +29,13 @@ if sys.version_info[0:2] == (2, 6):
 if "BB_BUILDSLAVE" in os.environ:
     install_requires_extras += tests_require
 
-# We require nose for tests but we also require unittest2
-# on Python 2.6.
-tests_require = ["nose"]
-if sys.version_info[0:2] == (2, 6):
-    tests_require.append("unittest2")
-
 setup(
     name="pywincffi",
     version="0.1.0",
     packages=find_packages(
         include=("pywincffi*", )
     ),
+    package_data={"pywincffi": ["headers/*.h"]},
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
