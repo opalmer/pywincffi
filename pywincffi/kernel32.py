@@ -80,3 +80,36 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     error_check("OpenProcess")
 
     return ffi.new_handle(handle_id)
+
+
+def TerminateProcess(hProcess, uExitCode):
+    """
+    Terminates the given process as declared by the handle provided
+    by ``hProcess``.  For example::
+
+    >>> import os
+    >>> from pywincffi.kernel32 import (
+    ...     PROCESS_TERMINATE, OpenProcess, TerminateProcess)
+    >>> handle = OpenProcess(PROCESS_TERMINATE, False, os.getpid())
+    >>> TerminateProcess(handle, 0)
+
+    :param handle hProcess:
+        A handle to the process to terminate.  Functions such as
+        :func:`OpenProcess` return a handle that can be used here.
+
+    :param int uExitCode:
+       The exit code to terminate the process with.
+    """
+    input_check("hProcess", hProcess, "handle")
+    input_check("uExitCode", uExitCode, six.integer_types)
+
+    code = _kernel32.TerminateProcess(
+        hProcess,
+        uExitCode
+    )
+    error_check("TerminateProcess", code=code, nonzero=True)
+
+if __name__ == "__main__":
+    import os
+    handle = OpenProcess(PROCESS_TERMINATE, False, os.getpid())
+    TerminateProcess(handle, 1)
