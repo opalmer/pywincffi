@@ -33,15 +33,28 @@ class WindowsAPIError(PyWinCFFIError):
     A subclass of :class:`PyWinCFFIError` that's raised when there was a
     problem calling a Windows API function.
     """
-    def __init__(self, api_function, api_error_message, code, expected_code):
+    def __init__(
+            self, api_function, api_error_message, code, expected_code,
+            nonzero=False
+    ):
         self.api_function = api_function
         self.api_error_message = api_error_message
         self.code = code
         self.expected_code = expected_code
-        self.message = \
-            "Error when calling %s, error was %r.  Received " \
-            "return value %s when we expected %s." % (
-            self.api_function, self.api_error_message, self.code,
-            self.expected_code
-        )
+        self.nonzero = nonzero
+
+        if not self.nonzero:
+            self.message = \
+                "Error when calling %s, error was %r.  Received " \
+                "return value %s when we expected %s." % (
+                self.api_function, self.api_error_message, self.code,
+                self.expected_code
+            )
+        else:
+            self.message = \
+                "Expected a non-zero result from %r but got zero instead.  " \
+                "Message from windows API was %r" % (
+                    self.api_function, self.api_error_message
+                )
+
         super(WindowsAPIError, self).__init__(self.message)
