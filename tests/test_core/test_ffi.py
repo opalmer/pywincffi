@@ -101,6 +101,12 @@ class TestTypeCheck(TestCase):
         with self.assertRaises(InputError):
             ffi.input_check("", None, "handle")
 
+    def test_not_a_handle(self):
+        typeof = Mock(kind="", cname="")
+        with patch.object(ffi.ffi, "typeof", return_value=typeof):
+            with self.assertRaises(InputError):
+                ffi.input_check("", None, "handle")
+
     def test_handle_type_success(self):
         typeof = Mock(kind="pointer", cname="void *")
         with patch.object(ffi.ffi, "typeof", return_value=typeof):
