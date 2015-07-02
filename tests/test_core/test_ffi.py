@@ -80,6 +80,14 @@ class TestCheckErrorCode(TestCase):
             with self.assertRaises(WindowsAPIError):
                 ffi.error_check("Foobar", expected=2)
 
+    def test_non_zero_error(self):
+        with patch.object(ffi.ffi, "getwinerror", return_value=(0, "NGTG")):
+            with self.assertRaises(WindowsAPIError):
+                ffi.error_check("Foobar", nonzero=True)
+
+    def test_non_zero_failure(self):
+        ffi.error_check("Foobar", code=1, nonzero=True)
+
 
 class TestTypeCheck(TestCase):
     """

@@ -48,7 +48,7 @@ def bind(ffi_instance, library_name, header=None):
     return ffi_instance.dlopen(library_name)
 
 
-def error_check(api_function, code=None, expected=0):
+def error_check(api_function, code=None, expected=0, nonzero=False):
     """
     Checks the results of a return code against an expected result.  If
     a code is not provided we'll use :func:`ffi.getwinerror` to retrieve
@@ -70,8 +70,13 @@ def error_check(api_function, code=None, expected=0):
         api_function, code, expected
     )
 
-    if code != expected:
-        raise WindowsAPIError(api_function, api_error_message, code, expected)
+    if nonzero and code != 0:
+        return
+
+    if nonzero and code == 0 or code != expected:
+        raise WindowsAPIError(
+            api_function, api_error_message, code, expected, nonzero=nonzero
+        )
 
 
 def input_check(name, value, allowed_types):
