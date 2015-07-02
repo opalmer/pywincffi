@@ -76,7 +76,7 @@ def error_check(api_function, code=None, expected=0):
 
 def input_check(name, value, allowed_types):
     """
-    A small wrapper around :func:`insinstance`.  This is mainly meant
+    A small wrapper around :func:`isinstance`.  This is mainly meant
     to be used inside of other functions to pre-validate input rater
     than using assertions.  It's better to fail early with bad input
     so more reasonable error message can be provided instead of from
@@ -95,6 +95,17 @@ def input_check(name, value, allowed_types):
         "input_check(name=%r, value=%r, allowed_types=%r",
         name, value, allowed_types
     )
+    if allowed_types == "handle":
+        try:
+            typeof = ffi.typeof(value)
+            if typeof.kind != "pointer" or typeof.cname != "void *":
+                raise TypeError
+
+        except TypeError:
+            raise InputError(name, value, allowed_types)
+
+        return
+
     if not isinstance(value, allowed_types):
         raise InputError(name, value, allowed_types)
 

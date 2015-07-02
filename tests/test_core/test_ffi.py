@@ -4,7 +4,7 @@ from textwrap import dedent
 from os.path import dirname, join
 
 from cffi import FFI
-from mock import patch
+from mock import Mock, patch
 
 from pywincffi.core import ffi
 from pywincffi.core.ffi import new_ffi
@@ -89,3 +89,13 @@ class TestTypeCheck(TestCase):
         with self.assertRaises(InputError):
             ffi.input_check("foobar", 1, str)
 
+    def test_handle_type_failure(self):
+        with self.assertRaises(InputError):
+            ffi.input_check("", None, "handle")
+
+    def test_handle_type_success(self):
+        typeof = Mock(kind="pointer", cname="void *")
+        with patch.object(ffi.ffi, "typeof", return_value=typeof):
+            # The value does not matter here since we're
+            # mocking out typeof()
+            ffi.input_check("", None, "handle")
