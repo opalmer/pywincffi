@@ -77,7 +77,7 @@ if errorlevel 9009 (
 :sphinx_ok
 
 if "%1" == "apidoc" (
-	%SPHINXAPIDOC% ../pywincffi --output-dir sources/modules --separate --force
+	%SPHINXAPIDOC% ../pywincffi --output-dir source/modules --separate --force
 	if errorlevel 1 exit /b 1
 	echo.
 	echo.API docs generated
