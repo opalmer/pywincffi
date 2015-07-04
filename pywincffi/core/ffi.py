@@ -16,7 +16,17 @@ from pywincffi.exceptions import InputError, WindowsAPIError
 
 
 def find_header(header_name):
-    """Finds a given header for this package by name"""
+    """
+    Finds a header for the given ``header_name``.  Header files
+    are located under the ``headers`` directory under the root
+    of the pywincffi project.
+
+    :param str header_name:
+        The name of hte header to load.  (ex. kernel32)
+
+    :returns:
+        Returns the file path to the requested header.
+    """
     header_name = "headers/%s.h" % header_name
     logger.debug("Searching for header %r", header_name)
     return resource_filename("pywincffi", header_name)
