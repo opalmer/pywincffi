@@ -9,6 +9,7 @@ funcnaility as well.
 
 from pkg_resources import resource_filename
 
+import six
 from cffi import FFI
 
 from pywincffi.core.logger import logger
@@ -102,17 +103,26 @@ def input_check(name, value, allowed_types):
     to be used inside of other functions to pre-validate input rater
     than using assertions.  It's better to fail early with bad input
     so more reasonable error message can be provided instead of from
-    somewhere deep in cffi.
+    somewhere deep in cffi or Windows.
+
+    :param str name:
+        The name of the input being checked.  This is provided
+        so error messages make more sense and can be attributed
+        to specific input arguments.
 
     :param value:
-        The value we're performing the type check on
+        The value we're performing the type check on.
 
     :param allowed_types:
-        The allowed type or types for ``value``
+        The allowed type or types for ``value``.  This argument
+        also supports a string for `allowed_types` called 'handle'
+        to validate ctype handle declarations.
 
     :raises pywincffi.exceptions.InputError:
         Raised if ``value`` is not an instance of ``allowed_types``
     """
+    assert isinstance(name, six.string_types)
+
     logger.debug(
         "input_check(name=%r, value=%r, allowed_types=%r",
         name, value, allowed_types
@@ -128,14 +138,16 @@ def input_check(name, value, allowed_types):
 
         return
 
+    # A new named type was provided for `allowed_types`,
+    # be sure to update the docs for `allowed_types`
+    assert not isinstance(allowed_types, six.string_types)
+
     if not isinstance(value, allowed_types):
         raise InputError(name, value, allowed_types)
 
 
 def new_ffi():
-    """
-    Returns an instance of :class:`FFI`
-    """
+    """Returns an instance of :class:`FFI`"""
     ffi_instance = FFI()
     ffi_instance.set_unicode(True)
     return ffi_instance
