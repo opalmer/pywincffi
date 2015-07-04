@@ -34,18 +34,25 @@ def find_header(header_name):
 
 def bind(ffi_instance, library_name, header=None):
     """
-    A wrapper for :meth:`FFI.dlopen` :meth:`FFI.cdef` that
-    this module uses to bin a variable to a Windows module.
+    A wrapper for :meth:`FFI.dlopen` and :meth:`FFI.cdef`.  For
+    example, to bind ``kernel32`` you could do:
+
+    >>> from pywincffi.core.ffi import bind, ffi
+    >>> kernel32 = bind(ffi, "kernel32")
+
+    :param cffi.api.FFI ffi_instance:
+        The instance of :class:`FFI` to apply the binding to.
 
     :param str library_name:
         The name of the Windows library you are attempting
         to produce a binding for, `kernel32` for example.  This
         value will be passed into :meth:`FFI.dlopen`.
 
-    :param str header:
-        The header which will be used to provide a definition
-        for ``library_name``.  If not provided we'll make a call
-        to :func:`find_header` using ``library_name``
+    :keyword str header:
+        An optional header to provide the definitions for the
+        given ``library_name``.  This keyword is mainly used
+        when testing, when not provided we contruct the header
+        name using ``library_name``
 
     :rtype: :class:`cffi.api.FFILibrary`
     """
