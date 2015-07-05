@@ -3,7 +3,8 @@ import os
 from pywincffi.core.ffi import ffi
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32 import PROCESS_QUERY_LIMITED_INFORMATION, OpenProcess
+from pywincffi.kernel32.process import (
+    PROCESS_QUERY_LIMITED_INFORMATION, OpenProcess)
 
 
 class TestOpenProcess(TestCase):
