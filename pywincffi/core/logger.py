@@ -30,9 +30,10 @@ logger.addHandler(NullHandler())
 
 def configure(level, handler=None, formatter=None):
     """
-    Enables pywincffi's logger, add formatting, handling and set
+    Enables pywincffi's logger, adds formatting, handling and sets
     the logging level.  Normally pywincffi's logger is not configured
-    except for an
+    and logs nothing, this function will enable it however and can
+    be useful for debugging.
     """
     if formatter is None:
         formatter = logging.Formatter(
