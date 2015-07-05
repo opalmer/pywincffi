@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     pywincffi.core
+    pywincffi.kernel32
 
 Submodules
 ----------
@@ -14,7 +15,6 @@ Submodules
 .. toctree::
 
    pywincffi.exceptions
-   pywincffi.kernel32
 
 Module contents
 ---------------
