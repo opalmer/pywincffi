@@ -17,6 +17,7 @@ from pywincffi.core.logger import logger
 from pywincffi.exceptions import (
     InputError, WindowsAPIError, HeaderNotFoundError)
 
+NoneType = type(None)
 
 class Library(object):
     """
