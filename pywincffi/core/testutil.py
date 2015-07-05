@@ -12,17 +12,18 @@ import sys
 from errno import ENOENT
 from os.path import isfile, isdir
 
-import six
+from cffi import FFI
 
 if sys.version_info[0:2] == (2, 6):
     from unittest2 import TestCase as _TestCase
 else:
     from unittest import TestCase as _TestCase
 
-from pywincffi.core.ffi import ffi, bind
-
-
-kernel32 = bind(ffi, "kernel32")
+# Load in our own kernel32 with the function(s) we need
+# so we don't have to rely on pywincffi.core
+ffi = FFI()
+ffi.cdef("void SetLastError(DWORD);")
+kernel32 = ffi.dlopen("kernel32")
 
 
 class TestCase(_TestCase):
