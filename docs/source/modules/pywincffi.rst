@@ -1,12 +1,20 @@
 pywincffi package
 =================
 
+Subpackages
+-----------
+
+.. toctree::
+
+    pywincffi.core
+
 Submodules
 ----------
 
 .. toctree::
 
-   pywincffi.logger
+   pywincffi.exceptions
+   pywincffi.kernel32
 
 Module contents
 ---------------

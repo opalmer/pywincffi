@@ -1,14 +1,9 @@
 import logging
 import os
-import sys
 
-if sys.version_info[0:2] == (2, 6):
-    from unittest2 import TestCase
-else:
-    from unittest import TestCase
+from pywincffi.core.logger import UNSET, NullHandler, configure, logger
+from pywincffi.core.testutil import TestCase
 
-
-from pywincffi.logger import NullHandler, logger, configure
 
 class TestLogger(TestCase):
     def setUp(self):
@@ -28,6 +23,14 @@ class TestLogger(TestCase):
     def test_configure_level(self):
         configure(logging.CRITICAL)
         self.assertEqual(logger.level, logging.CRITICAL)
+
+    def test_configure_level_unset(self):
+        configure(logging.CRITICAL)
+        configure(UNSET)
+        self.assertEqual(
+            [type(handler) for handler in logger.handlers],
+            [type(NullHandler())]
+        )
 
     def test_configure_default_handler(self):
         configure(logging.CRITICAL)
