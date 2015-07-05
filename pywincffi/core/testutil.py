@@ -12,17 +12,19 @@ import sys
 from errno import ENOENT
 from os.path import isfile, isdir
 
-try:
-    WindowsError
-except NameError:  # pragma: no cover
-    WindowsError = OSError
+from cffi import FFI
 
 if sys.version_info[0:2] == (2, 6):
     from unittest2 import TestCase as _TestCase
 else:
     from unittest import TestCase as _TestCase
 
-from pywincffi.kernel32 import SetLastError
+# Load in our own kernel32 with the function(s) we need
+# so we don't have to rely on pywincffi.core
+ffi = FFI()
+ffi.cdef("void SetLastError(DWORD);")
+kernel32 = ffi.dlopen("kernel32")
+
 
 class TestCase(_TestCase):
     """
@@ -33,7 +35,7 @@ class TestCase(_TestCase):
         # Always reset the last error to 0 between tests.  This
         # ensures that any error we intentionally throw in one
         # test does not causes an error to be raised in another.
-        SetLastError(0)
+        kernel32.SetLastError(ffi.cast("DWORD", 0))
 
     def remove(self, path, onexit=True):
         """

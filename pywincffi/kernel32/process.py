@@ -1,10 +1,11 @@
 """
-Kernel32
-========
+Process
+-------
 
 Provides functions, constants and utilities that wrap the Windows
-kernel32 library.  This module also provides several constants as well, see
-Microsoft's documentation for the constant names and their purpose:
+functions associated with process management and interaction.  This
+module also provides several constants as well, see Microsoft's
+documentation for the constant names and their purpose:
 
     * **Process Security and Access Rights** -
       https://msdn.microsoft.com/en-us/library/windows/desktop/ms684880
@@ -15,9 +16,9 @@ Microsoft's documentation for the constant names and their purpose:
 """
 
 import six
-from pywincffi.core.ffi import bind, ffi, input_check, error_check
+from pywincffi.core.ffi import Library, ffi, input_check, error_check
 
-_kernel32 = bind(ffi, "kernel32")
+kernel32 = Library.load("kernel32")
 
 PROCESS_CREATE_PROCESS = 0x0080
 PROCESS_CREATE_THREAD = 0x0002
@@ -32,18 +33,6 @@ PROCESS_VM_OPERATION = 0x0008
 PROCESS_VM_READ = 0x0008
 PROCESS_VM_WRITE = 0x0020
 SYNCHRONIZE = 0x00100000
-
-
-def SetLastError(dwErrCode):
-    """
-    Sets the last error code using the Windows API.  This function
-    generally should only be used by tests.
-
-    :param int dwErrCode:
-        The error code to set
-    """
-    input_check("dwErrCode", dwErrCode, six.integer_types)
-    _kernel32.SetLastError(ffi.cast("DWORD", dwErrCode))
 
 
 def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
@@ -72,7 +61,7 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     input_check("bInheritHandle", bInheritHandle, bool)
     input_check("dwProcessId", dwProcessId, six.integer_types)
 
-    handle_id = _kernel32.OpenProcess(
+    handle_id = kernel32.OpenProcess(
         ffi.cast("DWORD", dwDesiredAccess),
         ffi.cast("BOOL", bInheritHandle),
         ffi.cast("DWORD", dwProcessId)

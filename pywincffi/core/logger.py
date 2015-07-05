@@ -53,7 +53,7 @@ def configure(level, handler=None, formatter=None):
     if formatter is None:
         formatter = logging.Formatter(
             "%(asctime)s %(name)s %(levelname)9s %(message)s",
-            datefmt="%D %H:%M:%S"
+            datefmt="%Y-%m-%d %H:%M:%S"
         )
 
     if handler is None:

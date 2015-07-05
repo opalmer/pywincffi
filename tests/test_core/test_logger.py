@@ -47,7 +47,7 @@ class TestLogger(TestCase):
             "%(asctime)s %(name)s %(levelname)9s %(message)s"
         )
         self.assertEqual(
-            handler.formatter.datefmt, "%D %H:%M:%S"
+            handler.formatter.datefmt, "%Y-%m-%d %H:%M:%S"
         )
 
     def test_configure_custom_handler(self):
