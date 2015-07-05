@@ -1,7 +1,7 @@
 import logging
 import os
 
-from pywincffi.core.logger import NullHandler, configure, logger
+from pywincffi.core.logger import UNSET, NullHandler, configure, logger
 from pywincffi.core.testutil import TestCase
 
 
@@ -23,6 +23,14 @@ class TestLogger(TestCase):
     def test_configure_level(self):
         configure(logging.CRITICAL)
         self.assertEqual(logger.level, logging.CRITICAL)
+
+    def test_configure_level_unset(self):
+        configure(logging.CRITICAL)
+        configure(UNSET)
+        self.assertEqual(
+            [type(handler) for handler in logger.handlers],
+            [type(NullHandler())]
+        )
 
     def test_configure_default_handler(self):
         configure(logging.CRITICAL)
