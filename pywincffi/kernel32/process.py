@@ -16,9 +16,9 @@ documentation for the constant names and their purpose:
 """
 
 import six
-from pywincffi.core.ffi import bind, ffi, input_check, error_check
+from pywincffi.core.ffi import Library, ffi, input_check, error_check
 
-_kernel32 = bind(ffi, "kernel32")
+kernel32 = Library.load("kernel32")
 
 PROCESS_CREATE_PROCESS = 0x0080
 PROCESS_CREATE_THREAD = 0x0002
@@ -61,7 +61,7 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     input_check("bInheritHandle", bInheritHandle, bool)
     input_check("dwProcessId", dwProcessId, six.integer_types)
 
-    handle_id = _kernel32.OpenProcess(
+    handle_id = kernel32.OpenProcess(
         ffi.cast("DWORD", dwDesiredAccess),
         ffi.cast("BOOL", bInheritHandle),
         ffi.cast("DWORD", dwProcessId)
