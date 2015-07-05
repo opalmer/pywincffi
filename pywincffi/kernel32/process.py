@@ -35,18 +35,6 @@ PROCESS_VM_WRITE = 0x0020
 SYNCHRONIZE = 0x00100000
 
 
-def SetLastError(dwErrCode):
-    """
-    Sets the last error code using the Windows API.  This function
-    generally should only be used by tests.
-
-    :param int dwErrCode:
-        The error code to set
-    """
-    input_check("dwErrCode", dwErrCode, six.integer_types)
-    _kernel32.SetLastError(ffi.cast("DWORD", dwErrCode))
-
-
 def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     """
     Opens an existing local process object.
