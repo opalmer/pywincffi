@@ -56,11 +56,6 @@ class TestWindowsAPIError(TestCase):
         error = WindowsAPIError("function", "there was a problem", 1, 0)
         self.assertEqual(error.expected_code, 0)
 
-    def test_ivar_non_zero(self):
-        error = WindowsAPIError(
-            "function", "there was a problem", 1, 0, nonzero=-1)
-        self.assertEqual(error.nonzero, -1)
-
     def test_str(self):
         error = WindowsAPIError("function", "there was a problem", 1, 0)
         self.assertEqual(str(error), error.message)

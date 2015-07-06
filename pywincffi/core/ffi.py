@@ -17,6 +17,8 @@ from pywincffi.core.logger import logger
 from pywincffi.exceptions import (
     InputError, WindowsAPIError, HeaderNotFoundError)
 
+NON_ZERO = object()
+
 
 class Library(object):
     """
@@ -109,34 +111,47 @@ class Library(object):
         return library
 
 
-def error_check(api_function, code=None, expected=0, nonzero=False):
+def error_check(api_function, code=None, expected=0):
     """
     Checks the results of a return code against an expected result.  If
     a code is not provided we'll use :func:`ffi.getwinerror` to retrieve
     the code.
 
     :param str api_function:
-        The Windows API function being caled.
+        The Windows API function being called.
+
+    :param int code:
+        An explicit code to compare against.  This can be used
+        instead of asking :func:`ffi.getwinerrro` to retrieve a code.
+
+    :param int expected:
+        The code we expect to have as a result of a successful
+        call.  This can also be passed ``pywincffi.ffi.NON_ZERO`` if
+        ``code`` can be anything but zero.
 
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
     """
     if code is None:
-        code, api_error_message = ffi.getwinerror()
+        result, api_error_message = ffi.getwinerror()
     else:
-        code, api_error_message = ffi.getwinerror(code)
+        result, api_error_message = ffi.getwinerror(code)
+
+    expected_str = expected
+    if expected is NON_ZERO:
+        expected_str = "non-zero"
 
     logger.debug(
-        "error_check(%r, code=%r, expected=%r)",
-        api_function, code, expected
+        "error_check(%r, code=%r, result=%r, expected=%r)",
+        api_function, code, result, expected_str
     )
 
-    if nonzero and code != 0:
+    if expected is NON_ZERO and (result != 0 or code is not None and code != 0):
         return
 
-    if nonzero and code == 0 or code != expected:
+    if expected != result:
         raise WindowsAPIError(
-            api_function, api_error_message, code, expected, nonzero=nonzero
+            api_function, api_error_message, result, expected
         )
 
 
