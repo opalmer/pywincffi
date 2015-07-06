@@ -5,6 +5,7 @@ Files
 A module containing common Windows file functions.
 """
 
+from six import PY2
 from pywincffi.core.ffi import Library, NoneType, input_check, ffi, error_check
 
 kernel32 = Library.load("kernel32")
@@ -97,6 +98,9 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     """
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
+
+    if PY2 and not isinstance(lpBuffer, str):
+        lpBuffer = unicode(lpBuffer)
 
     # Prepare string and outputs
     nNumberOfBytesToWrite = len(lpBuffer)
