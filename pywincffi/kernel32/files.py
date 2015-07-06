@@ -56,7 +56,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     code = kernel32.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
     error_check("CreatePipe", code=code, nonzero=True)
 
-    return hReadPipe, hWritePipe
+    return hReadPipe[0], hWritePipe[0]
 
 
 def CloseHandle(hObject):
