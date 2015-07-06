@@ -174,7 +174,8 @@ def input_check(name, value, allowed_types):
     if allowed_types == "handle":
         try:
             typeof = ffi.typeof(value)
-            if typeof.kind != "pointer" or typeof.cname != "void *":
+            if (typeof.kind != "pointer" or
+                  typeof.cname not in ("void *", "void * *")):
                 raise TypeError
 
         except TypeError:
