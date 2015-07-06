@@ -124,6 +124,11 @@ def error_check(api_function, code=None, expected=0):
         An explicit code to compare against.  This can be used
         instead of asking :func:`ffi.getwinerrro` to retrieve a code.
 
+    :param int expected:
+        The code we expect to have as a result of a successful
+        call.  This can also be passed ``pywincffi.ffi.NON_ZERO`` if
+        ``code`` can be anything but zero.
+
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
     """
