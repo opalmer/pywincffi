@@ -120,8 +120,9 @@ def error_check(api_function, code=None, expected=0):
     :param str api_function:
         The Windows API function being called.
 
-    :param code:
-
+    :param int code:
+        An explicit code to compare against.  This can be used
+        instead of asking :func:`ffi.getwinerrro` to retrieve a code.
 
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
