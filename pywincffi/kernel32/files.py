@@ -6,7 +6,8 @@ A module containing common Windows file functions.
 """
 
 from six import PY2
-from pywincffi.core.ffi import Library, NoneType, input_check, ffi, error_check
+from pywincffi.core.ffi import (
+    NON_ZERO, Library, NoneType, input_check, ffi, error_check)
 
 kernel32 = Library.load("kernel32")
 
@@ -55,7 +56,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         lpPipeAttributes = ffi.NULL
 
     code = kernel32.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
-    error_check("CreatePipe", code=code, nonzero=True)
+    error_check("CreatePipe", code=code, expected=NON_ZERO)
 
     return hReadPipe[0], hWritePipe[0]
 
@@ -74,7 +75,7 @@ def CloseHandle(hObject):
     input_check("hObject", hObject, "handle")
 
     code = kernel32.CloseHandle(hObject)
-    error_check("CloseHandle", code=code, nonzero=True)
+    error_check("CloseHandle", code=code, expected=NON_ZERO)
 
 
 def WriteFile(hFile, lpBuffer, lpOverlapped=None):
@@ -109,7 +110,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
     code = kernel32.WriteFile(
         hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_written, lpOverlapped)
-    error_check("WriteFile", code=code, nonzero=True)
+    error_check("WriteFile", code=code, expected=NON_ZERO)
 
     return bytes_written[0]
 
