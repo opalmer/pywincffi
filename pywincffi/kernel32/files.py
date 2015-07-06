@@ -100,7 +100,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         lpOverlapped = ffi.NULL
 
     try:
-        if isinstance(lpBuffer, unicode):
+        if not isinstance(lpBuffer, unicode):
             lpBuffer = unicode(lpBuffer)
     except NameError:  # pragma: no cover
         pass
