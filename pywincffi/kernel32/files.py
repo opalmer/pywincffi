@@ -57,3 +57,19 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     error_check("CreatePipe", code=code, nonzero=True)
 
     return hReadPipe, hWritePipe
+
+
+def CloseHandle(hObject):
+    """
+    Closes an open object handle.
+
+    :param handle hObject:
+        The handle object to close.
+
+    .. seealso::
+        https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211
+    """
+    input_check("hObject", hObject, "handle")
+
+    code = kernel32.CloseHandle(hObject)
+    error_check("CloseHandle", code=code, nonzero=True)
