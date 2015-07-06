@@ -67,9 +67,54 @@ def CloseHandle(hObject):
         The handle object to close.
 
     .. seealso::
+
         https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211
     """
     input_check("hObject", hObject, "handle")
 
     code = kernel32.CloseHandle(hObject)
     error_check("CloseHandle", code=code, nonzero=True)
+
+
+def WriteFile(hFile, lpBuffer, lpOverlapped=None):
+    """
+    Writes data to ``hFile`` which may be an I/O device for file.
+
+    :param handle hFile:
+        The handle to write to
+
+    :type lpBuffer: bytes, string or unicode.
+    :param lpBuffer:
+        The data to be written to the file or device. This be data should
+        be bytes or a string.
+
+    :returns:
+        Returns the number of bytes written
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365747
+    """
+    if lpOverlapped is None:
+        lpOverlapped = ffi.NULL
+
+    # Prepare string and outputs
+    nNumberOfBytesToWrite = len(lpBuffer)
+    lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToWrite, lpBuffer)
+    bytes_written = ffi.new("LPDWORD")
+
+    code = kernel32.WriteFile(
+        hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_written, lpOverlapped)
+    error_check("WriteFile", code=code, nonzero=True)
+
+    return bytes_written[0]
+
+
+# TODO: docs and implementation
+def ReadFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped=None):
+    """
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365467
+
+    """
