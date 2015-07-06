@@ -9,7 +9,8 @@ from mock import Mock, patch
 from six.moves import builtins
 
 import pywincffi
-from pywincffi.core.ffi import Library, new_ffi, ffi, input_check, error_check
+from pywincffi.core.ffi import (
+    NON_ZERO, Library, new_ffi, ffi, input_check, error_check)
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import (
     WindowsAPIError, InputError, HeaderNotFoundError)
@@ -116,13 +117,13 @@ class TestCheckErrorCode(TestCase):
             with self.assertRaises(WindowsAPIError):
                 error_check("Foobar", expected=2)
 
-    def test_non_zero_error(self):
-        with patch.object(ffi, "getwinerror", return_value=(0, "NGTG")):
-            with self.assertRaises(WindowsAPIError):
-                error_check("Foobar", nonzero=True)
+    def test_non_zero(self):
+        with patch.object(ffi, "getwinerror", return_value=(1, "NGTG")):
+            error_check("Foobar", expected=NON_ZERO)
 
-    def test_non_zero_failure(self):
-        error_check("Foobar", code=1, nonzero=True)
+    def test_non_zero_success(self):
+        with patch.object(ffi, "getwinerror", return_value=(0, "NGTG")):
+            error_check("Foobar", code=1, expected=NON_ZERO)
 
 
 class TestTypeCheck(TestCase):
