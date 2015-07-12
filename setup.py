@@ -21,9 +21,18 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
-tests_require = ["nose", "coverage", "mock"]
-if sys.version_info[0:2] == (2, 6):
+tests_require = ["nose", "coverage"]
+
+pymajor, pyminor = sys.version_info[0:2]
+
+if pymajor == 2:
     tests_require.append("unittest2")
+
+if pyminor == 7:
+    tests_require.append("mock")
+
+if pyminor == 6:
+    tests_require.append("mock==1.0.1")
 
 # Running on buildbot
 if "BB_BUILDSLAVE" in os.environ:
