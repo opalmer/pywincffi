@@ -1,6 +1,6 @@
 import os
 
-from pywincffi.core.utility import ffi
+from pywincffi.core.ffi import ffi
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32.process import (
