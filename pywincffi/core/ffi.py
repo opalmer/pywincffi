@@ -11,10 +11,11 @@ from errno import ENOENT
 from cffi import FFI
 from pkg_resources import resource_filename
 
-from pywincffi.core.logger import logger
+from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import HeaderNotFoundError
 
-logger = logger.getChild("core.ffi")
+
+logger = get_logger("core.ffi")
 
 
 class Library(object):
