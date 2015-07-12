@@ -16,7 +16,9 @@ documentation for the constant names and their purpose:
 """
 
 import six
-from pywincffi.core.ffi import Library, ffi, input_check, error_check
+
+from pywincffi.core.ffi import Library, ffi
+from pywincffi.core.checks import input_check, error_check
 
 kernel32 = Library.load("kernel32")
 
