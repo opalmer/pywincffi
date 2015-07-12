@@ -1,6 +1,3 @@
-import os
-import sys
-import tempfile
 from textwrap import dedent
 from os.path import dirname, join
 
@@ -14,7 +11,6 @@ from pywincffi.core.ffi import (
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import (
     WindowsAPIError, InputError, HeaderNotFoundError)
-
 
 
 class TestFFI(TestCase):
