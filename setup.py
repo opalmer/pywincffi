@@ -37,6 +37,10 @@ else:
     except ImportError:
         tests_require.append("mock")
 
+if (py_major, py_minor) < (3, 4):
+    install_requires_extras.append("enum34")
+
+
 # Running on buildbot
 if "BB_BUILDSLAVE" in os.environ:
     install_requires_extras += tests_require
