@@ -96,9 +96,5 @@ def input_check(name, value, allowed_types):
 
         return
 
-    # A new named type was provided for `allowed_types`,
-    # be sure to update the docs for `allowed_types`
-    assert not isinstance(allowed_types, string_types)
-
     if not isinstance(value, allowed_types):
         raise InputError(name, value, allowed_types)
