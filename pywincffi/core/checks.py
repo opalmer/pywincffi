@@ -3,10 +3,10 @@ import enum
 from six import string_types
 
 from pywincffi.core.ffi import ffi
-from pywincffi.core.logger import logger
+from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import WindowsAPIError, InputError
 
-logger = logger.getChild("core.check")
+logger = get_logger("core.check")
 
 Enums = enum.Enum("Enums", " ".join([
     "NON_ZERO",
