@@ -13,11 +13,13 @@ import six
 from cffi import FFI
 from pkg_resources import resource_filename
 
-from pywincffi.core.logger import logger
+from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import (
     InputError, WindowsAPIError, HeaderNotFoundError)
 
 NON_ZERO = object()
+
+logger = get_logger("core.ffi")
 
 
 class Library(object):

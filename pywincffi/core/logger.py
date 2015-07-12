@@ -35,7 +35,7 @@ def get_logger(name):
     if name.startswith("."):
         raise ValueError("`name` cannot start with '.'")
 
-    if sys.version_info <= (2, 6):
+    if sys.version_info[0:2] <= (2, 6):
         return logging.getLogger(logger.name + "." + name)
 
     return logger.getChild(name)
