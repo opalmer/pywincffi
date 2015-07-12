@@ -71,3 +71,14 @@ class TestConfigureHandlers(LoggerTestCase):
         self.addCleanup(handler.close)
         configure(logging.CRITICAL, handler)
         self.assertIs(logger.handlers[-1], handler)
+
+
+class TestGetLogger(LoggerTestCase):
+    def test_invalid_name(self):
+        with self.assertRaises(ValueError):
+            get_logger(".foo")
+
+    def test_get_child(self):
+        expected_name = logger.name + "." + "hello.world"
+        child_logger = get_logger("hello.world")
+        self.assertEqual(expected_name, child_logger.name)
