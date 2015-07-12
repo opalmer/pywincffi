@@ -1,11 +1,12 @@
-import os
-import sys
-import tempfile
 from textwrap import dedent
 from os.path import dirname, join
 
+try:
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
+
 from cffi import FFI
-from mock import Mock, patch
 from six.moves import builtins
 
 import pywincffi
@@ -14,7 +15,6 @@ from pywincffi.core.utility import (
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import (
     WindowsAPIError, InputError, HeaderNotFoundError)
-
 
 
 class TestFFI(TestCase):

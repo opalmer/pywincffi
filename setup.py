@@ -23,16 +23,19 @@ if "READTHEDOCS" in os.environ:
 
 tests_require = ["nose", "coverage"]
 
-pymajor, pyminor = sys.version_info[0:2]
+py_major, py_minor = sys.version_info[0:2]
 
-if pymajor == 2:
+if py_major == 2:
     tests_require.append("unittest2")
 
-if pyminor == 7:
-    tests_require.append("mock")
-
-if pyminor == 6:
+if py_major == 2 and py_minor == 6:
     tests_require.append("mock==1.0.1")
+
+else:
+    try:
+        from unittest import mock
+    except ImportError:
+        tests_require.append("mock")
 
 # Running on buildbot
 if "BB_BUILDSLAVE" in os.environ:
