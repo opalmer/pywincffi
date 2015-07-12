@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions.
 """
 
-from pywincffi.core.ffi import (
+from pywincffi.core.utility import (
     NON_ZERO, Library, NoneType, input_check, ffi, error_check)
 
 kernel32 = Library.load("kernel32")
@@ -15,7 +15,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     """
     Creates an anonymous pipe and returns the read and write handles.
 
-    >>> from pywincffi.core.ffi import ffi
+    >>> from pywincffi.core.utility import ffi
     >>> lpPipeAttributes = ffi.new(
     ...     "SECURITY_ATTRIBUTES[1]", [{
     ...     "nLength": ffi.sizeof("SECURITY_ATTRIBUTES"),

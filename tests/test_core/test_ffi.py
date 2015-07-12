@@ -9,7 +9,7 @@ from mock import Mock, patch
 from six.moves import builtins
 
 import pywincffi
-from pywincffi.core.ffi import (
+from pywincffi.core.utility import (
     NON_ZERO, Library, new_ffi, ffi, input_check, error_check)
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import (

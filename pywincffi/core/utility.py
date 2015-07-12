@@ -20,6 +20,7 @@ from pywincffi.exceptions import (
 NoneType = type(None)
 NON_ZERO = object()
 
+
 class Library(object):
     """
     A wrapper around :meth:`FFI.cdef` and :meth:`FFI.dlopen` that
