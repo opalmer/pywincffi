@@ -1,11 +1,12 @@
 import logging
 import os
 
-from pywincffi.core.logger import UNSET, NullHandler, configure, logger
+from pywincffi.core.logger import (
+    UNSET, NullHandler, configure, logger, get_logger)
 from pywincffi.core.testutil import TestCase
 
 
-class TestLogger(TestCase):
+class LoggerTestCase(TestCase):
     def setUp(self):
         self.handlers = logger.handlers[:]
         self.level = logger.level
@@ -14,17 +15,21 @@ class TestLogger(TestCase):
         logger.handlers[:] = self.handlers
         logger.setLevel(self.level)
 
+
+class TestDefaultHandler(LoggerTestCase):
     def test_default_handlers(self):
         self.assertEqual(
             [type(handler) for handler in logger.handlers],
             [type(NullHandler())]
         )
 
-    def test_configure_level(self):
+
+class TestConfigureLevels(LoggerTestCase):
+    def test_level(self):
         configure(logging.CRITICAL)
         self.assertEqual(logger.level, logging.CRITICAL)
 
-    def test_configure_level_unset(self):
+    def test_level_unset(self):
         configure(logging.CRITICAL)
         configure(UNSET)
         self.assertEqual(
@@ -32,14 +37,16 @@ class TestLogger(TestCase):
             [type(NullHandler())]
         )
 
-    def test_configure_default_handler(self):
-        configure(logging.CRITICAL)
-        self.assertEqual(
-            [type(handler) for handler in logger.handlers],
-            [type(NullHandler()), type(logging.StreamHandler())]
-        )
 
-    def test_configure_default_formatter(self):
+class TestConfigureFormatter(LoggerTestCase):
+    def test_custom_formatter(self):
+        formatter = logging.Formatter(fmt="1234", datefmt="4567")
+        configure(logging.CRITICAL, formatter=formatter)
+        handler = logger.handlers[-1]
+        self.assertEqual(handler.formatter._fmt, "1234")
+        self.assertEqual(handler.formatter.datefmt, "4567")
+
+    def test_default_formatter(self):
         configure(logging.CRITICAL)
         handler = logger.handlers[-1]
         self.assertEqual(
@@ -50,15 +57,28 @@ class TestLogger(TestCase):
             handler.formatter.datefmt, "%Y-%m-%d %H:%M:%S"
         )
 
-    def test_configure_custom_handler(self):
+
+class TestConfigureHandlers(LoggerTestCase):
+    def test_default_handler(self):
+        configure(logging.CRITICAL)
+        self.assertEqual(
+            [type(handler) for handler in logger.handlers],
+            [type(NullHandler()), type(logging.StreamHandler())]
+        )
+
+    def test_custom_handler(self):
         handler = logging.FileHandler(os.devnull)
         self.addCleanup(handler.close)
         configure(logging.CRITICAL, handler)
         self.assertIs(logger.handlers[-1], handler)
 
-    def test_configure_custom_formatter(self):
-        formatter = logging.Formatter(fmt="1234", datefmt="4567")
-        configure(logging.CRITICAL, formatter=formatter)
-        handler = logger.handlers[-1]
-        self.assertEqual(handler.formatter._fmt, "1234")
-        self.assertEqual(handler.formatter.datefmt, "4567")
+
+class TestGetLogger(LoggerTestCase):
+    def test_invalid_name(self):
+        with self.assertRaises(ValueError):
+            get_logger(".foo")
+
+    def test_get_child(self):
+        expected_name = logger.name + "." + "hello.world"
+        child_logger = get_logger("hello.world")
+        self.assertEqual(expected_name, child_logger.name)

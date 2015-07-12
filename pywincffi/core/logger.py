@@ -7,6 +7,7 @@ configure the logger at runtime.
 """
 
 import logging
+import sys
 
 try:
     NullHandler = logging.NullHandler
@@ -27,6 +28,17 @@ UNSET = object()
 
 logger = logging.getLogger("pywincffi")
 logger.addHandler(NullHandler())
+
+
+def get_logger(name):
+    """Returns a child of the parent logger for pywincffi"""
+    if name.startswith("."):
+        raise ValueError("`name` cannot start with '.'")
+
+    if sys.version_info[0:2] <= (2, 6):
+        return logging.getLogger(logger.name + "." + name)
+
+    return logger.getChild(name)
 
 
 def configure(level, handler=None, formatter=None):

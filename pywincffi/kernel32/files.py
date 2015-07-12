@@ -5,8 +5,8 @@ Files
 A module containing common Windows file functions.
 """
 
-from pywincffi.core.ffi import (
-    NON_ZERO, Library, NoneType, input_check, ffi, error_check)
+from pywincffi.core.ffi import Library, ffi
+from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 
 kernel32 = Library.load("kernel32")
 
@@ -55,7 +55,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         lpPipeAttributes = ffi.NULL
 
     code = kernel32.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
-    error_check("CreatePipe", code=code, expected=NON_ZERO)
+    error_check("CreatePipe", code=code, expected=Enums.NON_ZERO)
 
     return hReadPipe[0], hWritePipe[0]
 
@@ -71,10 +71,10 @@ def CloseHandle(hObject):
 
         https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211
     """
-    input_check("hObject", hObject, "handle")
+    input_check("hObject", hObject, Enums.HANDLE)
 
     code = kernel32.CloseHandle(hObject)
-    error_check("CloseHandle", code=code, expected=NON_ZERO)
+    error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
 
 
 def WriteFile(hFile, lpBuffer, lpOverlapped=None):
@@ -112,7 +112,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
     code = kernel32.WriteFile(
         hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_written, lpOverlapped)
-    error_check("WriteFile", code=code, expected=NON_ZERO)
+    error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
 
     return bytes_written[0]
 
