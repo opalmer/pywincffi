@@ -1,4 +1,4 @@
-from collections import namedtuple
+import enum
 
 from six import string_types
 
@@ -7,10 +7,11 @@ from pywincffi.core.logger import logger
 from pywincffi.exceptions import WindowsAPIError, InputError
 
 logger = logger.getChild("core.check")
-_Enums = namedtuple("_Enums", ("NON_ZERO", ))
-Enums = _Enums(
-    NON_ZERO=object()
-)
+
+Enums = enum.Enum("Enums", " ".join([
+    "NON_ZERO",
+    "HANDLE"
+]))
 
 
 def error_check(api_function, code=None, expected=0):
@@ -28,8 +29,8 @@ def error_check(api_function, code=None, expected=0):
 
     :param int expected:
         The code we expect to have as a result of a successful
-        call.  This can also be passed ``pywincffi.ffi.NON_ZERO`` if
-        ``code`` can be anything but zero.
+        call.  This can also be passed ``pywincffi.core.checks.Enums.NON_ZERO``
+        if ``code`` can be anything but zero.
 
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
@@ -39,13 +40,9 @@ def error_check(api_function, code=None, expected=0):
     else:
         result, api_error_message = ffi.getwinerror(code)
 
-    expected_str = expected
-    if expected is Enums.NON_ZERO:
-        expected_str = "non-zero"
-
     logger.debug(
         "error_check(%r, code=%r, result=%r, expected=%r)",
-        api_function, code, result, expected_str
+        api_function, code, result, expected
     )
 
     if (expected is Enums.NON_ZERO
@@ -76,8 +73,8 @@ def input_check(name, value, allowed_types):
 
     :param allowed_types:
         The allowed type or types for ``value``.  This argument
-        also supports a string for `allowed_types` called 'handle'
-        to validate ctype handle declarations.
+        also supports a special value, ``pywincffi.core.checks.Enums.HANDLE``,
+        which will check to ensure ``value`` is a handle object.
 
     :raises pywincffi.exceptions.InputError:
         Raised if ``value`` is not an instance of ``allowed_types``
@@ -88,7 +85,7 @@ def input_check(name, value, allowed_types):
         "input_check(name=%r, value=%r, allowed_types=%r",
         name, value, allowed_types
     )
-    if allowed_types == "handle":
+    if allowed_types is Enums.HANDLE:
         try:
             typeof = ffi.typeof(value)
             if typeof.kind != "pointer" or typeof.cname != "void *":
