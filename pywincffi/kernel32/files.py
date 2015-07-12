@@ -86,8 +86,8 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
     :type lpBuffer: bytes, string or unicode.
     :param lpBuffer:
-        The data to be written to the file or device. This be data should
-        be bytes or a string.
+        The data to be written to the file or device. We should be able
+        to convert this value to unicode.
 
     :returns:
         Returns the number of bytes written
@@ -99,11 +99,8 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
 
-    try:
-        if not isinstance(lpBuffer, unicode):
-            lpBuffer = unicode(lpBuffer)
-    except NameError:  # pragma: no cover
-        pass
+    input_check("lpBuffer", lpBuffer, Enums.UTF8)
+    lpBuffer = lpBuffer.encode("utf-8")
 
     # Prepare string and outputs
     nNumberOfBytesToWrite = len(lpBuffer)

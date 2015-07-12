@@ -12,6 +12,7 @@ NoneType = type(None)
 Enums = enum.Enum("Enums", " ".join([
     "NON_ZERO",
     "HANDLE",
+    "UTF8" # Unicode in Python 2, string in Python 3
 ]))
 
 
@@ -95,7 +96,12 @@ def input_check(name, value, allowed_types):
         except TypeError:
             raise InputError(name, value, allowed_types)
 
-        return
+    elif allowed_types is Enums.UTF8:
+        try:
+            value.encode("utf-8")
+        except (ValueError, AttributeError, TypeError):
+            raise InputError(name, value, allowed_types)
 
-    if not isinstance(value, allowed_types):
-        raise InputError(name, value, allowed_types)
+    else:
+        if not isinstance(value, allowed_types):
+            raise InputError(name, value, allowed_types)
