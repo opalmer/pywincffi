@@ -123,7 +123,7 @@ def input_check(name, value, allowed_types):
     elif allowed_types is Enums.UTF8:
         try:
             value.encode("utf-8")
-        except (ValueError, AttributeError, TypeError):
+        except (ValueError, AttributeError):
             raise InputError(name, value, allowed_types)
 
     else:
