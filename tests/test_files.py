@@ -29,7 +29,7 @@ class CreatePipeTest(TestCase):
             CloseHandle(reader)
 
 
-class AnonymousPipeFileTest(TestCase):
+class AnonymousPipeReadWriteTest(TestCase):
     """
     Basic tests for :func:`pywincffi.files.WritePipe` and
     :func:`pywincffi.files.ReadPipe`
