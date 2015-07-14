@@ -116,5 +116,5 @@ class TestEnumMapping(TestCase):
 class EnumUTF8Test(TestCase):
     def test_attribute_error(self):
         with self.assertRaises(InputError):
-            input_check("", b"", Enums.UTF8)
+            input_check("", None, Enums.UTF8)
 
