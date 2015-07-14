@@ -53,3 +53,30 @@ class AnonymousPipeReadWriteTest(TestCase):
 
         read_data = ReadFile(reader, data_written)
         self.assertEqual(data, read_data)
+
+    def test_partial_bytes_read(self):
+        reader, writer = CreatePipe()
+        self.addCleanup(CloseHandle, reader)
+        self.addCleanup(CloseHandle, writer)
+
+        data = b"hello world".decode("utf-8")
+        WriteFile(writer, data)
+
+        read_data = ReadFile(reader, 5)
+        self.assertEqual(read_data, "hello")
+
+        read_data = ReadFile(reader, 6)
+        self.assertEqual(read_data, " world")
+
+    def test_read_more_bytes_than_written(self):
+        reader, writer = CreatePipe()
+        self.addCleanup(CloseHandle, reader)
+        self.addCleanup(CloseHandle, writer)
+
+        data = b"hello world".decode("utf-8")
+        data_written = WriteFile(writer, data)
+
+        read_data = ReadFile(reader, data_written * 2)
+        self.assertEqual(data, read_data)
+
+
