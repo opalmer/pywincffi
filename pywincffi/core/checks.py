@@ -109,10 +109,10 @@ def input_check(name, value, allowed_types):
         mapping = INPUT_CHECK_MAPPINGS[allowed_types]
 
         try:
-            if value is ffi.NULL and not mapping.nullable:
-                raise TypeError
-
             typeof = ffi.typeof(value)
+
+            if mapping.nullable and value is ffi.NULL:
+                return
 
             if typeof.kind != mapping.kind or typeof.cname != mapping.cname:
                 raise TypeError
