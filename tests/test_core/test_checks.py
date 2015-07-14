@@ -3,7 +3,8 @@ try:
 except ImportError:
     from mock import Mock, patch
 
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import (
+    INPUT_CHECK_MAPPINGS, CheckMapping, Enums, input_check, error_check)
 from pywincffi.core.ffi import ffi
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError, InputError
@@ -55,3 +56,58 @@ class TestTypeCheck(TestCase):
             # The value does not matter here since we're
             # mocking out typeof()
             input_check("", None, Enums.HANDLE)
+
+
+class TestEnumMapping(TestCase):
+    def setUp(self):
+        self.original_mappings = INPUT_CHECK_MAPPINGS.copy()
+        INPUT_CHECK_MAPPINGS.clear()
+
+    def tearDown(self):
+        INPUT_CHECK_MAPPINGS.clear()
+        INPUT_CHECK_MAPPINGS.update(self.original_mappings)
+
+    def test_nullable(self):
+        INPUT_CHECK_MAPPINGS.update(
+            mapping=CheckMapping(
+                kind="foo",
+                cname="bar",
+                nullable=True
+            )
+        )
+
+        # If something is nullable but kind/cname don't match it
+        # should not fail the input check
+        typeof = Mock(kind="pointer", cname="void *")
+        with patch.object(ffi, "typeof", return_value=typeof):
+            input_check("", ffi.NULL, "mapping")
+
+    def test_not_nullable(self):
+        INPUT_CHECK_MAPPINGS.update(
+            mapping=CheckMapping(
+                kind="foo",
+                cname="bar",
+                nullable=False
+            )
+        )
+
+        # If something is nullable but kind/cname don't match it
+        # should not fail the input check
+        typeof = Mock(kind="foo", cname="bar")
+        with patch.object(ffi, "typeof", return_value=typeof):
+            input_check("", ffi.NULL, "mapping")
+
+    def test_kind_and_cname(self):
+        INPUT_CHECK_MAPPINGS.update(
+            mapping=CheckMapping(
+                kind="foo",
+                cname="bar",
+                nullable=True
+            )
+        )
+
+        # If something is nullable but kind/cname don't match it
+        # should not fail the input check
+        typeof = Mock(kind="foo", cname="bar")
+        with patch.object(ffi, "typeof", return_value=typeof):
+            input_check("", "", "mapping")
