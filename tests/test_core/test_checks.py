@@ -111,3 +111,10 @@ class TestEnumMapping(TestCase):
         typeof = Mock(kind="foo", cname="bar")
         with patch.object(ffi, "typeof", return_value=typeof):
             input_check("", "", "mapping")
+
+
+class EnumUTF8Test(TestCase):
+    def test_attribute_error(self):
+        with self.assertRaises(InputError):
+            input_check("", b"", Enums.UTF8)
+
