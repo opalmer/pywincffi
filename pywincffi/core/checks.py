@@ -1,4 +1,5 @@
 import enum
+from collections import namedtuple
 
 from six import string_types
 
@@ -9,11 +10,28 @@ from pywincffi.exceptions import WindowsAPIError, InputError
 logger = get_logger("core.check")
 
 NoneType = type(None)
-Enums = enum.Enum("Enums", " ".join([
-    "NON_ZERO",
-    "HANDLE",
-    "UTF8" # Unicode in Python 2, string in Python 3
-]))
+Enums = enum.Enum("Enums", """
+NON_ZERO
+HANDLE
+UTF8
+OVERLAPPED
+""".strip())
+
+# A mapping of value we can expect to get from `ffi.typeof` against
+# some known input enums.
+CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
+INPUT_CHECK_MAPPINGS = {
+    Enums.HANDLE: CheckMapping(
+        kind="pointer",
+        cname="void *",
+        nullable=False
+    ),
+    Enums.OVERLAPPED: CheckMapping(
+        kind="array",
+        cname="OVERLAPPED[1]",
+        nullable=True
+    )
+}
 
 
 def error_check(api_function, code=None, expected=0):
@@ -87,10 +105,16 @@ def input_check(name, value, allowed_types):
         "input_check(name=%r, value=%r, allowed_types=%r",
         name, value, allowed_types
     )
-    if allowed_types is Enums.HANDLE:
+    if allowed_types in INPUT_CHECK_MAPPINGS:
+        mapping = INPUT_CHECK_MAPPINGS[allowed_types]
+
         try:
+            if value is ffi.NULL and not mapping.nullable:
+                raise TypeError
+
             typeof = ffi.typeof(value)
-            if typeof.kind != "pointer" or typeof.cname != "void *":
+
+            if typeof.kind != mapping.kind or typeof.cname != mapping.cname:
                 raise TypeError
 
         except TypeError:
