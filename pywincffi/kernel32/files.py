@@ -5,6 +5,8 @@ Files
 A module containing common Windows file functions.
 """
 
+from six import integer_types
+
 from pywincffi.core.ffi import Library, ffi
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 
@@ -99,8 +101,9 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
 
+    input_check("hFile", hFile, Enums.HANDLE)
     input_check("lpBuffer", lpBuffer, Enums.UTF8)
-    lpBuffer = lpBuffer.encode("utf-8")
+    # TODO: need input_check for lpOverlapped
 
     # Prepare string and outputs
     nNumberOfBytesToWrite = len(lpBuffer)
@@ -115,10 +118,30 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
 
 # TODO: docs and implementation
-def ReadFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpOverlapped=None):
+def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
+    :param handle hFile:
+        The handle to read from
+
+    :returns:
+        Returns the data read from ``hFile``
+
     .. seealso::
 
         https://msdn.microsoft.com/en-us/library/windows/desktop/aa365467
 
     """
+    if lpOverlapped is None:
+        lpOverlapped = ffi.NULL
+
+    input_check("hFile", hFile, Enums.HANDLE)
+    input_check("nNumberOfBytesToRead", nNumberOfBytesToRead, integer_types)
+    # TODO: need input_check for lpOverlapped
+
+    lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToRead)
+    bytes_read = ffi.new("LPDWORD")
+    code = kernel32.ReadFile(
+        hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_read, lpOverlapped
+    )
+    error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
+    return ffi.string(lpBuffer)

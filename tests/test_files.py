@@ -5,7 +5,8 @@ except ImportError:
 
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.files import CreatePipe, CloseHandle, WriteFile
+from pywincffi.kernel32.files import (
+    CreatePipe, CloseHandle, WriteFile, ReadFile)
 
 
 class CreatePipeTest(TestCase):
@@ -35,8 +36,20 @@ class AnonymousPipeFileTest(TestCase):
     """
     def test_bytes_written(self):
         reader, writer = CreatePipe()
-        data = "hello world"
+        self.addCleanup(CloseHandle, reader)
+        self.addCleanup(CloseHandle, writer)
+
+        data = b"hello world".decode("utf-8")
         bytes_written = WriteFile(writer, data)
         self.assertEqual(bytes_written, len(data) * 2)
 
-    # TODO: tests for ReadFile on `reader`
+    def test_bytes_read(self):
+        reader, writer = CreatePipe()
+        self.addCleanup(CloseHandle, reader)
+        self.addCleanup(CloseHandle, writer)
+
+        data = b"hello world".decode("utf-8")
+        data_written = WriteFile(writer, data)
+
+        read_data = ReadFile(reader, data_written)
+        self.assertEqual(data, read_data)
