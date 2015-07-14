@@ -91,6 +91,20 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         The data to be written to the file or device. We should be able
         to convert this value to unicode.
 
+    :type lpOverlapped: None or OVERLAPPED
+    :param lpOverlapped:
+        None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
+        documentation for intended usage and below for an example of this
+        struct.
+
+        >>> from pywincffi.core.ffi import ffi
+        >>> reader = None # normally, this would be a handle
+        >>> struct = ffi.new(
+        ...     "OVERLAPPED[1]", [{
+        ...         "hEvent": reader
+        ...     }]
+        ... )
+
     :returns:
         Returns the number of bytes written
 
@@ -103,7 +117,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
     input_check("hFile", hFile, Enums.HANDLE)
     input_check("lpBuffer", lpBuffer, Enums.UTF8)
-    # TODO: need input_check for lpOverlapped
+    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
 
     # Prepare string and outputs
     nNumberOfBytesToWrite = len(lpBuffer)
@@ -117,11 +131,27 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     return bytes_written[0]
 
 
-# TODO: docs and implementation
 def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
     :param handle hFile:
         The handle to read from
+
+    :param int nNumberOfBytesToRead:
+        The number of bytes to read from ``hFile``
+
+    :type lpOverlapped: None or OVERLAPPED
+    :param lpOverlapped:
+        None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
+        documentation for intended usage and below for an example of this
+        struct.
+
+        >>> from pywincffi.core.ffi import ffi
+        >>> reader = None # normally, this would be a handle
+        >>> struct = ffi.new(
+        ...     "OVERLAPPED[1]", [{
+        ...         "hEvent": reader
+        ...     }]
+        ... )
 
     :returns:
         Returns the data read from ``hFile``
@@ -136,7 +166,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
 
     input_check("hFile", hFile, Enums.HANDLE)
     input_check("nNumberOfBytesToRead", nNumberOfBytesToRead, integer_types)
-    # TODO: need input_check for lpOverlapped
+    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
 
     lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToRead)
     bytes_read = ffi.new("LPDWORD")
