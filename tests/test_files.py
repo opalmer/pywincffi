@@ -5,7 +5,7 @@ except ImportError:
 
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.files import (
+from pywincffi.kernel32.io import (
     CreatePipe, CloseHandle, WriteFile, ReadFile)
 
 
