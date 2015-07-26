@@ -21,8 +21,6 @@ from pywincffi.core.ffi import Library
 from pywincffi.core.checks import input_check, error_check
 
 
-
-
 def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     """
     Opens an existing local process object.
