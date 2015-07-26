@@ -10,9 +10,9 @@ from cffi import FFI
 from six.moves import builtins
 
 import pywincffi
-from pywincffi.core.ffi import Loader, ffi
+from pywincffi.core.ffi import Library
 from pywincffi.core.testutil import TestCase
-from pywincffi.exceptions import HeaderNotFoundError
+from pywincffi.exceptions import ResourceNotFoundError
 
 
 class TestFFI(TestCase):
@@ -20,34 +20,33 @@ class TestFFI(TestCase):
     Tests the ``pywinffi.core.ffi.ffi`` global.
     """
     def test_unicode(self):
+        ffi, _ = Library.load()
         self.assertTrue(ffi._windows_unicode)
 
     def test_instance(self):
+        ffi, _ = Library.load()
         self.assertIsInstance(ffi, FFI)
 
 
-class TestLibraryLoadHeader(TestCase):
+class TestSourcePaths(TestCase):
     """
-    Tests for ``pywincffi.core.ffi.Library._load_header``
+    Tests for ``pywincffi.core.ffi.Library.[HEADERS|SOURCES]``
     """
-    def test_loads_header_from_correct_path(self):
-        path = join(dirname(pywincffi.__file__), "headers", "kernel32.h")
-        with open(path, "rb") as stream:
-            header = stream.read().decode()
+    def test_sources_exist(self):
+        for path in Library.SOURCES:
+            try:
+                with open(path, "r"):
+                    pass
+            except (OSError, IOError, WindowsError) as error:
+                self.fail("Failed to load %s: %s" % (path, error))
 
-        self.assertEqual(Loader._load_header("kernel32.h"), header)
-
-    def test_returns_none_when_header_not_found(self):
-        self.assertIsNone(Loader._load_header("foobar"))
-
-    def test_raises_non_not_found_errors(self):
-        def side_effect(*args, **kwargs):
-            raise OSError(42, "fail")
-
-        with patch.object(builtins, "open", side_effect=side_effect):
-            with self.assertRaises(OSError) as raised_error:
-                Loader._load_header("kernel32")
-        self.assertEqual(raised_error.exception.errno, 42)
+    def test_headers_exist(self):
+        for path in Library.HEADERS:
+            try:
+                with open(path, "r"):
+                    pass
+            except (OSError, IOError, WindowsError) as error:
+                self.fail("Failed to load %s: %s" % (path, error))
 
 
 class TestLibraryLoad(TestCase):
@@ -55,48 +54,34 @@ class TestLibraryLoad(TestCase):
     Tests for ``pywincffi.core.ffi.Library.load``
     """
     def setUp(self):
-        self._cache = Loader.CACHE.copy()
-        Loader.CACHE.clear()
+        self._cache = Library.CACHE
+        Library.CACHE = None
 
     def tearDown(self):
-        Loader.CACHE.clear()
-        Loader.CACHE.update(self._cache)
-
-    def test_returns_cached(self):
-        ffi_instance = Loader.ffi()
-        Loader.CACHE[ffi_instance] = {"foo_library1": True}
-        self.assertIs(
-            Loader.load("foo_library1", ffi_instance=ffi_instance),
-            True
-        )
-
-    def test_returns_cached_default_ffi_instance(self):
-        Loader.CACHE[ffi] = {"foo_library2": False}
-        self.assertIs(Loader.load("foo_library2"), False)
+        Library.CACHE = self._cache
 
     def test_header_not_found(self):
-        with patch.object(Loader, "_load_header", return_value=None):
-            with self.assertRaises(HeaderNotFoundError):
-                Loader.load("kernel32")
+        with patch.object(Library, "HEADERS", ("foobar", )):
+            with self.assertRaises(ResourceNotFoundError):
+                Library.load()
 
     def test_loads_library(self):
         fake_header = dedent("""
         #define HELLO_WORLD 42
         """)
-        with patch.object(Loader, "_load_header", return_value=fake_header):
-            library = Loader.load("kernel32")
+        with patch.object(Library, "_load_files", return_value=fake_header):
+            ffi, library = Library.load()
 
         self.assertEqual(library.HELLO_WORLD, 42)
 
     def test_caches_library(self):
+        self.assertIsNone(Library.CACHE)
+
         fake_header = dedent("""
         #define HELLO_WORLD 42
         """)
-        self.assertNotIn(ffi, Loader.CACHE)
-        with patch.object(Loader, "_load_header", return_value=fake_header):
-            library1 = Loader.load("kernel32")
-            self.assertIn(ffi, Loader.CACHE)
-            library2 = Loader.load("kernel32")
-
-        self.assertIs(Loader.CACHE[ffi]["kernel32"], library1)
-        self.assertIs(Loader.CACHE[ffi]["kernel32"], library2)
+        with patch.object(Library, "_load_files", return_value=fake_header):
+            ffi1, lib1 = Library.load()
+            ffi2, lib2 = Library.load()
+        self.assertIs(ffi1, ffi2)
+        self.assertIs(lib1, lib2)
