@@ -1,10 +1,9 @@
 import os
 
-from pywincffi.core.ffi import ffi
+from pywincffi.core.ffi import Library
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.process import (
-    PROCESS_QUERY_LIMITED_INFORMATION, OpenProcess)
+from pywincffi.kernel32.process import OpenProcess
 
 
 class TestOpenProcess(TestCase):
@@ -12,11 +11,14 @@ class TestOpenProcess(TestCase):
     Tests for :func:`pywincffi.kernel32.OpenProcess`
     """
     def test_returns_handle(self):
+        ffi, library = Library.load()
+
         handle = OpenProcess(
-            PROCESS_QUERY_LIMITED_INFORMATION,
+            library.PROCESS_QUERY_LIMITED_INFORMATION,
             False,
             os.getpid()
         )
+
         typeof = ffi.typeof(handle)
         self.assertEqual(typeof.kind, "pointer")
         self.assertEqual(typeof.cname, "void *")

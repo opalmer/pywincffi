@@ -5,6 +5,7 @@ Exceptions
 Custom exceptions that ``pywincffi`` can throw.
 """
 
+
 class PyWinCFFIError(Exception):
     """
     The base class for all custom exceptions that pywincffi can throw.
@@ -57,5 +58,5 @@ class WindowsAPIError(PyWinCFFIError):
         super(WindowsAPIError, self).__init__(self.message)
 
 
-class HeaderNotFoundError(PyWinCFFIError):
-    """Raised when we fail to locate a specific header file"""
+class ResourceNotFoundError(PyWinCFFIError):
+    """Raised when we fail to locate a specific resource"""

@@ -7,12 +7,13 @@ This module is mainly responsible for loading and configuring
 """
 
 from errno import ENOENT
+from os.path import join
 
 from cffi import FFI
 from pkg_resources import resource_filename
 
 from pywincffi.core.logger import get_logger
-from pywincffi.exceptions import HeaderNotFoundError
+from pywincffi.exceptions import ResourceNotFoundError
 
 
 logger = get_logger("core.ffi")
@@ -25,94 +26,73 @@ class Library(object):
     loaded multiple times causing an exception to be raised when
     a function is redefined.
     """
-    CACHE = {}
+    CACHE = None
+    VERIFY_LIBRARIES = ("kernel32", )
+    HEADERS_ROOT = resource_filename(
+        "pywincffi", join("core", "cdefs", "headers"))
+    SOURCES_ROOT = resource_filename(
+        "pywincffi", join("core", "cdefs", "sources"))
+    HEADERS = (
+        join(HEADERS_ROOT, "constants.h"),
+        join(HEADERS_ROOT, "structs.h"),
+        join(HEADERS_ROOT, "functions.h")
+    )
+    SOURCES = (
+        join(SOURCES_ROOT, "main.c"),
+    )
 
     @staticmethod
-    def _load_header(header_name):
+    def _load_files(filepaths):
         """
-        For the given ``header_name`` locate the path on disk and
-        attempt to load it.  This function will search the `headers`
-        directory under the root of the pywincffi project.
+        Given a tuple of file paths open each file and return a string
+        containing the contents of all the files loaded.
 
-        :param str header_name:
-            The name of the header to load, kernel32.h for example.  This
-            will be passed along to :func:`resource_filename` to construct
-            the path.
+        :param tuple filepaths:
+            A tuple of file paths to load
 
-        :returns:
-            Returns the loaded header file or ``None`` if no header for
-            for the given name could be found.
+        :raises ResourceNotFoundError:
+            Raised if one of the paths in ``filepaths`` could not
+            be loaded.
+
+        :return:
+            Returns a string containing all the loaded paths.
         """
-        header_name = "headers/" + header_name
-        logger.debug("Searching for header %r", header_name)
-        path = resource_filename("pywincffi", header_name)
+        output = ""
 
-        logger.debug("Loading header for %s from %s", header_name, path)
+        for path in filepaths:
+            logger.debug("Reading %s", path)
+            try:
+                with open(path, "r") as open_file:
+                    output += open_file.read()
 
-        try:
-            with open(path, "rb") as stream:
-                header_data = stream.read().decode()
-        except (OSError, IOError, WindowsError) as error:
-            if error.errno == ENOENT:
-                logger.error("No such header %s", path)
-                return None
-            raise
-        return header_data
+            except (OSError, IOError, WindowsError) as error:
+                if error.errno == ENOENT:
+                    raise ResourceNotFoundError("Failed to locate %s" % path)
+
+        return output
 
     @classmethod
-    def load(cls, library_name, ffi_instance=None, header=None):
+    def load(cls, cached=True):
         """
-        Loads the given ``library_name`` and returns a bound instance of
-        :class:`FFI`.  The return value may either a new instance or
-        a cached result we've seen before.
+        Main function which loads up an instance of the library.
 
-        :param str library_name:
-            The name of the library to load (ex. kernel32)
-
-        :keyword cffi.api.FFI ffi_instance:
-            The optional instance of :class:`FFI` to bind to.  If no value
-            is provided we'll use the global ``pywincffi.core.ffi.ffi`
-            instance instead.
-
-        :keyword str header:
-            An optional header to provide the definitions for the
-            given ``library_name``.  This keyword is mainly used
-            when testing and when not provided we use :meth:`_find_header`
-            to locate the path to the header file for the given
-            library_name.
+        :returns:
+            Returns a tuple of :class:`FFI` and the loaded library.
         """
-        if ffi_instance is None:
-            ffi_instance = ffi
+        if cached and cls.CACHE is not None:
+            return cls.CACHE
 
-        cached = cls.CACHE.get(ffi_instance, None)
-        if cached is not None and library_name in cached:
-            logger.debug(
-                "Returning cached library %s for %s",
-                library_name, ffi_instance
-            )
-            return cached[library_name]
+        # Read in headers
+        csource = cls._load_files(cls.HEADERS)
+        source = cls._load_files(cls.SOURCES)
 
-        logger.debug("Loading %s onto %s", library_name, ffi_instance)
+        # Compile
+        # TODO: this should do something slightly different if pre-compiled
+        ffi = FFI()
+        ffi.set_unicode(True)
+        ffi.cdef(csource)
+        library = ffi.verify(source, libraries=cls.VERIFY_LIBRARIES)
 
-        if header is None:
-            header = cls._load_header(library_name + ".h")
+        cls.CACHE = (ffi, library)
 
-        if header is None:
-            raise HeaderNotFoundError(
-                "Failed to locate header for %s" % library_name
-            )
-
-        ffi_instance.cdef(header)
-        library = ffi_instance.dlopen(library_name)
-        instance_cache = cls.CACHE.setdefault(ffi_instance, {})
-        instance_cache[library_name] = library
-        return library
-
-
-def new_ffi():
-    """Returns an instance of :class:`FFI`"""
-    ffi_instance = FFI()
-    ffi_instance.set_unicode(True)
-    return ffi_instance
-
-ffi = new_ffi()
+        return cls.CACHE

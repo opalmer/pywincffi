@@ -7,17 +7,16 @@ A module containing common Windows file functions.
 
 from six import integer_types
 
-from pywincffi.core.ffi import Library, ffi
+from pywincffi.core.ffi import Library
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
-
-kernel32 = Library.load("kernel32")
 
 
 def CreatePipe(nSize=0, lpPipeAttributes=None):
     """
     Creates an anonymous pipe and returns the read and write handles.
 
-    >>> from pywincffi.core.ffi import ffi
+    >>> from pywincffi.core.ffi import Library
+    >>> ffi, library = Library.load()
     >>> lpPipeAttributes = ffi.new(
     ...     "SECURITY_ATTRIBUTES[1]", [{
     ...     "nLength": ffi.sizeof("SECURITY_ATTRIBUTES"),
@@ -49,6 +48,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     """
     input_check("nSize", nSize, int)
     input_check("lpPipeAttributes", lpPipeAttributes, (NoneType, dict))
+    ffi, library = Library.load()
 
     hReadPipe = ffi.new("PHANDLE")
     hWritePipe = ffi.new("PHANDLE")
@@ -56,7 +56,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     if lpPipeAttributes is None:
         lpPipeAttributes = ffi.NULL
 
-    code = kernel32.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
+    code = library.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
     error_check("CreatePipe", code=code, expected=Enums.NON_ZERO)
 
     return hReadPipe[0], hWritePipe[0]
@@ -74,8 +74,9 @@ def CloseHandle(hObject):
         https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211
     """
     input_check("hObject", hObject, Enums.HANDLE)
+    ffi, library = Library.load()
 
-    code = kernel32.CloseHandle(hObject)
+    code = library.CloseHandle(hObject)
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
 
 
@@ -112,6 +113,8 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
         https://msdn.microsoft.com/en-us/library/windows/desktop/aa365747
     """
+    ffi, library = Library.load()
+
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
 
@@ -124,7 +127,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToWrite, lpBuffer)
     bytes_written = ffi.new("LPDWORD")
 
-    code = kernel32.WriteFile(
+    code = library.WriteFile(
         hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_written, lpOverlapped)
     error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
 
@@ -145,7 +148,8 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         documentation for intended usage and below for an example of this
         struct.
 
-        >>> from pywincffi.core.ffi import ffi
+        >>> from pywincffi.core.ffi import Library
+        >>> ffi, library = Library.load()
         >>> reader = None # normally, this would be a handle
         >>> struct = ffi.new(
         ...     "OVERLAPPED[1]", [{
@@ -161,6 +165,8 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         https://msdn.microsoft.com/en-us/library/windows/desktop/aa365467
 
     """
+    ffi, library = Library.load()
+
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
 
@@ -170,7 +176,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
 
     lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToRead)
     bytes_read = ffi.new("LPDWORD")
-    code = kernel32.ReadFile(
+    code = library.ReadFile(
         hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_read, lpOverlapped
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
