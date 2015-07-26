@@ -7,10 +7,10 @@ A module containing common Windows file functions.
 
 from six import integer_types
 
-from pywincffi.core.ffi import Library, ffi
+from pywincffi.core.ffi import Loader, ffi
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 
-kernel32 = Library.load("kernel32")
+kernel32 = Loader.load("kernel32")
 
 
 def CreatePipe(nSize=0, lpPipeAttributes=None):

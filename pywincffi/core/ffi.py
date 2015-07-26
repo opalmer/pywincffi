@@ -18,7 +18,7 @@ from pywincffi.exceptions import HeaderNotFoundError
 logger = get_logger("core.ffi")
 
 
-class Library(object):
+class Loader(object):
     """
     A wrapper around :meth:`FFI.cdef` and :meth:`FFI.dlopen` that
     also performs caching.  Without caching a library could be
@@ -26,6 +26,13 @@ class Library(object):
     a function is redefined.
     """
     CACHE = {}
+
+    @staticmethod
+    def ffi():
+        """Returns an instance of :class:`FFI`"""
+        instance = FFI()
+        instance.set_unicode(True)
+        return instance
 
     @staticmethod
     def _load_header(header_name):
@@ -109,10 +116,4 @@ class Library(object):
         return library
 
 
-def new_ffi():
-    """Returns an instance of :class:`FFI`"""
-    ffi_instance = FFI()
-    ffi_instance.set_unicode(True)
-    return ffi_instance
-
-ffi = new_ffi()
+ffi = Loader.ffi()

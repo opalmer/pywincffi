@@ -17,10 +17,10 @@ documentation for the constant names and their purpose:
 
 import six
 
-from pywincffi.core.ffi import Library, ffi
+from pywincffi.core.ffi import Loader, ffi
 from pywincffi.core.checks import input_check, error_check
 
-kernel32 = Library.load("kernel32")
+kernel32 = Loader.load("kernel32")
 
 PROCESS_CREATE_PROCESS = 0x0080
 PROCESS_CREATE_THREAD = 0x0002
