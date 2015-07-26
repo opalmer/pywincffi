@@ -5,6 +5,7 @@ Exceptions
 Custom exceptions that ``pywincffi`` can throw.
 """
 
+
 class PyWinCFFIError(Exception):
     """
     The base class for all custom exceptions that pywincffi can throw.
