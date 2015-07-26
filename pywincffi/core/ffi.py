@@ -33,8 +33,8 @@ class Library(object):
     SOURCES_ROOT = resource_filename(
         "pywincffi", join("core", "cdefs", "sources"))
     HEADERS = (
-        join(HEADERS_ROOT, "structs.h"),
         join(HEADERS_ROOT, "constants.h"),
+        join(HEADERS_ROOT, "structs.h"),
         join(HEADERS_ROOT, "functions.h")
     )
     SOURCES = (
