@@ -5,10 +5,18 @@ Files
 A module containing common Windows file functions.
 """
 
+from collections import namedtuple
+
 from six import integer_types
 
 from pywincffi.core.ffi import Library
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
+
+PeekNamedPipeResult = namedtuple(
+    "PeekNamedPipeResult",
+    ("lpBuffer", "lpBytesRead", "lpTotalBytesAvail",
+     "lpBytesLeftThisMessage")
+)
 
 
 def CreatePipe(nSize=0, lpPipeAttributes=None):
@@ -62,22 +70,115 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     return hReadPipe[0], hWritePipe[0]
 
 
-def CloseHandle(hObject):
+def SetNamedPipeHandleState(
+        hNamedPipe,
+        lpMode=None, lpMaxCollectionCount=None, lpCollectDataTimeout=None):
     """
-    Closes an open object handle.
+    Sets the read and blocking mode of the specified ``hNamedPipe``.
 
-    :param handle hObject:
-        The handle object to close.
+    :param handle hNamedPipe:
+        A handle to the named pipe instance.
+
+    :keyword int lpMode:
+        The new pipe mode which is a combination of read mode:
+
+            * ``PIPE_READMODE_BYTE``
+            * ``PIPE_READMODE_MESSAGE``
+
+        And a wait-mode flag:
+
+            * ``PIPE_WAIT``
+            * ``PIPE_NOWAIT``
+
+    :keyword int lpMaxCollectionCount:
+        The maximum number of bytes collected.
+
+    :keyword int lpCollectDataTimeout:
+        The maximum time, in milliseconds, that can pass before a
+        remote named pipe transfers information
 
     .. seealso::
 
-        https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211
+        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365787
     """
-    input_check("hObject", hObject, Enums.HANDLE)
+    input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
     ffi, library = Library.load()
 
-    code = library.CloseHandle(hObject)
-    error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
+    if lpMode is None:
+        lpMode = ffi.NULL
+    else:
+        input_check("lpMode", lpMode, int)
+        lpMode = ffi.new("LPDWORD", lpMode)
+
+    if lpMaxCollectionCount is None:
+        lpMaxCollectionCount = ffi.NULL
+    else:
+        input_check("lpMaxCollectionCount", lpMaxCollectionCount, int)
+        lpMaxCollectionCount = ffi.new("LPDWORD", lpMaxCollectionCount)
+
+    if lpCollectDataTimeout is None:
+        lpCollectDataTimeout = ffi.NULL
+    else:
+        input_check("lpCollectDataTimeout", lpCollectDataTimeout, int)
+        lpCollectDataTimeout = ffi.new("LPDWORD", lpCollectDataTimeout)
+
+    code = library.SetNamedPipeHandleState(
+        hNamedPipe,
+        lpMode,
+        lpMaxCollectionCount,
+        lpCollectDataTimeout
+    )
+    error_check("SetNamedPipeHandleState", code=code, expected=Enums.NON_ZERO)
+
+
+def PeekNamedPipe(hNamedPipe, nBufferSize):
+    """
+    Copies data from a pipe into a buffer without removing it
+    from the pipe.
+
+    :param handle hNamedPipe:
+        The handele to the pipe object we want to peek into.
+
+    :param int nBufferSize:
+        The number of bytes to 'peek' into the pipe.
+
+    :rtype: :class:`PeekNamedPipeResult`
+    :return:
+        Returns an instance of :class:`PeekNamedPipeResult` which
+        contains the buffer read, number of bytes read and the result.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365779
+    """
+    # input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
+    input_check("nBufferSize", nBufferSize, int)
+    ffi, library = Library.load()
+
+    # Outputs
+    lpBuffer = ffi.new("LPVOID[%d]" % nBufferSize)
+    lpBytesRead = ffi.new("LPDWORD")
+    lpTotalBytesAvail = ffi.new("LPDWORD")
+    lpBytesLeftThisMessage = ffi.new("LPDWORD")
+
+    code = library.PeekNamedPipe(
+        hNamedPipe,
+        lpBuffer,
+        nBufferSize,
+        lpBytesRead,
+        lpTotalBytesAvail,
+        lpBytesLeftThisMessage
+    )
+    error_check("PeekNamedPipe", code=code, expected=Enums.NON_ZERO)
+
+    # FIXME: ffi.string(lpBuffer) does not work
+    # FIXME: iterating over parts of the buffer yields every other char (may be a handler state issue)
+    return PeekNamedPipeResult(
+        lpBuffer=ffi.string(lpBuffer),
+        lpBytesRead=lpBytesRead[0],
+        lpTotalBytesAvail=lpTotalBytesAvail[0],
+        lpBytesLeftThisMessage=lpBytesLeftThisMessage[0]
+    )
 
 
 def WriteFile(hFile, lpBuffer, lpOverlapped=None):
@@ -181,3 +282,21 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
     return ffi.string(lpBuffer)
+
+
+def CloseHandle(hObject):
+    """
+    Closes an open object handle.
+
+    :param handle hObject:
+        The handle object to close.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211
+    """
+    input_check("hObject", hObject, Enums.HANDLE)
+    ffi, library = Library.load()
+
+    code = library.CloseHandle(hObject)
+    error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
