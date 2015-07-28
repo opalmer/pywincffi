@@ -35,6 +35,30 @@ It's generated directly from this library using sphinx::
     cd docs
     make html
 
+Function Documentation
+~~~~~~~~~~~~~~~~~~~~~~
+
+Windows API Functions are typically documented in the following format:
+
+.. code-block:: python
+
+    def DuplicateHandle(arg1):
+        """
+        A brief message about this function.
+
+        :param type arg1:
+            Brief information about this argument
+
+        .. seealso::
+
+            <url to the MSDN API documentation for this function>
+        """
+
+It's important to note that the ``seealso`` link is an important part
+of each function.  If you're looking to learn more about specific behaviors,
+caveats or just more general information then follow the link to Microsoft's
+documentation.
+
 
 Testing
 -------
