@@ -19,13 +19,23 @@ class InputError(PyWinCFFIError):
     to be sure that the input(s) being provided are what we're expecting so
     we fail early and provide better error messages.
     """
-    def __init__(self, name, value, expected_types):
+    def __init__(self, name, value, expected_types, allowed_values=None):
         self.name = name
         self.value = value
         self.expected_types = expected_types
-        self.message = "Expected type(s) %r for %s.  Got %s instead." % (
-            self.expected_types, self.name, type(self.value)
-        )
+        self.allowed_values = allowed_values
+
+        if self.allowed_values is None:
+            self.message = "Expected type(s) %r for %s.  Got %s instead." % (
+                self.expected_types, self.name, type(self.value)
+            )
+
+        else:
+            self.message = \
+                "Expected value for %s to be in %r, got %r instead." % (
+                    self.name, self.allowed_values, value
+                )
+
         super(InputError, self).__init__(self.message)
 
 

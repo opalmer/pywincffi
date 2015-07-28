@@ -55,12 +55,18 @@ def error_check(api_function, code=None, expected=0):
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
     """
-    ffi, _ = Library.load()
+    ffi, library = Library.load()
 
     if code is None:
         result, api_error_message = ffi.getwinerror()
     else:
-        result, api_error_message = ffi.getwinerror(code)
+        # If the is zero and we expected non-zero then
+        # the real error message can be found with ffi.getwinerror.
+        if code == 0 and expected is Enums.NON_ZERO:
+            result = code
+            _, api_error_message = ffi.getwinerror()
+        else:
+            result, api_error_message = ffi.getwinerror(code)
 
     logger.debug(
         "error_check(%r, code=%r, result=%r, expected=%r)",
@@ -68,7 +74,7 @@ def error_check(api_function, code=None, expected=0):
     )
 
     if (expected is Enums.NON_ZERO
-        and (result != 0 or code is not None and code != 0)):
+            and (result != 0 or code is not None and code != 0)):
         return
 
     if expected != result:
@@ -77,7 +83,7 @@ def error_check(api_function, code=None, expected=0):
         )
 
 
-def input_check(name, value, allowed_types):
+def input_check(name, value, allowed_types=None, allowed_values=None):
     """
     A small wrapper around :func:`isinstance`.  This is mainly meant
     to be used inside of other functions to pre-validate input rater
@@ -98,17 +104,29 @@ def input_check(name, value, allowed_types):
         also supports a special value, ``pywincffi.core.checks.Enums.HANDLE``,
         which will check to ensure ``value`` is a handle object.
 
+    :param tuple allowed_values:
+        A tuple of allowed values.  When provided ``value`` must
+        be in this tuple otherwise :class:`InputError` will be
+        raised.
+
     :raises pywincffi.exceptions.InputError:
         Raised if ``value`` is not an instance of ``allowed_types``
     """
     assert isinstance(name, string_types)
+    assert allowed_values is None or isinstance(allowed_values, tuple)
     ffi, _ = Library.load()
 
     logger.debug(
-        "input_check(name=%r, value=%r, allowed_types=%r",
-        name, value, allowed_types
+        "input_check(name=%r, value=%r, allowed_types=%r, allowed_values=%r",
+        name, value, allowed_types, allowed_values
     )
-    if allowed_types in INPUT_CHECK_MAPPINGS:
+
+    if allowed_types is None and isinstance(allowed_values, tuple):
+        if value not in allowed_values:
+            raise InputError(
+                name, value, allowed_types, allowed_values=allowed_values)
+
+    elif allowed_types in INPUT_CHECK_MAPPINGS:
         mapping = INPUT_CHECK_MAPPINGS[allowed_types]
 
         try:

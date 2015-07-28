@@ -126,8 +126,43 @@ class TestEnumMapping(TestCase):
             input_check("", "", "mapping")
 
 
-class EnumUTF8Test(TestCase):
+class TestEnumUTF8(TestCase):
     def test_attribute_error(self):
         with self.assertRaises(InputError):
             input_check("", None, Enums.UTF8)
 
+
+class TestAllowedValues(TestCase):
+    def test_exception_attribute(self):
+        try:
+            input_check("", 1, allowed_values=(2, ))
+
+        except InputError as error:
+            self.assertEqual(error.allowed_values, (2, ))
+
+        else:
+            self.fail("InputError not raised")
+
+    def test_valid(self):
+        input_check("", 1, allowed_values=(1, ))
+
+    def test_invalid(self):
+        with self.assertRaises(InputError):
+            input_check("", 1, allowed_values=(2, ))
+
+    def test_invalid_message(self):
+        try:
+            input_check("foo", 1, allowed_values=(2, ))
+
+        except InputError as error:
+            self.assertEqual(
+                error.message,
+                "Expected value for foo to be in (2,), got 1 instead."
+            )
+
+        else:
+            self.fail("InputError not raised")
+
+    def test_assertion(self):
+        with self.assertRaises(AssertionError):
+            input_check("", None, allowed_values=1)
