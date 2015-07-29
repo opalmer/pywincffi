@@ -11,6 +11,7 @@ from six import integer_types
 
 from pywincffi.core.ffi import Library
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
+from pywincffi.exceptions import WindowsAPIError
 
 PeekNamedPipeResult = namedtuple(
     "PeekNamedPipeResult",
@@ -151,7 +152,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
 
         https://msdn.microsoft.com/en-us/library/windows/desktop/aa365779
     """
-    # input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
+    input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
     input_check("nBufferSize", nBufferSize, int)
     ffi, library = Library.load()
 
@@ -171,10 +172,8 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
     )
     error_check("PeekNamedPipe", code=code, expected=Enums.NON_ZERO)
 
-    # FIXME: ffi.string(lpBuffer) does not work
-    # FIXME: iterating over parts of the buffer yields every other char (may be a handler state issue)
     return PeekNamedPipeResult(
-        lpBuffer=ffi.string(lpBuffer),
+        lpBuffer=lpBuffer,
         lpBytesRead=lpBytesRead[0],
         lpTotalBytesAvail=lpTotalBytesAvail[0],
         lpBytesLeftThisMessage=lpBytesLeftThisMessage[0]
@@ -300,3 +299,4 @@ def CloseHandle(hObject):
 
     code = library.CloseHandle(hObject)
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
+
