@@ -19,6 +19,8 @@ if sys.version_info[0:2] == (2, 6):
 else:
     from unittest import TestCase as _TestCase
 
+from pywincffi.core.ffi import Library
+
 # Load in our own kernel32 with the function(s) we need
 # so we don't have to rely on pywincffi.core
 ffi = FFI()
@@ -55,3 +57,33 @@ class TestCase(_TestCase):
         except (OSError, IOError, WindowsError) as e:
             if e.errno != ENOENT and onexit:
                 atexit.register(self.remove, path, onexit=False)
+
+
+class HeaderFileDefinitionTestCase(_TestCase):
+    """
+    Used to test header definitions against our library.
+    """
+    # The full path to the header file we're testing
+    HEADER = None
+
+    def setUp(self):
+        if self.HEADER is None:
+            self.skipTest("HEADER not set")
+
+        with open(self.HEADER, "r") as header_file:
+            self.header = header_file.read()
+
+        self.ffi, self.library = Library.load()
+
+    def get_definitions(self):
+        pass
+
+    def test_definitions(self):
+        definitions = self.get_definitions()
+
+        if definitions is None:
+            self.skipTest("No definitions provided.")
+
+        if not definitions:
+            self.fail("No definitions found")
+
