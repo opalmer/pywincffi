@@ -7,9 +7,7 @@ except ImportError:
     from mock import Mock, patch
 
 from cffi import FFI
-from six.moves import builtins
 
-import pywincffi
 from pywincffi.core.ffi import Library
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError

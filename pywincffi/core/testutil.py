@@ -55,3 +55,4 @@ class TestCase(_TestCase):
         except (OSError, IOError, WindowsError) as e:
             if e.errno != ENOENT and onexit:
                 atexit.register(self.remove, path, onexit=False)
+
