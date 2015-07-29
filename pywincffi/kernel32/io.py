@@ -55,7 +55,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         https://msdn.microsoft.com/en-us/library/windows/desktop/aa365152
         https://msdn.microsoft.com/en-us/library/windows/desktop/aa379560
     """
-    input_check("nSize", nSize, int)
+    input_check("nSize", nSize, integer_types)
     input_check("lpPipeAttributes", lpPipeAttributes, (NoneType, dict))
     ffi, library = Library.load()
 
@@ -108,19 +108,19 @@ def SetNamedPipeHandleState(
     if lpMode is None:
         lpMode = ffi.NULL
     else:
-        input_check("lpMode", lpMode, int)
+        input_check("lpMode", lpMode, integer_types)
         lpMode = ffi.new("LPDWORD", lpMode)
 
     if lpMaxCollectionCount is None:
         lpMaxCollectionCount = ffi.NULL
     else:
-        input_check("lpMaxCollectionCount", lpMaxCollectionCount, int)
+        input_check("lpMaxCollectionCount", lpMaxCollectionCount, integer_types)
         lpMaxCollectionCount = ffi.new("LPDWORD", lpMaxCollectionCount)
 
     if lpCollectDataTimeout is None:
         lpCollectDataTimeout = ffi.NULL
     else:
-        input_check("lpCollectDataTimeout", lpCollectDataTimeout, int)
+        input_check("lpCollectDataTimeout", lpCollectDataTimeout, integer_types)
         lpCollectDataTimeout = ffi.new("LPDWORD", lpCollectDataTimeout)
 
     code = library.SetNamedPipeHandleState(
@@ -153,7 +153,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
         https://msdn.microsoft.com/en-us/library/windows/desktop/aa365779
     """
     input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
-    input_check("nBufferSize", nBufferSize, int)
+    input_check("nBufferSize", nBufferSize, integer_types)
     ffi, library = Library.load()
 
     # Outputs
