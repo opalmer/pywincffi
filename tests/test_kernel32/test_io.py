@@ -4,9 +4,10 @@ except ImportError:
     from mock import patch
 
 from pywincffi.core.testutil import TestCase
+from pywincffi.core.ffi import Library
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32.io import (
-    CreatePipe, CloseHandle, WriteFile, ReadFile,
+    CreatePipe, CloseHandle, WriteFile, ReadFile, GetStdHandle,
     PeekNamedPipe, PeekNamedPipeResult)
 
 
@@ -138,3 +139,27 @@ class TestPeekNamedPipe(PipeBaseTestCase):
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(
             result.lpTotalBytesAvail, bytes_written - (read_bytes * 2))
+
+
+class TestGetStdHandle(TestCase):
+    def test_std_input_handle(self):
+        ffi, library = Library.load()
+        self.assertEqual(
+            GetStdHandle(library.STD_INPUT_HANDLE),
+            library.GetStdHandle(library.STD_INPUT_HANDLE)
+        )
+
+    def test_std_output_handle(self):
+        ffi, library = Library.load()
+        self.assertEqual(
+            GetStdHandle(library.STD_OUTPUT_HANDLE),
+            library.GetStdHandle(library.STD_OUTPUT_HANDLE)
+        )
+
+    def test_stderr_handle(self):
+        ffi, library = Library.load()
+        self.assertEqual(
+            GetStdHandle(library.STD_ERROR_HANDLE),
+            library.GetStdHandle(library.STD_ERROR_HANDLE)
+        )
+

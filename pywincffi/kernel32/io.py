@@ -300,3 +300,34 @@ def CloseHandle(hObject):
     code = library.CloseHandle(hObject)
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
 
+
+def GetStdHandle(nStdHandle):
+    """
+    Retrieves a handle to the specified standard
+    device (standard input, standard output, or standard error).
+
+    :param int nStdHandle:
+        The standard device to retrieve
+
+    :rtype: handle
+    :return:
+        Returns a handle to the standard device retrieved.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/windows/desktop/ms683231
+    """
+    ffi, library = Library.load()
+    input_check("nStdHandle", nStdHandle,
+                allowed_values=(library.STD_INPUT_HANDLE,
+                                library.STD_OUTPUT_HANDLE,
+                                library.STD_ERROR_HANDLE))
+
+    handle = library.GetStdHandle(nStdHandle)
+
+    if handle == library.INVALID_HANDLE_VALUE:  # pragma: no cover
+        raise WindowsAPIError(
+            "GetStdHandle", "Invalid Handle", library.INVALID_HANDLE_VALUE,
+            "not %s" % library.INVALID_HANDLE_VALUE)
+
+    return handle
