@@ -1,6 +1,8 @@
 import re
 from os.path import isfile, join
 
+from six import integer_types
+
 from pywincffi.core.ffi import Library
 from pywincffi.core.testutil import TestCase
 
@@ -27,4 +29,9 @@ class TestConstantsHeader(TestCase):
         for constant_name in self.get_constants():
             self.assertTrue(hasattr(library, constant_name))
 
+    def test_constant_type(self):
+        ffi, library = Library.load()
+        valid_types = tuple(list(integer_types) + [bool])
 
+        for constant_name in self.get_constants():
+            self.assertIsInstance(getattr(library, constant_name), valid_types)
