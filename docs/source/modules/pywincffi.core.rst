@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   pywincffi.core.checks
    pywincffi.core.ffi
    pywincffi.core.logger
    pywincffi.core.testutil

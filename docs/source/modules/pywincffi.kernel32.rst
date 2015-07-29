@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   pywincffi.kernel32.io
    pywincffi.kernel32.process
 
 Module contents
