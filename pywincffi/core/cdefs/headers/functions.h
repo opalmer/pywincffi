@@ -1,3 +1,10 @@
+//
+// NOTE: The tests for this file, tests/test_core/test_cdefs/test_functions.py
+//       depend on a function's format to be the following:
+//           RETURN_TYPE FunctionName(...
+//
+
+
 // Processes
 HANDLE OpenProcess(DWORD, BOOL, DWORD);
 

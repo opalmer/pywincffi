@@ -1,3 +1,9 @@
+//
+// NOTE: The tests for this file, tests/test_core/test_cdefs/test_structs.py
+//       depend on a struct's names to follow this format:
+//           } NAME, NAME, NAME;
+//
+
 typedef struct _SECURITY_ATTRIBUTES {
     DWORD  nLength;
     LPVOID lpSecurityDescriptor;
@@ -16,4 +22,3 @@ typedef struct _OVERLAPPED {
   };
   HANDLE    hEvent;
 } OVERLAPPED, *LPOVERLAPPED;
-
