@@ -1,6 +1,10 @@
 Python Windows Wrapper Using CFFI
 =================================
 
+.. image:: https://ci.appveyor.com/api/projects/status/dl0ec1fny9keo61c/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/opalmer/pywincffi/history
+    :alt: build status
+
 [![Build status](https://ci.appveyor.com/api/projects/status/dl0ec1fny9keo61c?svg=true)](https://ci.appveyor.com/project/opalmer/pywincffi)
 
 
