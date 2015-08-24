@@ -21,7 +21,7 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
-tests_require = ["nose", "coverage"]
+tests_require = ["nose", "coverage", "setuptools>=17.1"]
 
 py_major, py_minor = sys.version_info[0:2]
 
@@ -29,6 +29,7 @@ if py_major == 2:
     tests_require.append("unittest2")
 
 if py_major == 2 and py_minor == 6:
+    # Later versions don't work with 2.6
     tests_require.append("mock==1.0.1")
 
 else:
@@ -39,11 +40,6 @@ else:
 
 if (py_major, py_minor) < (3, 4):
     install_requires_extras.append("enum34")
-
-
-# Running on buildbot
-if "BB_BUILDSLAVE" in os.environ:
-    install_requires_extras += tests_require
 
 setup(
     name="pywincffi",
