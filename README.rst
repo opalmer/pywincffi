@@ -5,8 +5,6 @@ Python Windows Wrapper Using CFFI
     :target: https://ci.appveyor.com/project/opalmer/pywincffi/history
     :alt: build status
 
-[![Build status](https://ci.appveyor.com/api/projects/status/dl0ec1fny9keo61c?svg=true)](https://ci.appveyor.com/project/opalmer/pywincffi)
-
 
 This library is a wrapper around some Windows functions using Python 
 and CFFI.  The repository was originally created to assist the Twisted
