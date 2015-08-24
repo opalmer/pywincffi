@@ -50,7 +50,6 @@ install:
   # build/compile process
   - ps: Invoke-WebRequest https://raw.githubusercontent.com/pypa/python-packaging-user-guide/master/source/code/run_with_compiler.cmd -OutFile C:\\project\\run_with_cmd.cmd
   - ps: Invoke-WebRequest https://raw.githubusercontent.com/pypa/python-packaging-user-guide/master/source/code/install.ps1 -OutFile C:\\project\\install.ps1
-  - ps: Invoke-WebRequest https://raw.githubusercontent.com/opalmer/pywincffi/appveyor/vcvars64.bat -OutFile "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\amd64\vcvars64.bat"
 
   # Install Python (from the official .msi of http://python.org) and pip when
   # not already installed.
