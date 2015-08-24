@@ -21,7 +21,7 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
-tests_require = ["nose", "coverage"]
+tests_require = ["nose", "coverage", "setuptools>=17.1"]
 
 py_major, py_minor = sys.version_info[0:2]
 
