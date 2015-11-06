@@ -1,6 +1,11 @@
 Python Windows Wrapper Using CFFI
 =================================
 
+.. image:: https://ci.appveyor.com/api/projects/status/dl0ec1fny9keo61c/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/opalmer/pywincffi/history
+    :alt: build status
+
+
 This library is a wrapper around some Windows functions using Python 
 and CFFI.  The repository was originally created to assist the Twisted
 project in moving away from pywin32 so installation does not require a compile
@@ -72,7 +77,9 @@ the ``setup.py`` file::
     pip install -e .
     python setup.py test
 
-Every build is also executed on https://build.opalmer.com/ and you could
-use ``nosetests`` directly if you wish as well::
+Every commit and pull request is also executed on
+[AppVeyor](https://ci.appveyor.com/project/opalmer/pywincffi).  Tests can also
+be executed manually as well::
 
     nosetests -v --with-coverage
+
