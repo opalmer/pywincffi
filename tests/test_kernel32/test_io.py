@@ -142,14 +142,14 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
 
 class TestGetStdHandle(TestCase):
-    def test_std_input_handle(self):
+    def test_stdin_handle(self):
         ffi, library = Library.load()
         self.assertEqual(
             GetStdHandle(library.STD_INPUT_HANDLE),
             library.GetStdHandle(library.STD_INPUT_HANDLE)
         )
 
-    def test_std_output_handle(self):
+    def test_stdout_handle(self):
         ffi, library = Library.load()
         self.assertEqual(
             GetStdHandle(library.STD_OUTPUT_HANDLE),
