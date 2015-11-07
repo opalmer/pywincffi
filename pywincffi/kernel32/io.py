@@ -24,6 +24,11 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     """
     Creates an anonymous pipe and returns the read and write handles.
 
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365152
+        https://msdn.microsoft.com/en-us/library/aa379560
+
     >>> from pywincffi.core.ffi import Library
     >>> ffi, library = Library.load()
     >>> lpPipeAttributes = ffi.new(
@@ -49,11 +54,6 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         Returns a tuple of handles containing the reader and writer
         ends of the pipe that was created.  The user of this function
         is responsible for calling CloseHandle at some point.
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365152
-        https://msdn.microsoft.com/en-us/library/windows/desktop/aa379560
     """
     input_check("nSize", nSize, integer_types)
     input_check("lpPipeAttributes", lpPipeAttributes, (NoneType, dict))
@@ -77,6 +77,10 @@ def SetNamedPipeHandleState(
     """
     Sets the read and blocking mode of the specified ``hNamedPipe``.
 
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365787
+
     :param handle hNamedPipe:
         A handle to the named pipe instance.
 
@@ -97,10 +101,6 @@ def SetNamedPipeHandleState(
     :keyword int lpCollectDataTimeout:
         The maximum time, in milliseconds, that can pass before a
         remote named pipe transfers information
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365787
     """
     input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
     ffi, library = Library.load()
@@ -137,6 +137,10 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
     Copies data from a pipe into a buffer without removing it
     from the pipe.
 
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365779
+
     :param handle hNamedPipe:
         The handele to the pipe object we want to peek into.
 
@@ -147,10 +151,6 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
     :return:
         Returns an instance of :class:`PeekNamedPipeResult` which
         contains the buffer read, number of bytes read and the result.
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365779
     """
     input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
     input_check("nBufferSize", nBufferSize, integer_types)
@@ -184,6 +184,10 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     """
     Writes data to ``hFile`` which may be an I/O device for file.
 
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365747
+
     :param handle hFile:
         The handle to write to
 
@@ -198,20 +202,19 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         documentation for intended usage and below for an example of this
         struct.
 
-        >>> from pywincffi.core.ffi import ffi
-        >>> reader = None # normally, this would be a handle
-        >>> struct = ffi.new(
+        >>> from pywincffi.core.ffi import Library
+        >>> ffi, library = Library.load()
+        >>> hFile = None # normally, this would be a handle
+        >>> lpOverlapped = ffi.new(
         ...     "OVERLAPPED[1]", [{
-        ...         "hEvent": reader
+        ...         "hEvent": hFile
         ...     }]
         ... )
+        >>> bytes_written = WriteFile(
+        ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
     :returns:
         Returns the number of bytes written
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365747
     """
     ffi, library = Library.load()
 
@@ -236,6 +239,12 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
 def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
+    Read the specified number of bytes from ``hFile``.
+    
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365467
+
     :param handle hFile:
         The handle to read from
 
@@ -250,20 +259,17 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
 
         >>> from pywincffi.core.ffi import Library
         >>> ffi, library = Library.load()
-        >>> reader = None # normally, this would be a handle
-        >>> struct = ffi.new(
+        >>> hFile = None # normally, this would be a handle
+        >>> lpOverlapped = ffi.new(
         ...     "OVERLAPPED[1]", [{
-        ...         "hEvent": reader
+        ...         "hEvent": hFile
         ...     }]
         ... )
+        >>> read_data = ReadFile(  # read 12 bytes from hFile
+        ...     hFile, 12, lpOverlapped=lpOverlapped)
 
     :returns:
         Returns the data read from ``hFile``
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/library/windows/desktop/aa365467
-
     """
     ffi, library = Library.load()
 
@@ -287,12 +293,12 @@ def CloseHandle(hObject):
     """
     Closes an open object handle.
 
-    :param handle hObject:
-        The handle object to close.
-
     .. seealso::
 
-        https://msdn.microsoft.com/en-us/library/windows/desktop/ms724211
+        https://msdn.microsoft.com/en-us/library/ms724211
+
+    :param handle hObject:
+        The handle object to close.
     """
     input_check("hObject", hObject, Enums.HANDLE)
     ffi, library = Library.load()
@@ -306,16 +312,16 @@ def GetStdHandle(nStdHandle):
     Retrieves a handle to the specified standard
     device (standard input, standard output, or standard error).
 
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms683231
+
     :param int nStdHandle:
         The standard device to retrieve
 
     :rtype: handle
     :return:
         Returns a handle to the standard device retrieved.
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/library/windows/desktop/ms683231
     """
     ffi, library = Library.load()
     input_check("nStdHandle", nStdHandle,

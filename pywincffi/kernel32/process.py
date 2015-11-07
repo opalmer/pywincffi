@@ -25,6 +25,10 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     """
     Opens an existing local process object.
 
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms684320
+
     :param int dwDesiredAccess:
         The required access to the process object.
 
@@ -38,10 +42,6 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
         Returns a handle to the opened process in the form of
         a void pointer.  This value can be used by other functions
         such as :func:`TerminateProcess`
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/library/windows/desktop/ms684320
     """
     input_check("dwDesiredAccess", dwDesiredAccess, six.integer_types)
     input_check("bInheritHandle", bInheritHandle, bool)
