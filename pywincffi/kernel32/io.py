@@ -239,6 +239,8 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
 def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
+    Read the specified number of bytes from ``hFile``.
+    
     .. seealso::
 
         https://msdn.microsoft.com/en-us/library/aa365467
