@@ -6,29 +6,29 @@ environment:
 
   matrix:
     # Preinstalled Python versions
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.x"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.x"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python33"
-      PYTHON_VERSION: "3.3.x"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python33-x64"
-      PYTHON_VERSION: "3.3.x"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: "3.4.x"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python34-x64"
-      PYTHON_VERSION: "3.4.x"
-      PYTHON_ARCH: "64"
+#    - PYTHON: "C:\\Python27"
+#      PYTHON_VERSION: "2.7.x"
+#      PYTHON_ARCH: "32"
+#
+#    - PYTHON: "C:\\Python27-x64"
+#      PYTHON_VERSION: "2.7.x"
+#      PYTHON_ARCH: "64"
+#
+#    - PYTHON: "C:\\Python33"
+#      PYTHON_VERSION: "3.3.x"
+#      PYTHON_ARCH: "32"
+#
+#    - PYTHON: "C:\\Python33-x64"
+#      PYTHON_VERSION: "3.3.x"
+#      PYTHON_ARCH: "64"
+#
+#    - PYTHON: "C:\\Python34"
+#      PYTHON_VERSION: "3.4.x"
+#      PYTHON_ARCH: "32"
+#
+#    - PYTHON: "C:\\Python34-x64"
+#      PYTHON_VERSION: "3.4.x"
+#      PYTHON_ARCH: "64"
 
     # Python 2.6.6 is the only Python 2.6 version that can be installed
     # without installing extra dependencies. See:
