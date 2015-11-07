@@ -202,13 +202,16 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         documentation for intended usage and below for an example of this
         struct.
 
-        >>> from pywincffi.core.ffi import ffi
-        >>> reader = None # normally, this would be a handle
-        >>> struct = ffi.new(
+        >>> from pywincffi.core.ffi import Library
+        >>> ffi, library = Library.load()
+        >>> hFile = None # normally, this would be a handle
+        >>> lpOverlapped = ffi.new(
         ...     "OVERLAPPED[1]", [{
-        ...         "hEvent": reader
+        ...         "hEvent": hFile
         ...     }]
         ... )
+        >>> bytes_written = WriteFile(
+        ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
     :returns:
         Returns the number of bytes written
