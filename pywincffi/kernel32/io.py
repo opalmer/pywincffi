@@ -257,12 +257,14 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
 
         >>> from pywincffi.core.ffi import Library
         >>> ffi, library = Library.load()
-        >>> reader = None # normally, this would be a handle
-        >>> struct = ffi.new(
+        >>> hFile = None # normally, this would be a handle
+        >>> lpOverlapped = ffi.new(
         ...     "OVERLAPPED[1]", [{
-        ...         "hEvent": reader
+        ...         "hEvent": hFile
         ...     }]
         ... )
+        >>> read_data = ReadFile(  # read 12 bytes from hFile
+        ...     hFile, 12, lpOverlapped=lpOverlapped)
 
     :returns:
         Returns the data read from ``hFile``
