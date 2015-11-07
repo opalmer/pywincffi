@@ -34,16 +34,14 @@ environment:
     # without installing extra dependencies. See:
     # https://github.com/ogrisel/python-appveyor-demo/issues/10
     # https://github.com/pypa/pip/issues/2494
-    - PYTHON: "C:\\Python266"
-      PYTHON_VERSION: "2.6.6"
+    - PYTHON: "C:\\Python26"
+      PYTHON_VERSION: "2.6.x"
       PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python266"
-      PYTHON_VERSION: "2.6.6"
+    - PYTHON: "C:\\Python26"
+      PYTHON_VERSION: "2.6.x"
       PYTHON_ARCH: "64"
 
-on_finish:
-- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 build: false  # Not a C# project, build stuff at the test step instead.
 clone_folder: c:\\project
