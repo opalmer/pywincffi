@@ -30,17 +30,17 @@ environment:
       PYTHON_VERSION: "3.4.x"
       PYTHON_ARCH: "64"
 
-    # Python 2.6.6 is the only Python 2.6 version that can be installed
-    # without installing extra dependencies. See:
-    # https://github.com/ogrisel/python-appveyor-demo/issues/10
-    # https://github.com/pypa/pip/issues/2494
-    - PYTHON: "C:\\Python266"
-      PYTHON_VERSION: "2.6.6"
+    - PYTHON: "C:\\Python26"
+      PYTHON_VERSION: "2.6.x"
       PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python266"
-      PYTHON_VERSION: "2.6.6"
-      PYTHON_ARCH: "64"
+    # Python 2.6 64-bit appers to be broken on AppVeyor.  However because
+    # we're testing 64-bit for all other versions, and 2.6 support is on
+    # the out anyway, we'll disable this for now.
+    # - PYTHON: "C:\\Python26"
+    #   PYTHON_VERSION: "2.6.x"
+    #   PYTHON_ARCH: "64"
+
 
 build: false  # Not a C# project, build stuff at the test step instead.
 clone_folder: c:\\project
