@@ -2,10 +2,49 @@
 # -*- coding: utf-8 -*-
 
 import ast
-from os.path import join, abspath, dirname
+import os
+import sys
+from errno import EEXIST
+from functools import partial
+from os.path import join, abspath, dirname, basename
+
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
 
 ROOT = abspath(join(dirname(abspath(__file__)), "..", ".."))
+DOC_MODULE_ROOT = join(ROOT, "docs", "source", "modules")
+MODULE_ROOT = join(ROOT, "pywincffi")
 
+
+def has_init(root, path):
+    return "__init__.py" in os.listdir(join(root, path))
+
+
+def make_directory(path):
+    try:
+        os.makedirs(path)
+    except (OSError, IOError, WindowsError) as error:
+        assert error.errno == EEXIST, error
+
+
+# Write out the
+for root, dirs, files in os.walk(join(ROOT, "pywincffi")):
+    dirs[:] = filter(partial(has_init, root), dirs)
+    files[:] = filter(lambda name: name.endswith(".py"), files)
+
+    for name in files:
+        path = join(root, name)
+        doc_path = path.replace(
+            MODULE_ROOT, DOC_MODULE_ROOT).replace(
+            ".py", ".rst").replace("__init__", "index")
+
+        print("Creating %s for %s" % (doc_path, path))
+        make_directory(dirname(doc_path))
+
+
+sys.exit(0)
 
 # -- General configuration ------------------------------------------------
 
@@ -16,7 +55,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.viewcode"
 ]
 
 linkcheck_timeout = 60
