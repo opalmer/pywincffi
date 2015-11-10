@@ -21,9 +21,11 @@ else:
 
 # Load in our own kernel32 with the function(s) we need
 # so we don't have to rely on pywincffi.core
-ffi = FFI()
-ffi.cdef("void SetLastError(DWORD);")
-kernel32 = ffi.dlopen("kernel32")
+kernel32 = None
+if not os.environ.get("READTHEDOCS"):
+    ffi = FFI()
+    ffi.cdef("void SetLastError(DWORD);")
+    kernel32 = ffi.dlopen("kernel32")
 
 
 class TestCase(_TestCase):
@@ -32,6 +34,8 @@ class TestCase(_TestCase):
     core test case just provides some extra functionality.
     """
     def setUp(self):
+        self.failIf(kernel32 is None, "kernel32 was never defined")
+
         # Always reset the last error to 0 between tests.  This
         # ensures that any error we intentionally throw in one
         # test does not causes an error to be raised in another.
