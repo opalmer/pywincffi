@@ -4,12 +4,38 @@ pywincffi.core package
 Submodules
 ----------
 
-.. toctree::
+pywincffi.core.checks module
+----------------------------
 
-   pywincffi.core.checks
-   pywincffi.core.ffi
-   pywincffi.core.logger
-   pywincffi.core.testutil
+.. automodule:: pywincffi.core.checks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pywincffi.core.ffi module
+-------------------------
+
+.. automodule:: pywincffi.core.ffi
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pywincffi.core.logger module
+----------------------------
+
+.. automodule:: pywincffi.core.logger
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pywincffi.core.testutil module
+------------------------------
+
+.. automodule:: pywincffi.core.testutil
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
