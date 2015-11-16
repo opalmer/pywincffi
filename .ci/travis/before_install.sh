@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -e
 
 if [[ $PYLINT == "1" ]]; then
-    retry pip install pylint
+    pip install pylint
 fi
