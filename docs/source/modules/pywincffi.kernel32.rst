@@ -4,10 +4,22 @@ pywincffi.kernel32 package
 Submodules
 ----------
 
-.. toctree::
+pywincffi.kernel32.io module
+----------------------------
 
-   pywincffi.kernel32.io
-   pywincffi.kernel32.process
+.. automodule:: pywincffi.kernel32.io
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pywincffi.kernel32.process module
+---------------------------------
+
+.. automodule:: pywincffi.kernel32.process
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------

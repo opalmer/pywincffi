@@ -12,9 +12,14 @@ Subpackages
 Submodules
 ----------
 
-.. toctree::
+pywincffi.exceptions module
+---------------------------
 
-   pywincffi.exceptions
+.. automodule:: pywincffi.exceptions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
