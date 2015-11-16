@@ -15,6 +15,10 @@ try:
 except AttributeError:  # pragma: no cover
     # Python 2.6 does not have a NullHandler
     class NullHandler(logging.Handler):
+        """
+        A Python 2.6 implementation of Python 2.7's
+        :class:`logging.NullHandler`
+        """
         def handle(self, record):
             pass
 
