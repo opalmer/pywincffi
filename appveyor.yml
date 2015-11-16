@@ -2,7 +2,7 @@ environment:
   global:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
-    WITH_COMPILER: "cmd /E:ON /V:ON /C C:\\project\\run_with_cmd.cmd"
+    WITH_COMPILER: "cmd /E:ON /V:ON /C C:\\project\\.ci\\appveyor\\run_with_cmd.cmd"
 
   matrix:
     # Preinstalled Python versions
@@ -43,14 +43,9 @@ build: false  # Not a C# project, build stuff at the test step instead.
 clone_folder: c:\\project
 
 install:
-  # First, download and install some files which help with the
-  # build/compile process
-  - ps: Invoke-WebRequest https://raw.githubusercontent.com/pypa/python-packaging-user-guide/master/source/code/run_with_compiler.cmd -OutFile C:\\project\\run_with_cmd.cmd
-  - ps: Invoke-WebRequest https://raw.githubusercontent.com/pypa/python-packaging-user-guide/master/source/code/install.ps1 -OutFile C:\\project\\install.ps1
-
   # Install Python (from the official .msi of http://python.org) and pip when
   # not already installed.
-  - ps: if (-not(Test-Path($env:PYTHON))) { & C:\\project\\install.ps1 }
+  - ps: if (-not(Test-Path($env:PYTHON))) { & C:\\project\\.ci\\appveyor\\install.ps1 }
 
   # Install some additional Python modules which will be required by
   # the tests.  Oddly, there are somtimes issues in AppVeyor and/or Windows
