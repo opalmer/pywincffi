@@ -6,6 +6,7 @@ from __future__ import print_function
 import ast
 import os
 import shutil
+import sys
 import subprocess
 from os.path import join, abspath, dirname
 
@@ -19,11 +20,16 @@ try:
 except NameError:
     WindowsError = OSError
 
+# Ensures certain non-cross platforms steps, such as building
+# some functions in testutil, don't run.
 os.environ["READTHEDOCS"] = "1"
 
 ROOT = abspath(join(dirname(abspath(__file__)), "..", ".."))
 DOC_MODULE_ROOT = join(ROOT, "docs", "source", "modules")
 MODULE_ROOT = join(ROOT, "pywincffi")
+
+# Required so we don't need to have pywincffi installed.
+sys.path.insert(0, ROOT)
 
 
 # -- General configuration ------------------------------------------------

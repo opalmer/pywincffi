@@ -5,8 +5,12 @@ Python Windows Wrapper Using CFFI
     :target: https://ci.appveyor.com/project/opalmer/pywincffi/history
     :alt: build status
 
+.. image:: https://readthedocs.org/projects/pywincffi/badge/?version=latest
+    :target: http://pywincffi.readthedocs.org/en/latest/?badge=latest
+    :alt: documentation badge
 
-This library is a wrapper around some Windows functions using Python 
+
+This library is a wrapper around some Windows functions using Python
 and CFFI.  The repository was originally created to assist the Twisted
 project in moving away from pywin32 so installation does not require a compile
 step.
@@ -21,9 +25,9 @@ Development
 Python Version Support
 ----------------------
 
-This project supports Python 2.6 and up including 
+This project supports Python 2.6 and up including
 Python 3.  PRs, patches, tests etc that don't include
-support for both 2.x and 3.x will not be merged.  The 
+support for both 2.x and 3.x will not be merged.  The
 aim is also the support both major versions of Python within
 the same code base rather than rely on tools such as 2to3.
 
