@@ -19,6 +19,12 @@ if sys.version_info[0:2] == (2, 6):
 else:
     from unittest import TestCase as _TestCase
 
+# To keep lint on non-windows platforms happy.
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
+
 # Load in our own kernel32 with the function(s) we need
 # so we don't have to rely on pywincffi.core
 kernel32 = None
@@ -56,6 +62,6 @@ class TestCase(_TestCase):
 
         try:
             remove(path)
-        except (OSError, IOError, WindowsError) as e:
-            if e.errno != ENOENT and onexit:
+        except (OSError, IOError, WindowsError) as error:
+            if error.errno != ENOENT and onexit:
                 atexit.register(self.remove, path, onexit=False)
