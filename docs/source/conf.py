@@ -4,8 +4,9 @@
 from __future__ import print_function
 
 import ast
-import subprocess
+import os
 import shutil
+import subprocess
 from os.path import join, abspath, dirname
 
 try:
@@ -17,6 +18,8 @@ try:
     WindowsError
 except NameError:
     WindowsError = OSError
+
+os.environ["READTHEDOCS"] = "1"
 
 ROOT = abspath(join(dirname(abspath(__file__)), "..", ".."))
 DOC_MODULE_ROOT = join(ROOT, "docs", "source", "modules")
