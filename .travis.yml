@@ -12,7 +12,7 @@ env:
 
 before_install:
   - source .ci/travis/retry.sh
-  - .ci/travis/before_install.sh
+  - retry .ci/travis/before_install.sh
 
 script:
   - .ci/travis/script.sh
