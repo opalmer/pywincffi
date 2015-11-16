@@ -34,12 +34,9 @@ environment:
       PYTHON_VERSION: "2.6.x"
       PYTHON_ARCH: "32"
 
-    # Python 2.6 64-bit appers to be broken on AppVeyor.  However because
-    # we're testing 64-bit for all other versions, and 2.6 support is on
-    # the out anyway, we'll disable this for now.
-    # - PYTHON: "C:\\Python26"
-    #   PYTHON_VERSION: "2.6.x"
-    #   PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python26-x64"
+      PYTHON_VERSION: "2.6.x"
+      PYTHON_ARCH: "64"
 
 
 build: false  # Not a C# project, build stuff at the test step instead.
