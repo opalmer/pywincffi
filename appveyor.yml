@@ -43,10 +43,6 @@ build: false  # Not a C# project, build stuff at the test step instead.
 clone_folder: c:\\project
 
 install:
-  # Install Python (from the official .msi of http://python.org) and pip when
-  # not already installed.
-  - ps: if (-not(Test-Path($env:PYTHON))) { & C:\\project\\.ci\\appveyor\\install.ps1 }
-
   # Install some additional Python modules which will be required by
   # the tests.  Oddly, there are somtimes issues in AppVeyor and/or Windows
   # if these are installed from the setup.py.
