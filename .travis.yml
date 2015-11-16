@@ -10,9 +10,9 @@ env:
   - READTHEDOCS=1
   - PYLINT=1
 
-before_install:
+install:
   - source .ci/travis/retry.sh
-  - retry .ci/travis/before_install.sh
+  - retry .ci/travis/install.sh
 
 script:
   - .ci/travis/script.sh
