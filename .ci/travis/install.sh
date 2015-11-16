@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 if [[ $PYLINT == "1" ]]; then
-    pip install pylint
+    pip install pylint pep8
 fi
 
 if [[ $READTHEDOCS == "1" ]]; then
