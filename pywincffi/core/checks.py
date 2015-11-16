@@ -73,8 +73,8 @@ def error_check(api_function, code=None, expected=0):
         api_function, code, result, expected
     )
 
-    if (expected is Enums.NON_ZERO
-            and (result != 0 or code is not None and code != 0)):
+    if (expected is Enums.NON_ZERO and (
+            result != 0 or code is not None and code != 0)):
         return
 
     if expected != result:
