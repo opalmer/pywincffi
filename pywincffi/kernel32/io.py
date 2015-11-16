@@ -114,13 +114,15 @@ def SetNamedPipeHandleState(
     if lpMaxCollectionCount is None:
         lpMaxCollectionCount = ffi.NULL
     else:
-        input_check("lpMaxCollectionCount", lpMaxCollectionCount, integer_types)
+        input_check(
+            "lpMaxCollectionCount", lpMaxCollectionCount, integer_types)
         lpMaxCollectionCount = ffi.new("LPDWORD", lpMaxCollectionCount)
 
     if lpCollectDataTimeout is None:
         lpCollectDataTimeout = ffi.NULL
     else:
-        input_check("lpCollectDataTimeout", lpCollectDataTimeout, integer_types)
+        input_check(
+            "lpCollectDataTimeout", lpCollectDataTimeout, integer_types)
         lpCollectDataTimeout = ffi.new("LPDWORD", lpCollectDataTimeout)
 
     code = library.SetNamedPipeHandleState(
@@ -240,7 +242,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
     Read the specified number of bytes from ``hFile``.
-    
+
     .. seealso::
 
         https://msdn.microsoft.com/en-us/library/aa365467
