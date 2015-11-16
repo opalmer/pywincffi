@@ -1,3 +1,9 @@
+"""
+Checks
+======
+
+Provides functions that are responsible for internal type checks.
+"""
 import enum
 from collections import namedtuple
 
