@@ -53,7 +53,7 @@ class TestLibraryLoad(TestCase):
     """
     def setUp(self):
         self._cache = Library.CACHE
-        Library.CACHE = None
+        Library.CACHE = (None, None)
 
     def tearDown(self):
         Library.CACHE = self._cache
