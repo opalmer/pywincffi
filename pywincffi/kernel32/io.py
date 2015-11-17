@@ -303,7 +303,7 @@ def CloseHandle(hObject):
         The handle object to close.
     """
     input_check("hObject", hObject, Enums.HANDLE)
-    ffi, library = Library.load()
+    _, library = Library.load()
 
     code = library.CloseHandle(hObject)
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
@@ -325,7 +325,7 @@ def GetStdHandle(nStdHandle):
     :return:
         Returns a handle to the standard device retrieved.
     """
-    ffi, library = Library.load()
+    _, library = Library.load()
     input_check("nStdHandle", nStdHandle,
                 allowed_values=(library.STD_INPUT_HANDLE,
                                 library.STD_OUTPUT_HANDLE,
