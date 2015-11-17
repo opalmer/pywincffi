@@ -16,7 +16,7 @@ HEADERS_DIR = join(
 CONSTANTS_HEADER = join(HEADERS_DIR, "constants.h")
 FUNCTIONS_HEADER = join(HEADERS_DIR, "functions.h")
 
-REGEX_FUNCTION = re.compile("^[A-Z]+ ([A-Z][a-z]*[A-Z].*)\(.*$")
+REGEX_FUNCTION = re.compile("^[A-Z]+ ([A-Z][a-z]*[A-Z].*)[(].*$")
 REGEX_CONSTANT = re.compile("^#define ([A-Z]*[_]*[A-Z]*[_]*[A-Z]*) ...$")
 
 
@@ -37,7 +37,7 @@ def transform(cls, constants=None, functions=None):
             cls.locals[value] = [scoped_nodes.Function(value, None)]
 
 
-def register(linter):
+def register(linter):  # pylint: disable=unused-argument
     """
     An entrypoint that pylint uses to search for and register
     plugins with the given ``linter``
