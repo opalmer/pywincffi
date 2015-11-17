@@ -7,3 +7,5 @@ fi
 if [[ $READTHEDOCS == "1" ]]; then
     pip install sphinx
 fi
+
+pip install .
