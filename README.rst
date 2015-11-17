@@ -5,6 +5,10 @@ Python Windows Wrapper Using CFFI
     :target: https://ci.appveyor.com/project/opalmer/pywincffi/history
     :alt: build status
 
+.. image:: https://travis-ci.org/opalmer/pywincffi.png?branch=master
+    :target: https://travis-ci.org/opalmer/pywincffi
+    :alt: build status (pylint and pep8)
+
 .. image:: https://readthedocs.org/projects/pywincffi/badge/?version=latest
     :target: http://pywincffi.readthedocs.org/en/latest/?badge=latest
     :alt: documentation badge
