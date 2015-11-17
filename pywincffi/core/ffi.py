@@ -25,7 +25,7 @@ except NameError:
 logger = get_logger("core.ffi")
 
 
-class Library(object):
+class Library(object):  # pylint: disable=too-few-public-methods
     """
     A wrapper around :meth:`FFI.cdef` and :meth:`FFI.dlopen` that
     also performs caching.  Without caching a library could be
@@ -78,7 +78,7 @@ class Library(object):
         return output
 
     @classmethod
-    def load(cls, cached=True):
+    def load(cls):
         """
         Main function which loads up an instance of the library.
 
