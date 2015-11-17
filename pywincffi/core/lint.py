@@ -2,20 +2,29 @@
 Lint Utilities
 ==============
 
-Plugins and utilities for lint checks.
+Provides some help to pylint so static analysis can be
+made aware of some constants and functions that we define
+in headers.
 """
 
 import re
 from functools import partial
 from os.path import dirname, abspath, join
 
-from astroid import MANAGER, scoped_nodes
+try:
+    from astroid import MANAGER, scoped_nodes
+
+# The astroid is only needed by pylint.  We ignore ImportError
+# here because the functions below are not called directory and
+# we don't want this to be an extra dependency for the whole
+# project.
+except ImportError:
+    pass
 
 HEADERS_DIR = join(
     dirname(dirname(abspath(__file__))), "core", "cdefs", "headers")
 CONSTANTS_HEADER = join(HEADERS_DIR, "constants.h")
 FUNCTIONS_HEADER = join(HEADERS_DIR, "functions.h")
-
 REGEX_FUNCTION = re.compile("^[A-Z]+ ([A-Z][a-z]*[A-Z].*)[(].*$")
 REGEX_CONSTANT = re.compile("^#define ([A-Z]*[_]*[A-Z]*[_]*[A-Z]*) ...$")
 
