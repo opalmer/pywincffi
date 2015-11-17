@@ -2,7 +2,7 @@ environment:
   global:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
-    WITH_COMPILER: "cmd /E:ON /V:ON /C C:\\project\\.ci\\appveyor\\run_with_cmd.cmd"
+    WITH_COMPILER: "cmd /E:ON /V:ON /C C:/project/.ci/appveyor/run_with_cmd.cmd"
 
   matrix:
     # Preinstalled Python versions
@@ -49,7 +49,6 @@ install:
   - "%PYTHON%\\Scripts\\pip.exe install setuptools coverage wheel --upgrade"
 
 test_script:
-  # Build the compiled extension and run the project tests
   - ps: cd C:\\project
   - "%WITH_COMPILER% %PYTHON%\\Scripts\\coverage.exe run setup.py test"
   - "%PYTHON%\\Scripts\\coverage.exe report"
