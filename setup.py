@@ -49,7 +49,7 @@ setup(
     packages=find_packages(
         include=("pywincffi*", )
     ),
-    package_data={"pywincffi": ["headers/*.h"]},
+    include_package_data=True,
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,

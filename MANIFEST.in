@@ -1,0 +1,2 @@
+include pywincffi/core/cdefs/headers/*.h
+include pywincffi/core/cdefs/sources/*.c
