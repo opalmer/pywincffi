@@ -2,7 +2,7 @@ environment:
   global:
     # /E:ON and /V:ON options are not enabled in the batch script intepreter
     # See: http://stackoverflow.com/a/13751649/163740
-    WITH_COMPILER: "cmd /E:ON /V:ON /C C:/project/.ci/appveyor/run_with_cmd.cmd"
+    WITH_COMPILER: "cmd /E:ON /V:ON /C C:\\project\\.ci\\appveyor\\run_with_cmd.cmd"
 
   matrix:
     # Preinstalled Python versions
@@ -38,9 +38,13 @@ environment:
       PYTHON_VERSION: "2.6.x"
       PYTHON_ARCH: "64"
 
+init:
+- ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 build: false  # Not a C# project, build stuff at the test step instead.
 clone_folder: c:\\project
+on_finish:
+- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 install:
   # Install some additional Python modules which will be required by
