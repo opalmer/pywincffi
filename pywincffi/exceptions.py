@@ -51,13 +51,14 @@ class WindowsAPIError(PyWinCFFIError):
         self.expected_code = expected_code
 
         # We can't import the ffi module here because it would result
-        # in a circular import so we exclude the two other cases (int and None).
+        # in a circular import so we exclude the two other cases such as
+        # int and None.
         if not isinstance(expected_code, int) and expected_code is not None:
             self.message = \
                 "Error when calling %s, error was %r.  Received " \
                 "return value %s when we expected non-zero" % (
-                self.api_function, self.api_error_message, self.code
-            )
+                    self.api_function, self.api_error_message, self.code
+                )
         else:
             self.message = \
                 "Expected a non-zero result from %r but got zero instead.  " \

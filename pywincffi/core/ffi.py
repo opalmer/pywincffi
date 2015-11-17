@@ -15,18 +15,24 @@ from pkg_resources import resource_filename
 from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import ResourceNotFoundError
 
+# To keep lint on non-windows platforms happy.
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
+
 
 logger = get_logger("core.ffi")
 
 
-class Library(object):
+class Library(object):  # pylint: disable=too-few-public-methods
     """
     A wrapper around :meth:`FFI.cdef` and :meth:`FFI.dlopen` that
     also performs caching.  Without caching a library could be
     loaded multiple times causing an exception to be raised when
     a function is redefined.
     """
-    CACHE = None
+    CACHE = (None, None)
     VERIFY_LIBRARIES = ("kernel32", )
     HEADERS_ROOT = resource_filename(
         "pywincffi", join("core", "cdefs", "headers"))
@@ -72,14 +78,14 @@ class Library(object):
         return output
 
     @classmethod
-    def load(cls, cached=True):
+    def load(cls):
         """
         Main function which loads up an instance of the library.
 
         :returns:
             Returns a tuple of :class:`FFI` and the loaded library.
         """
-        if cached and cls.CACHE is not None:
+        if cls.CACHE[0] is not None:
             return cls.CACHE
 
         # Read in headers

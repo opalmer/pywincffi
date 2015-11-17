@@ -53,7 +53,7 @@ class TestLibraryLoad(TestCase):
     """
     def setUp(self):
         self._cache = Library.CACHE
-        Library.CACHE = None
+        Library.CACHE = (None, None)
 
     def tearDown(self):
         Library.CACHE = self._cache
@@ -73,8 +73,6 @@ class TestLibraryLoad(TestCase):
         self.assertEqual(library.HELLO_WORLD, 42)
 
     def test_caches_library(self):
-        self.assertIsNone(Library.CACHE)
-
         fake_header = dedent("""
         #define HELLO_WORLD 42
         """)

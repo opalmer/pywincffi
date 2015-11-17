@@ -12,10 +12,14 @@ For more information, see the sections below for the module index.
 
     Add a few sections to supplement/expand on what's in the README.
 
-Indices and tables
-==================
+Main Index
+==========
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
 
+Python Package
+==============
+
+.. toctree:: modules/modules.rst

@@ -114,13 +114,15 @@ def SetNamedPipeHandleState(
     if lpMaxCollectionCount is None:
         lpMaxCollectionCount = ffi.NULL
     else:
-        input_check("lpMaxCollectionCount", lpMaxCollectionCount, integer_types)
+        input_check(
+            "lpMaxCollectionCount", lpMaxCollectionCount, integer_types)
         lpMaxCollectionCount = ffi.new("LPDWORD", lpMaxCollectionCount)
 
     if lpCollectDataTimeout is None:
         lpCollectDataTimeout = ffi.NULL
     else:
-        input_check("lpCollectDataTimeout", lpCollectDataTimeout, integer_types)
+        input_check(
+            "lpCollectDataTimeout", lpCollectDataTimeout, integer_types)
         lpCollectDataTimeout = ffi.new("LPDWORD", lpCollectDataTimeout)
 
     code = library.SetNamedPipeHandleState(
@@ -240,7 +242,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
     Read the specified number of bytes from ``hFile``.
-    
+
     .. seealso::
 
         https://msdn.microsoft.com/en-us/library/aa365467
@@ -301,7 +303,7 @@ def CloseHandle(hObject):
         The handle object to close.
     """
     input_check("hObject", hObject, Enums.HANDLE)
-    ffi, library = Library.load()
+    _, library = Library.load()
 
     code = library.CloseHandle(hObject)
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
@@ -323,7 +325,7 @@ def GetStdHandle(nStdHandle):
     :return:
         Returns a handle to the standard device retrieved.
     """
-    ffi, library = Library.load()
+    _, library = Library.load()
     input_check("nStdHandle", nStdHandle,
                 allowed_values=(library.STD_INPUT_HANDLE,
                                 library.STD_OUTPUT_HANDLE,

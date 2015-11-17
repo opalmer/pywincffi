@@ -38,7 +38,9 @@ else:
     except ImportError:
         tests_require.append("mock")
 
-if (py_major, py_minor) < (3, 4):
+try:
+    import enum
+except ImportError:
     install_requires_extras.append("enum34")
 
 setup(
@@ -47,7 +49,7 @@ setup(
     packages=find_packages(
         include=("pywincffi*", )
     ),
-    package_data={"pywincffi": ["headers/*.h"]},
+    include_package_data=True,
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
