@@ -17,7 +17,7 @@ CONSTANTS_HEADER = join(HEADERS_DIR, "constants.h")
 FUNCTIONS_HEADER = join(HEADERS_DIR, "functions.h")
 
 REGEX_FUNCTION = re.compile("^[A-Z]+ ([A-Z][a-z]*[A-Z].*)\(.*$")
-REGEX_CONSTANT = re.compile("^#define ([A-Z_])+ ...$")
+REGEX_CONSTANT = re.compile("^#define ([A-Z]*[_]*[A-Z]*[_]*[A-Z]*) ...$")
 
 
 def transform(cls, constants=None, functions=None):
