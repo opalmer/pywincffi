@@ -61,7 +61,7 @@ def error_check(api_function, code=None, expected=0):
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
     """
-    ffi, library = Library.load()
+    ffi, _ = Library.load()
 
     if code is None:
         result, api_error_message = ffi.getwinerror()
