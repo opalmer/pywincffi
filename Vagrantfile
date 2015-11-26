@@ -8,21 +8,8 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/code", create: true
     config.vm.synced_folder ".provision", "/provision", create: true
 
-    # Copy files used to perform the provisioning process
-    # into the virtual machine.
-    config.vm.provision "file",
-        source: "./.ci/vagrant/functions.ps1",
-        destination: "C:\\provision\\scripts\\functions.ps1"
-    config.vm.provision "file",
-        source: "./.ci/vagrant/install-python.ps1",
-        destination: "C:\\provision\\scripts\\install-python.ps1"
-    config.vm.provision "file",
-        source: "./.ci/vagrant/install-visual-studio.ps1",
-        destination: "C:\\provision\\scripts\\install-visual-studio.ps1"
-
-    # Install dependencies
     config.vm.provision "shell",
-        inline: "C:\\provision\\scripts\\install-visual-studio.ps1"
+        inline: "C:\\code\\.ci\\vagrant\\download.ps1"
     config.vm.provision "shell",
-        inline: "C:\\provision\\scripts\\install-python.ps1"
+        inline: "C:\\code\\.ci\\vagrant\\visual-studio.ps1"
 end
