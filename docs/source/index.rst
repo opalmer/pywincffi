@@ -23,3 +23,9 @@ Python Package
 ==============
 
 .. toctree:: modules/modules.rst
+
+
+Development
+===========
+
+.. toctree:: dev/index.rst
