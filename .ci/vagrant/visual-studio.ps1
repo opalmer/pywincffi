@@ -1,9 +1,45 @@
-. "c:\provision\scripts\functions.ps1"
+function MountISO {
+    $iso = $args[0]
+    $mount_info = $(Get-DiskImage $iso)
 
-Download "http://download.microsoft.com/download/8/B/5/8B5804AD-4990-40D0-A6AA-CE894CBBB3DC/VS2008ExpressENUX1397868.iso" C:\provision\visual_studio\VS2008ExpressENUX1397868.iso
-Download "http://download.microsoft.com/download/1/E/5/1E5F1C0A-0D5B-426A-A603-1798B951DDAE/VS2010Express1.iso" C:\provision\visual_studio\VS2010Express1.iso
+    if (!($mount_info.Attached)) {
+        Write-Output "Mounting $iso"
+        $mount = Mount-DiskImage $iso -PassThru
+        $drive = $($mount | Get-Volume).DriveLetter
 
-$vs2010mount = Mount-DiskImage C:\provision\visual_studio\VS2010Express1.iso -PassThrough
-$vs2010drive = $($vs2010mount | Get-Volume).DriveLetter
-$vs2008mount = Mount-DiskImage C:\provision\visual_studio\VS2008ExpressENUX1397868.iso -PassThrough
-$vs2008drive = $($vs2008mount | Get-Volume).DriveLetter
+    } else {
+        Write-Output "(skipped) Mounting $iso"
+        $drive = $($mount_info | Get-Volume).DriveLetter
+    }
+    Write-Output "$iso is mounted at $drive"
+}
+
+# ISOs must be mounted from the local machine
+if (!(Test-Path -Path C:\Users\vagrant\VS2008ExpressENUX1397868.iso )) {
+    Write-Output "Creating local copy of VS2008ExpressENUX1397868.iso"
+    Copy-Item C:\provision\visual_studio\VS2008ExpressENUX1397868.iso C:\Users\vagrant\VS2008ExpressENUX1397868.iso
+} else {
+    Write-Output "(skipped) Creating local copy of VS2008ExpressENUX1397868.iso"
+}
+
+MountISO "C:\Users\vagrant\VS2008ExpressENUX1397868.iso"
+
+# return statements in functions don't function like you'd expect so
+# we use Get-DiskImage here instead of asking for a result from MountISO
+$drive = $(Get-DiskImage "C:\Users\vagrant\VS2008ExpressENUX1397868.iso").DriveLetter
+
+# ISOs must be mounted from the local machine
+if (!(Test-Path -Path C:\Users\vagrant\VS2010Express1.iso )) {
+    Write-Output "Creating local copy of VS2010Express1.iso"
+    Copy-Item C:\provision\visual_studio\VS2010Express1.iso C:\Users\vagrant\VS2010Express1.iso
+} else {
+    Write-Output "(skipped) Creating local copy of VS2010Express1.iso"
+}
+
+MountISO "C:\Users\vagrant\VS2010Express1.iso"
+
+# return statements in functions don't function like you'd expect so
+# we use Get-DiskImage here instead of asking for a result from MountISO
+$drive = $(Get-DiskImage "C:\Users\vagrant\VS2010Express1.iso").DriveLetter
+
+
