@@ -5,6 +5,9 @@ Vagrant.configure("2") do |config|
         v.memory = 4096
     end
 
+    config.vm.synced_folder ".", "/code"
+    config.vm.synced_folder ".provision", "/provision"
+
     # Copy files used to perform the provisioning process
     # into the virtual machine.
     config.vm.provision "file",
