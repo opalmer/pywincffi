@@ -2,6 +2,7 @@ function Download {
     $url = $args[0]
     $output = $args[1]
     $parent_dir = Split-Path $output -parent
+    $start_time = Get-Date
 
     if (!(Test-Path -Path $parent_dir )) {
         Write-Output "Creating $parent_dir"
@@ -10,9 +11,10 @@ function Download {
 
     if (!(Test-Path -Path $output )) {
         Write-Output "Downloading $url to $output"
-        Invoke-WebRequest $url -OutFile $output
+        $wc = New-Object System.Net.WebClient
+        $wc.DownloadFile($url, $output)
     } else {
-        Write-Output "(skipped) Downloading $url to $output"
+        Write-Output "Already downloaded $url"
     }
 }
 
@@ -33,3 +35,4 @@ Download "https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-
 Download "https://download.microsoft.com/download/3/2/2/3224B87F-CFA0-4E70-BDA3-3DE650EFEBA5/vcredist_x64.exe" "C:\provision\vc_redist\2010x64.exe"
 Download "https://download.microsoft.com/download/8/B/5/8B5804AD-4990-40D0-A6AA-CE894CBBB3DC/VS2008ExpressENUX1397868.iso" "C:\provision\visual_studio\VS2008ExpressENUX1397868.iso"
 Download "https://download.microsoft.com/download/1/E/5/1E5F1C0A-0D5B-426A-A603-1798B951DDAE/VS2010Express1.iso" "C:\provision\visual_studio\VS2010Express1.iso"
+Download "https://download.microsoft.com/download/6/2/A/62A76ABB-9990-4EFC-A4FE-C7D698DAEB96/9600.17050.WINBLUE_REFRESH.140317-1640_X64FRE_SERVER_EVAL_EN-US-IR3_SSS_X64FREE_EN-US_DV9.ISO" "C:\provision\2012r2.iso"
