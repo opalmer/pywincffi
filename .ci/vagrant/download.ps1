@@ -28,6 +28,7 @@ function DownloadPythonInstallers {
 DownloadPythonInstallers 2.6.6
 DownloadPythonInstallers 2.7.10
 DownloadPythonInstallers 3.4.3
+Download "https://cygwin.com/setup-x86_64.exe" "C:\provision\cygwin\setup-x86_64.exe"
 Download "https://bootstrap.pypa.io/ez_setup.py" "C:\provision\python\ez_setup.py"
 Download "https://download.microsoft.com/download/1/1/1/1116b75a-9ec3-481a-a3c8-1777b5381140/vcredist_x86.exe" "C:\provision\vc_redist\2008x86.exe"
 Download "https://download.microsoft.com/download/d/2/4/d242c3fb-da5a-4542-ad66-f9661d0a8d19/vcredist_x64.exe" "C:\provision\vc_redist\2008x64.exe"
