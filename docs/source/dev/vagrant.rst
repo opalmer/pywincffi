@@ -93,6 +93,25 @@ get it installed on the system.
    Studio express editions, can't easily be installed in an unattended
    manner.
 
+Rerunning The Provisioning Step
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes you might need to execute the provisioning process again.  This
+could be because one of the steps failed when running ``vagrant up``, you've
+added a new step to the Vagrantfile or you've modified a step in
+``.ci/vagrant/``.
+
+To reexecute the provisioning process on a running VM run:
+
+.. code-block:: console
+
+   vagrant provision
+
+To restart the VM and execute the provisioning process run:
+
+.. code-block:: console
+
+   vagrant reload --provision
 
 Testing PyWinCFFI
 -----------------
