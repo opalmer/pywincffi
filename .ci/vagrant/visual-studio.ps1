@@ -74,11 +74,18 @@ if (!(Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio 9.0")) {
         Write-Output "(skipped) Creating local copy of VS2008ExpressENUX1397868.iso"
     }
 
+    # Install VS
     MountISO "C:\Users\vagrant\VS2008ExpressENUX1397868.iso"
     $drive = $(Get-DiskImage "C:\Users\vagrant\VS2008ExpressENUX1397868.iso" | Get-Volume).DriveLetter
     VSSetup "$drive`:\Setup.hta" "C:\Users\vagrant\vs2008_installed.txt"
     DismountISO "C:\Users\vagrant\VS2008ExpressENUX1397868.iso"
     Remove-Item "C:\Users\vagrant\VS2008ExpressENUX1397868.iso"
+
+    # Install redists
+    Write-Output "Installing Visual Studio 2008 Redistributable (x86)"
+    Start-Process -FilePath "C:\provision\vc_redist\2008x86.exe" -ArgumentList "/qb" -Wait
+    Write-Output "Installing Visual Studio 2008 Redistributable (x64)"
+    Start-Process -FilePath "C:\provision\vc_redist\2008x64.exe" -ArgumentList "/qb" -Wait
 
 } else {
     Write-Output "VS2008 appears to already be installed"
@@ -93,11 +100,18 @@ if (!(Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio 10.0")) {
         Write-Output "(skipped) Creating local copy of VS2010Express1.iso"
     }
 
+    # Install VS
     MountISO "C:\Users\vagrant\VS2010Express1.iso"
     $drive = $(Get-DiskImage "C:\Users\vagrant\VS2010Express1.iso" | Get-Volume).DriveLetter
     VSSetup "$drive`:\Setup.hta" "C:\Users\vagrant\vs2010_installed.txt"
     DismountISO "C:\Users\vagrant\VS2010Express1.iso"
     Remove-Item "C:\Users\vagrant\VS2010Express1.iso"
+
+    # Install redists
+    Write-Output "Installing Visual Studio 2010 Redistributable (x64)"
+    Start-Process -FilePath "C:\provision\vc_redist\2010x64.exe" -ArgumentList " /passive /norestart" -Wait
+    Write-Output "Installing Visual Studio 2010 Redistributable (x86)"
+    Start-Process -FilePath "C:\provision\vc_redist\2010x86.exe" -ArgumentList " /passive /norestart" -Wait
 
 } else {
     Write-Output "VS2010 appears to already be installed"
