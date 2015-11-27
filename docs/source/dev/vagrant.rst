@@ -86,6 +86,13 @@ for launching vagrant is:
 This will start up the virtual machine, download the necessary software and
 get it installed on the system.
 
+.. important::
+
+   At certain points during the install you will be required to perform
+   some manual steps.  This is because certain software, such as Visual
+   Studio express editions, can't easily be installed in an unattended
+   manner.
+
 
 Testing PyWinCFFI
 -----------------
