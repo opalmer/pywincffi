@@ -1,4 +1,4 @@
-. ".ci/vagrant/functions.ps1"
+. "C:\code\.ci\vagrant\functions.ps1"
 
 if (!(Test-Path -Path "C:\cygwin")) {
     Write-Output "Installing cygwin"
