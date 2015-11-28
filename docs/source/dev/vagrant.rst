@@ -113,6 +113,15 @@ To restart the VM and execute the provisioning process run:
 
    vagrant reload --provision
 
+
+Adding SSH Authorized Keys
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SSH for the Windows VM is setup to use key based authentication.  To
+provide you own set of keys, create a file at
+``.ci/vagrant/files/authorized_keys`` with your own public key(s).
+
+
 Testing PyWinCFFI
 -----------------
 
