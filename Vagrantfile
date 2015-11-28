@@ -5,11 +5,8 @@ Vagrant.configure("2") do |config|
         v.memory = 4096
     end
 
+    config.vm.network "forwarded_port", guest: 22, host: 2244
     config.vm.synced_folder ".", "/code", create: true
     config.vm.synced_folder ".provision", "/provision", create: true
-
-    config.vm.provision "shell",
-        inline: "C:\\code\\.ci\\vagrant\\download.ps1"
-    config.vm.provision "shell",
-        inline: "C:\\code\\.ci\\vagrant\\visual-studio.ps1"
+    config.vm.provision "shell", inline: "C:\\code\\.ci\\vagrant\\main.ps1"
 end
