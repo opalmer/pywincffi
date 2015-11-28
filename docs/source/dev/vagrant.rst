@@ -121,6 +121,11 @@ SSH for the Windows VM is setup to use key based authentication.  To
 provide you own set of keys, create a file at
 ``.ci/vagrant/files/authorized_keys`` with your own public key(s).
 
+pywincffi ships ``.ci/vagrant/files/authorized_keys.template`` which
+contains vagrant's public key.  You're welcome to copy this over and
+add your own keys.  By doing this, you'll be able to run ``vagrant ssh``
+in addition to being able to use ssh directly with your own key.
+
 
 Testing PyWinCFFI
 -----------------
