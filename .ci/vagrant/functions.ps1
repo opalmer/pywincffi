@@ -22,6 +22,23 @@ function RunScript($script) {
     Write-Output "[finished] $script"
 }
 
+function RestartService($service_name) {
+    $service = Get-Service $service_name
+
+    if ($service.Length -ne 1) {
+        Write-Warning "Service $service_name does not exist"
+        Exit 1
+    }
+
+    if ($service.Status -eq "Running") {
+        "Stopping service $service_name"
+        Stop-Service $service_name
+    }
+
+    "Starting service $service_name"
+    Start-Service $service_name
+}
+
 function Run($filename, $arguments) {
     Write-Output "run: $filename $arguments"
     $start_info = New-object System.Diagnostics.ProcessStartInfo
