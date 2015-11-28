@@ -10,3 +10,4 @@
 /docs/source/modules/
 /.vagrant
 /.provision
+/.ci/vagrant/files/authorized_keys
