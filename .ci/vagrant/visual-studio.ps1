@@ -1,3 +1,5 @@
+. "C:\code\.ci\vagrant\functions.ps1"
+
 function MountISO {
     $iso = $args[0]
     $mount_info = $(Get-DiskImage $iso)
@@ -83,9 +85,9 @@ if (!(Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio 9.0")) {
 
     # Install redists
     Write-Output "Installing Visual Studio 2008 Redistributable (x86)"
-    Start-Process -FilePath "C:\provision\vc_redist\2008x86.exe" -ArgumentList "/qb" -Wait
+    Run "C:\provision\vc_redist\2008x86.exe" "/qb"
     Write-Output "Installing Visual Studio 2008 Redistributable (x64)"
-    Start-Process -FilePath "C:\provision\vc_redist\2008x64.exe" -ArgumentList "/qb" -Wait
+    Run "C:\provision\vc_redist\2008x64.exe" "/qb"
 
 } else {
     Write-Output "VS2008 appears to already be installed"
@@ -109,9 +111,9 @@ if (!(Test-Path -Path "C:\Program Files (x86)\Microsoft Visual Studio 10.0")) {
 
     # Install redists
     Write-Output "Installing Visual Studio 2010 Redistributable (x64)"
-    Start-Process -FilePath "C:\provision\vc_redist\2010x64.exe" -ArgumentList " /passive /norestart" -Wait
+    Run "C:\provision\vc_redist\2010x64.exe" "/passive /norestart"
     Write-Output "Installing Visual Studio 2010 Redistributable (x86)"
-    Start-Process -FilePath "C:\provision\vc_redist\2010x86.exe" -ArgumentList " /passive /norestart" -Wait
+    Run "C:\provision\vc_redist\2010x86.exe" "/passive /norestart"
 
 } else {
     Write-Output "VS2010 appears to already be installed"
