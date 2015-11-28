@@ -24,4 +24,11 @@ if ((Test-Path -Path "C:\code\.ci\vagrant\files\authorized_keys" )) {
     Write-Output "C:\code\.ci\vagrant\files\authorized_keys does not exist"
 }
 
-Run "net.exe" "start sshd"
+# Replace the sshd configuration with our own
+Write-Output "Replace SSHD configuration"
+$src = "/cygdrive/c/code/.ci/vagrant/files/sshd_config"
+$dst = "/etc/sshd_config"
+Run "C:\cygwin\bin\bash.exe" "--login -c 'cp $src $dst"
+
+RestartService "sshd"
+
