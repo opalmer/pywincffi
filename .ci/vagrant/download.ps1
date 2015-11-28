@@ -1,33 +1,16 @@
-function Download {
-    $url = $args[0]
-    $output = $args[1]
-    $parent_dir = Split-Path $output -parent
-    $start_time = Get-Date
+. "C:\code\.ci\vagrant\functions.ps1"
 
-    if (!(Test-Path -Path $parent_dir )) {
-        Write-Output "Creating $parent_dir"
-        New-Item -ItemType directory -Path $parent_dir
-    }
+function DownloadPythonInstallers($version) {
+    # 32-bit
+    Download "https://www.python.org/ftp/python/$version/python-$version.msi" "C:\provision\python\$version-x86.msi"
 
-    if (!(Test-Path -Path $output )) {
-        Write-Output "Downloading $url to $output"
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile($url, $output)
-    } else {
-        Write-Output "Already downloaded $url"
-    }
+    # 64-bit
+    Download "https://www.python.org/ftp/python/$version/python-$version.amd64.msi" "C:\provision\python\$version-x64.msi"
 }
 
-function DownloadPythonInstallers {
-    $version = $args[0]
-
-    Download https://www.python.org/ftp/python/$version/python-$version.msi C:\provision\python\$version-x86.msi
-    Download https://www.python.org/ftp/python/$version/python-$version.amd64.msi C:\provision\python\$version-x64.msi
-}
-
-DownloadPythonInstallers 2.6.6
-DownloadPythonInstallers 2.7.10
-DownloadPythonInstallers 3.4.3
+DownloadPythonInstallers "2.6.6"
+DownloadPythonInstallers "2.7.10"
+DownloadPythonInstallers "3.4.3"
 Download "https://cygwin.com/setup-x86_64.exe" "C:\provision\cygwin\setup-x86_64.exe"
 Download "https://bootstrap.pypa.io/ez_setup.py" "C:\provision\python\ez_setup.py"
 Download "https://download.microsoft.com/download/1/1/1/1116b75a-9ec3-481a-a3c8-1777b5381140/vcredist_x86.exe" "C:\provision\vc_redist\2008x86.exe"
