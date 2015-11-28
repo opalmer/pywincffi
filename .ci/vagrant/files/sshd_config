@@ -1,0 +1,17 @@
+Port 22
+ListenAddress 0.0.0.0
+ListenAddress ::
+
+SyslogFacility AUTH
+LogLevel DEBUG
+
+PermitRootLogin yes
+RSAAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile %h/.ssh/authorized_keys
+PasswordAuthentication yes
+ChallengeResponseAuthentication yes
+UsePAM yes
+AllowTcpForwarding yes
+UsePrivilegeSeparation yes
+UseDNS no
