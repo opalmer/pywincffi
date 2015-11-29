@@ -12,12 +12,13 @@ import sys
 from errno import ENOENT
 from os.path import isfile, isdir  # pylint: disable=ungrouped-imports
 
+from cffi import FFI
+
 if sys.version_info[0:2] != (2, 6):
+    # pylint: disable=wrong-import-order
     from unittest import TestCase as _TestCase
 else:
     from unittest2 import TestCase as _TestCase
-
-from cffi import FFI
 
 # To keep lint on non-windows platforms happy.
 try:
