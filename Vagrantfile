@@ -9,8 +9,16 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/code", create: true
     config.vm.synced_folder ".provision", "/provision", create: true
 
-    config.vm.provision "provision", type: "shell" do |provision|
-        provision.inline = "C:\\code\\.ci\\vagrant\\provision\\main.ps1"
+    config.vm.provision "system", type: "shell" do |provision|
+        provision.inline = "C:\\code\\.ci\\vagrant\\system\\main.ps1"
+    end
+
+    config.vm.provision "software", type: "shell" do |provision|
+        provision.inline = "C:\\code\\.ci\\vagrant\\software\\main.ps1"
+    end
+
+    config.vm.provision "sshd", type: "shell" do |provision|
+        provision.inline = "C:\\code\\.ci\\vagrant\\sshd\\main.ps1"
     end
 
     config.vm.provision "python", type: "shell" do |provision|

@@ -2,4 +2,5 @@
 
 $DIR = Split-Path $MyInvocation.MyCommand.Path
 
-RunScript "$DIR\virtualenv.ps1"
+RunScript "$DIR\sshd.ps1"
+RunScript "$DIR\authorized-keys.ps1"

@@ -1,3 +1,15 @@
+$SOFTWARE = Get-WmiObject -Class Win32_Product
+$BASH = "C:\cygwin\bin\bash.exe"
+
+function ProductInstalled($ident) {
+    foreach ($software in $SOFTWARE) {
+        if ($software.IdentifyingNumber -eq $ident) {
+            return $True
+        }
+    }
+    return $False
+}
+
 function Download($url, $output) {
     $parent_dir = Split-Path $output -parent
     $start_time = Get-Date
