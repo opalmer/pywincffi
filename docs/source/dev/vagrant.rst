@@ -114,6 +114,19 @@ To restart the VM and execute the provisioning process run:
    vagrant reload --provision
 
 
+Installing Python Source Code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, the steps in `Rerunning The Provisioning Step`_ will
+install the source code for you.  If you make changes however to
+the setup.py file or something seems broke you can force the
+provision process to run again:
+
+.. code-block:: console
+
+   vagrant provision --provision-with python
+
+
 Adding SSH Authorized Keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
