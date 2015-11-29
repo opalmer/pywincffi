@@ -11,8 +11,6 @@ function Download($url, $output) {
         Write-Output "Downloading $url to $output"
         $client = New-Object System.Net.WebClient
         $client.DownloadFile($url, $output)
-    } else {
-        Write-Output "Already downloaded $url"
     }
 }
 
