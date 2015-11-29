@@ -4,4 +4,3 @@ $DIR = Split-Path $MyInvocation.MyCommand.Path
 
 RunScript "$DIR\core-packages.ps1"
 RunScript "$DIR\virtualenv.ps1"
-
