@@ -143,8 +143,23 @@ in addition to being able to use ssh directly with your own key.
 Testing PyWinCFFI
 -----------------
 
-.. TODO::
+PyCharm Remote Interpreter
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    * vagrant deploy?
-    * PyCharm remote interpreter?
+If you're using `PyCharm <https://www.jetbrains.com/pycharm/>`_ you can
+take advantage of its remote interpreter feature.  This will allow you to
+execute the tests as if Python is running locally even though it's in
+a virtual machine.
+
+For more information on how to set this up, check out these guides direct from
+JetBrains:
+
+    * https://www.jetbrains.com/pycharm/help/configuring-remote-python-interpreters.html
+    * https://confluence.jetbrains.com/display/PYH/Configuring+Interpreters+with+PyCharm
+    * https://www.jetbrains.com/pycharm/help/configuring-remote-interpreters-via-virtual-boxes.html
+
+.. note::
+
+    Some of the features above may require the professional version of PyCharm.
+
 
