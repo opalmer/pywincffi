@@ -1,7 +1,6 @@
 . "c:\provision\scripts\functions.ps1"
 
-function Install {
-    $version = $args[0]
+function Install($version) {
     $install_path = "C:\python\$version"
     $msi_path = "C:\provision\python\$version.msi"
     $python = "$install_path\python.exe"
@@ -15,10 +14,10 @@ function Install {
         Write-Output "Python $version appears to be installed at $install_path"
     }
 
-    Run "$python" "-m compileall $install_path"
-    Run "$python" "C:\provision\python\ez_setup.py"
-    Run "$easy_install" "pip"
-    Run "$pip" "virtualenv"
+    Run "$python" "-m compileall $install_path" $False
+    Run "$python" "C:\provision\python\ez_setup.py" $False
+    Run "$easy_install" "pip" $False
+    Run "$pip" "install virtualenv" $False
 }
 
 Install "2.6.6-x86"
