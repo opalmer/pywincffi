@@ -119,8 +119,8 @@ Installing Python Source Code
 
 By default, the steps in `Rerunning The Provisioning Step`_ will
 install the source code for you.  If you make changes however to
-the setup.py file or something seems broke you can force the
-provision process to run again:
+the setup.py file or something seems broken you can force the
+provision process to run again and skip the OS steps:
 
 .. code-block:: console
 
