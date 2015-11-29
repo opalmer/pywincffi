@@ -39,7 +39,7 @@ function RestartService($service_name) {
     Start-Service $service_name
 }
 
-function Run($filename, $arguments) {
+function Run($filename, $arguments, $IgnoreExit=$True) {
     Write-Output "run: $filename $arguments"
     $start_info = New-object System.Diagnostics.ProcessStartInfo
     $start_info.CreateNoWindow = $true
@@ -59,4 +59,9 @@ function Run($filename, $arguments) {
     # We don't really care about the exit code in most
     # cases so we'll just print it.
     Write-Output "exit code: $code"
+
+    if (($IgnoreExit -eq $False) -and ($code -ne 0)) {
+        Write-Warning "Exit code was non-zero"
+        Exit $code
+    }
 }
