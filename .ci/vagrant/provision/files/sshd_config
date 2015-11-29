@@ -14,3 +14,4 @@ ChallengeResponseAuthentication yes
 AllowTcpForwarding yes
 UsePrivilegeSeparation yes
 UseDNS no
+Subsystem sftp internal-sftp

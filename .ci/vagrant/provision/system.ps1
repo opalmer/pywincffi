@@ -11,5 +11,5 @@ New-ItemProperty `
     -Name EnableLUA -PropertyType DWord -Value 0 -Force
 
 Write-Output "Changing password policy"
-Run "secedit.exe" "/configure /db C:\windows\security\local.sdb /cfg C:\code\.ci\vagrant\files\secpol.cfg /areas SECURITYPOLICY"
+Run "secedit.exe" "/configure /db C:\windows\security\local.sdb /cfg C:\code\.ci\vagrant\provision\files\secpol.cfg /areas SECURITYPOLICY"
 Run "gpupdate.exe" "/Force"
