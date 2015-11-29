@@ -14,5 +14,4 @@ foreach ($pyversion in $items) {
 
     SafeRun $BASH "--login -c 'rm -rf $target'"
     SafeRun $BASH "--login -c '$virtualenv virtualenv/$pyversion'"
-    SafeRun $BASH "--login -c 'virtualenv/$pyversion/Scripts/python.exe /cygdrive/c/code/setup.py develop'"
 }
