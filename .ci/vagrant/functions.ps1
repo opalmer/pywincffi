@@ -44,6 +44,10 @@ function RestartService($service_name) {
     Start-Service $service_name
 }
 
+function SafeRun($filename, $arguments) {
+    Run $filename $arguments $False
+}
+
 function Run($filename, $arguments, $IgnoreExit=$True) {
     Write-Output "run: $filename $arguments"
     $start_info = New-object System.Diagnostics.ProcessStartInfo

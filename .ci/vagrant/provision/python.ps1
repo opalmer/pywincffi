@@ -14,10 +14,10 @@ function Install($version) {
         Write-Output "Python $version appears to be installed at $install_path"
     }
 
-    Run "$python" "-m compileall $install_path" $False
-    Run "$python" "C:\provision\python\ez_setup.py" $False
-    Run "$easy_install" "pip" $False
-    Run "$pip" "install virtualenv" $False
+    SafeRun "$python" "-m compileall $install_path"
+    SafeRun "$python" "C:\provision\python\ez_setup.py"
+    SafeRun "$easy_install" "pip"
+    SafeRun "$pip" "install virtualenv"
 }
 
 Install "2.6.6-x86"
