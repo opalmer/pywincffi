@@ -7,5 +7,6 @@ $items = Get-ChildItem C:\python -name
 foreach ($pyversion in $items) {
     $virtualenv = "/cygdrive/c/python/$pyversion/Scripts/virtualenv.exe"
     $target = "virtualenv/$pyversion/"
-    SafeRun $BASH "--login -c 'rm -rf $target'" $False
+    SafeRun $BASH "--login -c 'rm -rf $target'"
+    SafeRun $BASH "--login -c '$virtualenv $target'"
 }
