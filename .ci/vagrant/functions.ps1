@@ -17,6 +17,11 @@ function Download($url, $output) {
 }
 
 function RunScript($script) {
+    if (!(Test-Path -Path $script )) {
+        Write-Output "No such file $script"
+        Exit 1
+    }
+
     Write-Output "[starting] $script"
     & $script
     Write-Output "[finished] $script"
