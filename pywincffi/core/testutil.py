@@ -10,14 +10,15 @@ import os
 import shutil
 import sys
 from errno import ENOENT
-from os.path import isfile, isdir
+from os.path import isfile, isdir  # pylint: disable=ungrouped-imports
 
 from cffi import FFI
 
-if sys.version_info[0:2] == (2, 6):
-    from unittest2 import TestCase as _TestCase
-else:
+if sys.version_info[0:2] != (2, 6):
+    # pylint: disable=wrong-import-order
     from unittest import TestCase as _TestCase
+else:
+    from unittest2 import TestCase as _TestCase
 
 # To keep lint on non-windows platforms happy.
 try:
@@ -40,7 +41,8 @@ class TestCase(_TestCase):
     core test case just provides some extra functionality.
     """
     def setUp(self):
-        self.failIf(kernel32 is None, "kernel32 was never defined")
+        if kernel32 is None:
+            self.fail("kernel32 was never defined")
 
         # Always reset the last error to 0 between tests.  This
         # ensures that any error we intentionally throw in one

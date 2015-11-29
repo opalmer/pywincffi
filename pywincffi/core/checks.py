@@ -4,9 +4,10 @@ Checks
 
 Provides functions that are responsible for internal type checks.
 """
-import enum
+
 from collections import namedtuple
 
+import enum
 from six import string_types
 
 from pywincffi.core.ffi import Library
