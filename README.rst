@@ -67,10 +67,10 @@ Windows API Functions are typically documented in the following format:
             <url to the MSDN API documentation for this function>
         """
 
-It's important to note that the ``seealso`` link is an important part
-of each function.  If you're looking to learn more about specific behaviors,
-caveats or just more general information then follow the link to Microsoft's
-documentation.
+It's important to note that the docs also contain a ``seealso`` link which
+points back to the original documentation provided by Microsoft.  The link will
+contain more detailed information about a function's specific behaviors and
+caveats than pywincffi's docs may provide alone.
 
 
 Testing
@@ -86,8 +86,10 @@ the ``setup.py`` file::
     python setup.py test
 
 Every commit and pull request is also executed on
-[AppVeyor](https://ci.appveyor.com/project/opalmer/pywincffi).  Tests can also
+`AppVeyor <https://ci.appveyor.com/project/opalmer/pywincffi>`_.  Tests can also
 be executed manually as well::
 
     nosetests -v --with-coverage
 
+You can also follow `the documentation <https://pywincffi.readthedocs.org/en/latest/dev/vagrant.html>`_
+and use Vagrant to test locally on non-Windows platforms.
