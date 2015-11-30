@@ -162,4 +162,56 @@ JetBrains:
 
     Some of the features above may require the professional version of PyCharm.
 
+Manually Testing Using Vagrant
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. warning::
+
+   This method of testing does not work currently.  Please use one of these
+   methods instead:
+
+     * `PyCharm Remote Interpreter`_
+     * `Manually Using SSH and CYGWIN`_
+
+Before attempting to test be sure the core Python interpreters have been
+installed:
+
+.. code-block:: console
+
+   vagrant provision --provision-with python,install
+
+If you add a new module or the tests seem to be failing due to recent
+project changes you can rerun pywincffi's setup alone:
+
+.. code-block:: console
+
+   vagrant provision --provision-with install
+
+
+After performing the above the following can be executed to test pywincffi:
+
+.. code-block:: console
+
+   vagrant provision --provision-with test
+
+.. important::
+
+   For now, the above only tests Python 2.7.10 (32-bit).  When code is pushed
+   into a pull request it will be tested against all Python versions that the
+   project supports.
+
+Manually Using SSH and CYGWIN
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also manually test the project as well over ssh.
+
+.. code-block:: console
+
+   $ ssh -p 2244 vagrant@localhost
+   $ cd /cygdrive/c/code
+   $ ~/virtualenv/2.7.10-x86/Scripts/python.exe setup.py test
+   [ ... ]
+   ----------------------------------------------------------------------
+   Ran 70 tests in 0.359s
+
+   OK
