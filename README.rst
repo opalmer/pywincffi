@@ -86,10 +86,10 @@ the ``setup.py`` file::
     python setup.py test
 
 Every commit and pull request is also executed on
-[AppVeyor](https://ci.appveyor.com/project/opalmer/pywincffi).  Tests can also
+`AppVeyor <https://ci.appveyor.com/project/opalmer/pywincffi>`_.  Tests can also
 be executed manually as well::
 
     nosetests -v --with-coverage
 
-You can also follow [the documentation](https://pywincffi.readthedocs.org/en/latest/dev/vagrant.html)
+You can also follow `the documentation <https://pywincffi.readthedocs.org/en/latest/dev/vagrant.html>`_
 and use Vagrant to test locally on non-Windows platforms.
