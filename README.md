@@ -91,3 +91,5 @@ be executed manually as well::
 
     nosetests -v --with-coverage
 
+You can also follow [the documentation](https://pywincffi.readthedocs.org/en/latest/dev/vagrant.html)
+and use Vagrant to test locally on non-Windows platforms.
