@@ -20,6 +20,14 @@ pywincffi.core.ffi module
     :undoc-members:
     :show-inheritance:
 
+pywincffi.core.lint module
+--------------------------
+
+.. automodule:: pywincffi.core.lint
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pywincffi.core.logger module
 ----------------------------
 

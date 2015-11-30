@@ -8,3 +8,6 @@
 /.tox/
 .coverage
 /docs/source/modules/
+/.vagrant
+/.provision
+/.ci/vagrant/sshd/files/authorized_keys
