@@ -5,7 +5,6 @@
 #
 
 $items = Get-ChildItem C:\cygwin\home\vagrant\virtualenv -name
-$ez_setup = "/cygdrive/c/provision/python/ez_setup.py"
 
 foreach ($virtualenv_name in $items) {
     $pip = "virtualenv/$virtualenv_name/Scripts/pip.exe"

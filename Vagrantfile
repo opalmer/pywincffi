@@ -25,7 +25,11 @@ Vagrant.configure("2") do |config|
         provision.inline = "C:\\code\\.ci\\vagrant\\python\\main.ps1"
     end
 
-    config.vm.provision "pywincffi", type: "shell" do |provision|
-        provision.inline = "C:\\code\\.ci\\vagrant\\pywincffi\\main.ps1"
+    config.vm.provision "install", type: "shell" do |provision|
+        provision.inline = "C:\\code\\.ci\\vagrant\\install.ps1"
+    end
+
+    config.vm.provision "test", type: "shell" do |provision|
+        provision.inline = "C:\\code\\.ci\\vagrant\\test.ps1"
     end
 end
