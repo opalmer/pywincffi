@@ -67,9 +67,9 @@ Windows API Functions are typically documented in the following format:
             <url to the MSDN API documentation for this function>
         """
 
-It's important to note that the docs also contain a ``seealso`` link which 
+It's important to note that the docs also contain a ``seealso`` link which
 points back to the original documentation provided by Microsoft.  The link will
-contain more detailed information about a function's specific behaviors and 
+contain more detailed information about a function's specific behaviors and
 caveats than pywincffi's docs may provide alone.
 
 
