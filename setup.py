@@ -9,7 +9,7 @@ except NameError:
     WindowsError = OSError
 
 try:
-    with open("README.rst") as readme:
+    with open("README.md") as readme:
         long_description = readme.read()
 except (OSError, IOError, WindowsError) as error:
     if error.errno == ENOENT:
