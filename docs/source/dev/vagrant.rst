@@ -29,7 +29,7 @@ locally usually.
 
 The install process for the various dependencies besides the operating system
 will be covered in another section.  This section will cover setting up the
-base machine image itself so
+base machine image itself.
 
 #. Use git to clone the packer templates:
 
@@ -51,9 +51,8 @@ base machine image itself so
       cd packer-templates
       packer build -force -only virtualbox-iso ./vbox-2012r2.json
 
-   The above will take a while to run but when it finishes you should
-   end up with a file on disk with a .box extension such as
-   ``windows2012r2min-virtualbox.box``
+   The above will take a while to run.  When complete you should end up
+   with a file like ``windows2012r2min-virtualbox.box`` on disk.
 
 #. Add the box image to vagrant:
 
@@ -68,15 +67,15 @@ a Windows image.
 
    The box that was generated is using an evaluation copy of Windows 2012 R2
    Standard which expires in 180 days.  You will either need to add a license
-   for the operating system or repeat the steps outlined above.
+   for the operating system or repeat the steps outlined above again later on.
 
 
 Running Vagrant
 ---------------
 
-Vagrant is responsible for running the virtual machine itself as well as
-installing and downloading the necessary software for pywincffi.  The process
-for launching vagrant is:
+Vagrant is responsible for running the virtual machine as well as installing
+and downloading the necessary software for pywincffi.  The process for
+launching vagrant is:
 
 .. code-block:: console
 
@@ -117,14 +116,14 @@ To restart the VM and execute the provisioning process run:
 Installing Python Source Code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default, the steps in `Rerunning The Provisioning Step`_ will
+By default, going back over `rerunning the provisioning step`_ will
 install the source code for you.  If you make changes however to
 the setup.py file or something seems broken you can force the
 provision process to run again and skip the OS steps:
 
 .. code-block:: console
 
-   vagrant provision --provision-with python
+   vagrant provision --provision-with python,install
 
 
 Adding SSH Authorized Keys
@@ -139,6 +138,8 @@ contains vagrant's public key.  You're welcome to copy this over and
 add your own keys.  By doing this, you'll be able to run ``vagrant ssh``
 in addition to being able to use ssh directly with your own key.
 
+In addition you can also use the ``vagrant`` password for either the vagrant
+account or the Administrator account to login manually if needed.
 
 Testing PyWinCFFI
 -----------------
@@ -173,6 +174,9 @@ Manually Testing Using Vagrant
      * `PyCharm Remote Interpreter`_
      * `Manually Using SSH and CYGWIN`_
 
+   **Issue**: https://github.com/opalmer/pywincffi/issues/28
+
+
 Before attempting to test be sure the core Python interpreters have been
 installed:
 
@@ -181,24 +185,14 @@ installed:
    vagrant provision --provision-with python,install
 
 If you add a new module or the tests seem to be failing due to recent
-project changes you can rerun pywincffi's setup alone:
+project changes you can rerun the above steps.
 
-.. code-block:: console
-
-   vagrant provision --provision-with install
-
-
-After performing the above the following can be executed to test pywincffi:
+Next, execute the tests:
 
 .. code-block:: console
 
    vagrant provision --provision-with test
 
-.. important::
-
-   For now, the above only tests Python 2.7.10 (32-bit).  When code is pushed
-   into a pull request it will be tested against all Python versions that the
-   project supports.
 
 Manually Using SSH and CYGWIN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
