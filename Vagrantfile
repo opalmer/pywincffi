@@ -9,6 +9,10 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/code", create: true
     config.vm.synced_folder ".provision", "/provision", create: true
 
+    if File.directory?("../twisted")
+        config.vm.synced_folder "../twisted", "/twisted"
+    end
+
     config.vm.provision "system", type: "shell" do |provision|
         provision.inline = "C:\\code\\.ci\\vagrant\\system\\main.ps1"
     end
