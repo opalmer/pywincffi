@@ -23,9 +23,12 @@ except ImportError:
 
 HEADERS_DIR = join(
     dirname(dirname(abspath(__file__))), "core", "cdefs", "headers")
+SOURCES_DIR = join(
+    dirname(dirname(abspath(__file__))), "core", "cdefs", "sources")
 CONSTANTS_HEADER = join(HEADERS_DIR, "constants.h")
 FUNCTIONS_HEADER = join(HEADERS_DIR, "functions.h")
-REGEX_FUNCTION = re.compile("^[A-Z]+ ([A-Z][a-z]*[A-Z].*)[(].*$")
+SOURCE_MAIN = join(SOURCES_DIR, "main.c")
+REGEX_FUNCTION = re.compile("^[A-Z]+ (.*)\(.*$")
 REGEX_CONSTANT = re.compile("^#define ([A-Z]*[_]*[A-Z]*[_]*[A-Z]*) ...$")
 
 
@@ -49,23 +52,26 @@ def register(linter):  # pylint: disable=unused-argument
     An entrypoint that pylint uses to search for and register
     plugins with the given ``linter``
     """
-    # Load constants
     constants = set()
+    functions = set()
+
+    # Load constants from header
     with open(CONSTANTS_HEADER, "r") as constants_file:
         for line in constants_file:
             match = REGEX_CONSTANT.match(line)
             if match:
                 constants.add(match.group(1))
 
-    # Load functions
-    functions = set()
+    # Load functions from header
     with open(FUNCTIONS_HEADER, "r") as functions_file:
         for line in functions_file:
-            # special case that does not match the regex
-            if line.startswith("HANDLE handle_from_fd(int);"):
-                functions.add("handle_from_fd")
-                continue
+            match = REGEX_FUNCTION.match(line)
+            if match:
+                functions.add(match.group(1))
 
+    # Load functions from source
+    with open(SOURCE_MAIN, "r") as source_main_file:
+        for line in source_main_file:
             match = REGEX_FUNCTION.match(line)
             if match:
                 functions.add(match.group(1))
