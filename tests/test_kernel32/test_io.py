@@ -1,14 +1,20 @@
+import os
+import tempfile
+from errno import EBADF
+
 try:
     from unittest.mock import patch
 except ImportError:
     from mock import patch
 
+from six import PY3
+
 from pywincffi.core.testutil import TestCase
 from pywincffi.core.ffi import Library
-from pywincffi.exceptions import WindowsAPIError
+from pywincffi.exceptions import WindowsAPIError, InputError
 from pywincffi.kernel32.io import (
     CreatePipe, CloseHandle, WriteFile, ReadFile, GetStdHandle,
-    PeekNamedPipe, PeekNamedPipeResult)
+    PeekNamedPipe, PeekNamedPipeResult, handle_from_file)
 
 
 class PipeBaseTestCase(TestCase):
@@ -163,3 +169,37 @@ class TestGetStdHandle(TestCase):
             library.GetStdHandle(library.STD_ERROR_HANDLE)
         )
 
+
+class TestGetHandleFromFile(TestCase):
+    def test_fails_if_not_a_file(self):
+        with self.assertRaises(InputError):
+            handle_from_file(0)
+
+    def test_fails_if_file_is_not_open(self):
+        fd, path = tempfile.mkstemp()
+        test_file = os.fdopen(fd, "r")
+        test_file.close()
+
+        with self.assertRaises(ValueError):
+            handle_from_file(test_file)
+
+    def test_opens_correct_file_handle(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+
+        test_file = open(path, "w")
+        handle = handle_from_file(test_file)
+
+        CloseHandle(handle)
+
+        # If CloseHandle() was passed the same handle
+        # that test_file is trying to write to the file
+        # and/or flushing it should fail.
+        try:
+            test_file.write("foo")
+            test_file.flush()
+        except (OSError, IOError, WindowsError) as error:
+            # EBADF == Bad file descriptor (because CloseHandle closed it)
+            self.assertEqual(error.errno, EBADF)
+        else:
+            self.fail("Expected os.close(%r) to fail" % fd)
