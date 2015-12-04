@@ -5,10 +5,12 @@ Checks
 Provides functions that are responsible for internal type checks.
 """
 
+import io
+import types
 from collections import namedtuple
 
 import enum
-from six import string_types
+from six import PY3, string_types
 
 from pywincffi.core.ffi import Library
 from pywincffi.core.logger import get_logger
@@ -22,7 +24,13 @@ NON_ZERO
 HANDLE
 UTF8
 OVERLAPPED
+PYFILE
 """.strip())
+
+if PY3:
+    FileType = io.IOBase
+else:
+    FileType = types.FileType  # pylint: disable=no-member
 
 # A mapping of value we can expect to get from `ffi.typeof` against
 # some known input enums.
@@ -153,6 +161,10 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             value.encode("utf-8")
         except (ValueError, AttributeError):
             raise InputError(name, value, allowed_types)
+
+    elif allowed_types is Enums.PYFILE:
+        if not isinstance(value, FileType):
+            raise InputError(name, value, "file type")
 
     else:
         if not isinstance(value, allowed_types):
