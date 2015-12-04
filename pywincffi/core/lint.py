@@ -61,6 +61,11 @@ def register(linter):  # pylint: disable=unused-argument
     functions = set()
     with open(FUNCTIONS_HEADER, "r") as functions_file:
         for line in functions_file:
+            # special case that does not match the regex
+            if line.startswith("HANDLE handle_from_fd(int);"):
+                functions.add("handle_from_fd")
+                continue
+
             match = REGEX_FUNCTION.match(line)
             if match:
                 functions.add(match.group(1))
