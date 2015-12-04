@@ -28,8 +28,8 @@ SOURCES_DIR = join(
 CONSTANTS_HEADER = join(HEADERS_DIR, "constants.h")
 FUNCTIONS_HEADER = join(HEADERS_DIR, "functions.h")
 SOURCE_MAIN = join(SOURCES_DIR, "main.c")
-REGEX_FUNCTION = re.compile("^[A-Z]+ (.*)\(.*$")
-REGEX_CONSTANT = re.compile("^#define ([A-Z]*[_]*[A-Z]*[_]*[A-Z]*) ...$")
+REGEX_FUNCTION = re.compile(r"^[A-Z]+ (.*)\(.*$")
+REGEX_CONSTANT = re.compile(r"^#define ([A-Z]*[_]*[A-Z]*[_]*[A-Z]*) ...$")
 
 
 def transform(cls, constants=None, functions=None):
