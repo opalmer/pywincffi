@@ -37,13 +37,11 @@ def transform(cls, constants=None, functions=None):
     assert isinstance(constants, set)
     assert isinstance(functions, set)
 
-    # TODO: needs to change once we FFILibrary returns the prebuilt lib
-    if cls.name == "FFILibrary":
-        for value in constants:
-            cls.locals[value] = [scoped_nodes.Class(value, None)]
+    for value in constants:
+        cls.locals[value] = [scoped_nodes.Class(value, None)]
 
-        for value in functions:
-            cls.locals[value] = [scoped_nodes.Function(value, None)]
+    for value in functions:
+        cls.locals[value] = [scoped_nodes.Function(value, None)]
 
 
 def register(linter):  # pylint: disable=unused-argument
@@ -67,6 +65,8 @@ def register(linter):  # pylint: disable=unused-argument
             if match:
                 functions.add(match.group(1))
 
+    # TODO: needs to change once we FFILibrary returns the prebuilt lib
     MANAGER.register_transform(
         scoped_nodes.Class,
-        partial(transform, constants=constants, functions=functions))
+        partial(transform, constants=constants, functions=functions),
+        predicate=lambda node: node.name == "FFILibrary")
