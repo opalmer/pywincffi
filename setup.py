@@ -49,6 +49,7 @@ setup(
     packages=find_packages(
         include=("pywincffi*", )
     ),
+    cffi_modules=["pywincffi/core/dist.py:compile_"],
     include_package_data=True,
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
