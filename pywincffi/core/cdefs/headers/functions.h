@@ -4,6 +4,8 @@
 //           RETURN_TYPE FunctionName(...
 //
 
+// Custom functions
+HANDLE handle_from_fd(int);
 
 // Processes
 HANDLE OpenProcess(DWORD, BOOL, DWORD);
