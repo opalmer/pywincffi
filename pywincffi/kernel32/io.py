@@ -20,6 +20,31 @@ PeekNamedPipeResult = namedtuple(
 )
 
 
+def handle_from_file(python_file):
+    """
+    Given a standard Python file object produce a Windows
+    handle object that be be used in Windows function calls.
+
+    :param file python_file:
+        The Python file object to convert to a Windows handle.
+
+    :raises ValueError:
+        Raised if ``python_file`` is a valid file object
+        but is not open.
+
+    :return:
+        Returns a Windows handle object which is pointing at
+        the provided ``python_file`` object.
+    """
+    _, library = Library.load()
+    input_check("python_file", python_file, Enums.PYFILE)
+
+    # WARNING:
+    #   Be aware that passing in an invalid file descriptor
+    #   number can crash Python.
+    return library.handle_from_fd(python_file.fileno())
+
+
 def CreatePipe(nSize=0, lpPipeAttributes=None):
     """
     Creates an anonymous pipe and returns the read and write handles.
