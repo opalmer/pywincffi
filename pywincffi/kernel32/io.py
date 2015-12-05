@@ -28,10 +28,6 @@ def handle_from_file(python_file):
     :param file python_file:
         The Python file object to convert to a Windows handle.
 
-    :raises ValueError:
-        Raised if ``python_file`` is a valid file object
-        but is not open.
-
     :return:
         Returns a Windows handle object which is pointing at
         the provided ``python_file`` object.
@@ -41,7 +37,9 @@ def handle_from_file(python_file):
 
     # WARNING:
     #   Be aware that passing in an invalid file descriptor
-    #   number can crash Python.
+    #   number can crash Python.  The input_check function
+    #   above should handle this for us by checking to
+    #   ensure the file descriptor is valid first.
     return library.handle_from_fd(python_file.fileno())
 
 

@@ -180,7 +180,7 @@ class TestGetHandleFromFile(TestCase):
         test_file = os.fdopen(fd, "r")
         test_file.close()
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InputError):
             handle_from_file(test_file)
 
     def test_opens_correct_file_handle(self):

@@ -6,6 +6,7 @@ Provides functions that are responsible for internal type checks.
 """
 
 import io
+import os
 import types
 from collections import namedtuple
 
@@ -165,6 +166,17 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
     elif allowed_types is Enums.PYFILE:
         if not isinstance(value, FileType):
             raise InputError(name, value, "file type")
+
+        # Make sure the file descriptor itself is valid.  If it's
+        # not then we may have trouble working with the file
+        # object. Certain operations, such as library.handle_from_fd
+        # may also cause some bad side effects like crashing the
+        # interpreter without this check.
+        try:
+            os.fstat(value.fileno())
+        except (OSError, ValueError):
+            raise InputError(
+                name, value, "file type (with valid file descriptor)")
 
     else:
         if not isinstance(value, allowed_types):

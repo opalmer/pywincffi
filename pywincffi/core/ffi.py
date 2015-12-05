@@ -19,7 +19,7 @@ from pywincffi.exceptions import ResourceNotFoundError
 try:
     WindowsError
 except NameError:
-    WindowsError = OSError
+    WindowsError = OSError  # pylint: disable=redefined-builtin
 
 
 logger = get_logger("core.ffi")

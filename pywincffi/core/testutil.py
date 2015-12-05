@@ -24,7 +24,7 @@ else:
 try:
     WindowsError
 except NameError:
-    WindowsError = OSError
+    WindowsError = OSError  # pylint: disable=redefined-builtin
 
 # Load in our own kernel32 with the function(s) we need
 # so we don't have to rely on pywincffi.core
