@@ -19,6 +19,8 @@ PeekNamedPipeResult = namedtuple(
      "lpBytesLeftThisMessage")
 )
 
+INVALID_HANDLE_VALUE = -1
+
 
 def handle_from_file(python_file):
     """
@@ -356,9 +358,9 @@ def GetStdHandle(nStdHandle):
 
     handle = library.GetStdHandle(nStdHandle)
 
-    if handle == library.INVALID_HANDLE_VALUE:  # pragma: no cover
+    if handle == INVALID_HANDLE_VALUE:  # pragma: no cover
         raise WindowsAPIError(
-            "GetStdHandle", "Invalid Handle", library.INVALID_HANDLE_VALUE,
-            "not %s" % library.INVALID_HANDLE_VALUE)
+            "GetStdHandle", "Invalid Handle", INVALID_HANDLE_VALUE,
+            "not %s" % INVALID_HANDLE_VALUE)
 
     return handle
