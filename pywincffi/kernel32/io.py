@@ -5,7 +5,6 @@ Files
 A module containing common Windows file functions.
 """
 
-import os
 from collections import namedtuple
 
 from six import integer_types
