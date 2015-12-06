@@ -141,15 +141,21 @@ class Distribution(object):
         return cls._pywincffi.ffi, cls._pywincffi.library
 
     @classmethod
-    def out_of_line(cls, compile_=False):
+    def out_of_line(cls, compile_=True):
         """
         Compiles pywincffi in out of line mode.  This is used to create a
         distribution of pywcinffi and more specifically is used by
-        ``setup.py``
+        ``setup.py``.
 
         :param bool compile_:
             If True then perform the compile step as well.  By default calling
-            this method will not call :func:`FFI.compile`.
+            this executes :func:`FFI.compile` which will build the underlying
+            library.
+
+        :returns:
+            Returns a tuple of elements containing an instance of
+            :class:`FFI` and a string pointing at the module that
+            was built.
         """
         logger.debug("Compiling out of line")
         header, source = cls.load_definitions()
@@ -159,10 +165,11 @@ class Distribution(object):
         ffi.set_source(cls.MODULE_NAME, source)
         ffi.cdef(header)
 
+        built_path = None
         if compile_:
-            ffi.compile()
+            built_path = ffi.compile()
 
-        return ffi
+        return ffi, built_path
 
     @classmethod
     def load(cls):
@@ -197,9 +204,20 @@ class Distribution(object):
                 "Failed to load _pywincffi, attempting to compile inline.")
             return cls.inline()
 
-# Entrypoints for setup.py and the rest of pywincffi.  These
-# are provided some of the internal details are abstracted away.
-build = Distribution.out_of_line  # pylint: disable=invalid-name
-load = Distribution.load  # pylint: disable=invalid-name
 
-__all__ = ("build", "load")
+def ffi():
+    """
+    Called by the setup.py to get an out of line instance of :class:`FFI`
+    which can be used to build pywincffi.
+    """
+    return Distribution.out_of_line(compile_=False)[0]
+
+
+def load():
+    """
+    The main function used by pywincffi to load an instance of
+    :class:`FFI` and the underlying build library.
+    """
+    return Distribution.load()
+
+__all__ = ("ffi", "load")
