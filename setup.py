@@ -33,10 +33,7 @@ if py_major == 2 and py_minor == 6:
     tests_require.append("mock==1.0.1")
 
 else:
-    try:
-        from unittest import mock
-    except ImportError:
-        tests_require.append("mock")
+    tests_require.append("mock")
 
 try:
     import enum

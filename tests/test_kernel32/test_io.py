@@ -2,13 +2,6 @@ import os
 import tempfile
 from errno import EBADF
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
-from six import PY3
-
 from pywincffi.core.testutil import TestCase
 from pywincffi.core.ffi import Library
 from pywincffi.exceptions import WindowsAPIError, InputError
