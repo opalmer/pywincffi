@@ -22,6 +22,7 @@ on non-windows platforms.
 """
 
 import os
+from collections import namedtuple
 from os.path import join, isfile
 from pkg_resources import resource_filename
 
@@ -32,6 +33,7 @@ from pywincffi.exceptions import ResourceNotFoundError
 
 
 logger = get_logger("core.dist")
+InlineModule = namedtuple("InlineModule", ("ffi", "library"))
 
 
 def get_filepath(root, filename):
@@ -90,7 +92,6 @@ class Distribution(object):
     LIBRARIES = ("kernel32", )
 
     # Attributes used internally by this class for caching.
-    _ffi = None
     _pywincffi = None
     _cached_source = None
     _cached_header = None
@@ -143,8 +144,12 @@ class Distribution(object):
         ffi = FFI()
         ffi.set_unicode(True)
         ffi.cdef(header)
+        cls._pywincffi = InlineModule(
+            ffi=ffi,
+            library=ffi.verify(source, libraries=cls.LIBRARIES)
+        )
 
-        return ffi, ffi.verify(source, libraries=cls.LIBRARIES)
+        return cls._pywincffi.ffi, cls._pywincffi.library
 
     @classmethod
     def out_of_line(cls, compile_=False):
@@ -187,19 +192,15 @@ class Distribution(object):
         # Return the pre-cached library if we've
         # already loaded one below.
         if cls._pywincffi is not None:
-            return cls._ffi, cls._pywincffi
+            return cls._pywincffi.ffi, cls._pywincffi.library
 
         if os.environ.get("PYWINCFFI_DEV") == "1":
             return cls.inline()
 
         try:
             from pywincffi import _pywincffi
-
-            if cls._ffi is None:
-                cls._ffi = FFI()
-                cls._ffi.set_unicode(True)
-
-            return cls._ffi, _pywincffi
+            cls._pywincffi = _pywincffi
+            return cls._pywincffi.ffi, cls._pywincffi.library
 
         except ImportError:
             logger.warning(
