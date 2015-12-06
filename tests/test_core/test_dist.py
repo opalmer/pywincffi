@@ -23,9 +23,11 @@ except ImportError:
         return imp.new_module(name)
 
 from cffi import FFI
+from mock import patch
 
 from pywincffi.core.testutil import TestCase
-from pywincffi.core.dist import Distribution, InlineModule, get_filepath
+from pywincffi.core.dist import (
+    __all__, Distribution, InlineModule, get_filepath, ffi)
 from pywincffi.exceptions import ResourceNotFoundError
 
 
@@ -261,3 +263,20 @@ class TestDistributionLoad(TestDistributionLoadBaseTest):
         self.assertIsInstance(Distribution._pywincffi, InlineModule)
         func = getattr(lib, self.function_name)
         self.assertEqual(func(1), 2)
+
+
+class TestFFIFunction(TestDistributionLoadBaseTest):
+    def test_all_export(self):
+        self.assertIn("ffi", __all__)
+
+    def test_calls_implementation_function(self):
+        with patch.object(Distribution, "out_of_line") as mocked:
+            ffi()
+
+        mocked.assert_called_with(compile_=False)
+
+    def test_return_value(self):
+        with patch.object(Distribution, "out_of_line", return_value=(1, 2)):
+            result = ffi()
+
+        self.assertEqual(result, 1)
