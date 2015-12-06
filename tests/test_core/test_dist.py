@@ -27,7 +27,7 @@ from mock import patch
 
 from pywincffi.core.testutil import TestCase
 from pywincffi.core.dist import (
-    __all__, Distribution, InlineModule, get_filepath, ffi)
+    __all__, Distribution, InlineModule, get_filepath, ffi, load)
 from pywincffi.exceptions import ResourceNotFoundError
 
 
@@ -280,3 +280,20 @@ class TestFFIFunction(TestDistributionLoadBaseTest):
             result = ffi()
 
         self.assertEqual(result, 1)
+
+
+class TestLoadFunction(TestDistributionLoadBaseTest):
+    def test_all_export(self):
+        self.assertIn("load", __all__)
+
+    def test_calls_implementation_function(self):
+        with patch.object(Distribution, "load") as mocked:
+            load()
+
+        mocked.assert_called_once_with()
+
+    def test_return_value(self):
+        with patch.object(Distribution, "load", return_value=(1, 2)):
+            result = load()
+
+        self.assertEqual(result, (1, 2))
