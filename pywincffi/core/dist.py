@@ -209,7 +209,7 @@ class Distribution(object):
 
 # Entrypoints for setup.py and the rest of pywincffi.  These
 # are provided some of the internal details are abstracted away.
-build = Distribution.out_of_line
-load = Distribution.load
+build = Distribution.out_of_line  # pylint: disable=invalid-name
+load = Distribution.load  # pylint: disable=invalid-name
 
 __all__ = ("build", "load")
