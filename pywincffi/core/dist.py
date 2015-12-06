@@ -93,8 +93,6 @@ class Distribution(object):
 
     # Attributes used internally by this class for caching.
     _pywincffi = None
-    _cached_source = None
-    _cached_header = None
 
     @classmethod
     def load_definitions(cls, cached=True):
@@ -111,9 +109,6 @@ class Distribution(object):
             Returns a tuple of strings containing the headers
             and sources.
         """
-        if cached and cls._cached_header is not None:
-            return cls._cached_header, cls._cached_source
-
         header = ""
         source = ""
 
@@ -127,9 +122,7 @@ class Distribution(object):
             with open(path, "r") as file_:
                 source += file_.read()
 
-        cls._cached_header = header
-        cls._cached_source = source
-        return cls._cached_header, cls._cached_source
+        return header, source
 
     @classmethod
     def inline(cls):
