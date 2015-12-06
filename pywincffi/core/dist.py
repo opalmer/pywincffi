@@ -14,6 +14,11 @@ The second is to facilitate a means of building a static
 library.  This is used by the setup.py during the install
 process to build and install pywincffi as well as a wheel
 for distribution.
+
+The reason for this setup is so that pywincffi can handle
+the underlying load process inline. This makes it easier to
+test as well as perform some additional testing/development
+on non-windows platforms.
 """
 
 import os
@@ -84,7 +89,9 @@ class Distribution(object):
     SOURCES = (get_filepath("sources", "main.c"), )
     LIBRARIES = ("kernel32", )
 
+    # Attributes used internally by this class for caching.
     _ffi = None
+    _pywincffi = None
     _cached_source = None
     _cached_header = None
 
@@ -162,5 +169,46 @@ class Distribution(object):
 
         return ffi
 
-# Entrypoint for setup.py
+    @classmethod
+    def load(cls):
+        """
+        Responsible for loading an instance of :class:`FFI` and
+        the underlying compiled library.  This class method will
+        have different behaviors depending on a few factors:
+
+            * If ``PYWINCFFI_DEV`` is set to ``1`` in the environment
+              we call and return :meth:`inline`.
+            * Attempt to load :mod:`pywincffi._pywincffi`.  If we can,
+              instance :class:`FFI` and return this plus
+              :mod:`pywincffi._pywincffi`.
+            * If :mod:`pywincffi._pywincffi` can't be loaded, call
+              :meth:`inline` to try and compile the module instead.
+        """
+        # Return the pre-cached library if we've
+        # already loaded one below.
+        if cls._pywincffi is not None:
+            return cls._ffi, cls._pywincffi
+
+        if os.environ.get("PYWINCFFI_DEV") == "1":
+            return cls.inline()
+
+        try:
+            from pywincffi import _pywincffi
+
+            if cls._ffi is None:
+                cls._ffi = FFI()
+                cls._ffi.set_unicode(True)
+
+            return cls._ffi, _pywincffi
+
+        except ImportError:
+            logger.warning(
+                "Failed to load _pywincffi, attempting to compile inline.")
+            return cls.inline()
+
+# Entrypoints for setup.py and the rest of pywincffi.  These
+# are provided some of the internal details are abstracted away.
 compile_ = Distribution.out_of_line
+load = Distribution.load
+
+__all__ = ("compile_", "load")
