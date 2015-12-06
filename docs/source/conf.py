@@ -8,6 +8,7 @@ import os
 import shutil
 import sys
 import subprocess
+from errno import EEXIST, ENOENT
 from os.path import join, abspath, dirname
 
 try:
@@ -88,7 +89,17 @@ version = ".".join(parsed_version[0:2])
 
 # Delete the existing doc files first so it
 # sphinx-apidoc is clean every time.
-shutil.rmtree(DOC_MODULE_ROOT)
+try:
+    shutil.rmtree(DOC_MODULE_ROOT)
+except (WindowsError, IOError, OSError) as error:
+    if error.errno != ENOENT:
+        raise
+
+try:
+    os.makedirs(DOC_MODULE_ROOT)
+except (WindowsError, IOError, IOError) as error:
+    if error.errno != EEXIST:
+        raise
 
 subprocess.check_call([
     "sphinx-apidoc",
