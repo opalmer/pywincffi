@@ -153,6 +153,7 @@ class Distribution(object):
         """
         logger.debug("Compiling out of line")
         header, source = cls.load_definitions()
+
         ffi = FFI()
         ffi.set_unicode(True)
         ffi.set_source(cls.MODULE_NAME, source)
