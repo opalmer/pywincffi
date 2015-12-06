@@ -3,7 +3,17 @@ Distribution
 ============
 
 Module responsible for building the pywincffi distribution
-in ``setup.py``.
+in ``setup.py``.  This module is meant to serve two
+purposes.  The first is to serve as the main means of loading
+the pywincffi library:
+
+>>> from pywincffi.core import dist
+>>> ffi, library = dist.load()
+
+The second is to facilitate a means of building a static
+library.  This is used by the setup.py during the install
+process to build and install pywincffi as well as a wheel
+for distribution.
 """
 
 import os
