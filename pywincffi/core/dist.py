@@ -95,14 +95,10 @@ class Distribution(object):
     _pywincffi = None
 
     @classmethod
-    def load_definitions(cls, cached=True):
+    def load_definitions(cls):
         """
         Reads in the headers and source files and produces
         a tuple of strings with the results.
-
-        :param bool cached:
-            If True, return precached versions of the headers
-            and source.
 
         :rtype: tuple
         :return:
