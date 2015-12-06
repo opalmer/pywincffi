@@ -1,4 +1,7 @@
-from os.path import isfile, dirname, basename
+import os
+import sys
+import types
+from os.path import isfile, dirname, basename, join
 
 try:
     from importlib.machinery import ExtensionFileLoader
@@ -7,11 +10,17 @@ try:
         loader = ExtensionFileLoader(module_name, path)
         return loader.load_module()
 
+    def new_module(name):
+        return types.ModuleType(name)
+
 except ImportError:
     import imp
 
     def import_module(module_name, path):
         return imp.load_dynamic(module_name, path)
+
+    def new_module(name):
+        return imp.new_module(name)
 
 from cffi import FFI
 
@@ -104,6 +113,9 @@ class TestDistributionLoadBaseTest(TestCase):
         self._sources = Distribution.SOURCES
         self.count += 1
         self.function_name = "add%s" % self.count
+        self._pywincffi_environ = os.environ.pop("PYWINCFFI_DEV", None)
+        self._pywincffi_module = sys.modules.pop(
+            Distribution.MODULE_NAME, None)
 
         headers = self.HEADERS
         if self.HEADERS is None:
@@ -123,6 +135,12 @@ class TestDistributionLoadBaseTest(TestCase):
         Distribution._pywincffi = self._pywincffi
         Distribution.HEADERS = self._headers
         Distribution.SOURCES = self._sources
+
+        if self._pywincffi_module is not None:
+            sys.modules.update(_pywincffi=self._pywincffi_module)
+
+        if self._pywincffi_environ is not None:
+            os.environ.update(PYWINCFFI_DEV=self._pywincffi_environ)
 
     def generate_headers(self):
         path = self.tempfile("int %s(int);" % self.function_name)
@@ -205,4 +223,41 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
         _, path = Distribution.out_of_line(tmpdir=tmpdir)
         module = import_module(Distribution.MODULE_NAME, path)
         func = getattr(module.lib, self.function_name)
+        self.assertEqual(func(1), 2)
+
+
+class TestDistributionLoad(TestDistributionLoadBaseTest):
+    def test_return_cached(self):
+        value = InlineModule(ffi=1, lib=2)
+        Distribution._pywincffi = value
+        self.assertEqual(Distribution.load(), (value.ffi, value.lib))
+
+    def test_pywincffi_dev_in_env_calls_inline_compile(self):
+        os.environ.update(PYWINCFFI_DEV="1")
+        Distribution._pywincffi = None
+        Distribution.load()
+        self.assertIsInstance(Distribution._pywincffi, InlineModule)
+
+    def test_imports_module(self):
+        module = new_module(Distribution.MODULE_NAME)
+        module.ffi = 3
+        module.lib = 4
+        sys.modules.update({Distribution.MODULE_NAME: module})
+        self.assertEqual(Distribution.load(), (3, 4))
+        self.assertIs(Distribution._pywincffi, module)
+
+    def test_calls_inline_for_compile_error(self):
+        tempdir = self.tempdir()
+        with open(join(tempdir, "__init__.py"), "w"):
+            pass
+
+        with open(join(tempdir, "_pywincffi.py"), "w") as _pywincffi:
+            _pywincffi.write("raise ImportError('fail')" + os.linesep)
+
+        sys.path.insert(0, tempdir)
+        self.addCleanup(sys.path.remove, tempdir)
+
+        ffi, lib = Distribution.load()
+        self.assertIsInstance(Distribution._pywincffi, InlineModule)
+        func = getattr(lib, self.function_name)
         self.assertEqual(func(1), 2)
