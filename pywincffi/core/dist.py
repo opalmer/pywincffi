@@ -6,6 +6,7 @@ Module responsible for building the pywincffi distribution
 in ``setup.py``.
 """
 
+import os
 from os.path import join, isfile
 from pkg_resources import resource_filename
 
@@ -74,13 +75,27 @@ class Distribution(object):
     LIBRARIES = ("kernel32", )
 
     _ffi = None
+    _cached_source = None
+    _cached_header = None
 
     @classmethod
-    def load_definitions(cls):
+    def load_definitions(cls, cached=True):
         """
         Reads in the headers and source files and produces
-        a tuple of strings with the results
+        a tuple of strings with the results.
+
+        :param bool cached:
+            If True, return precached versions of the headers
+            and source.
+
+        :rtype: tuple
+        :return:
+            Returns a tuple of strings containing the headers
+            and sources.
         """
+        if cached and cls._cached_header is not None:
+            return cls._cached_header, cls._cached_source
+
         header = ""
         source = ""
 
@@ -94,7 +109,9 @@ class Distribution(object):
             with open(path, "r") as file_:
                 source += file_.read()
 
-        return header, source
+        cls._cached_header = header
+        cls._cached_source = source
+        return cls._cached_header, cls._cached_source
 
     @classmethod
     def inline(cls):
