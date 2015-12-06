@@ -130,12 +130,12 @@ class Distribution(object):
         logger.debug("Compiling inline")
         header, source = cls.load_definitions()
 
-        ffi = FFI()
-        ffi.set_unicode(True)
-        ffi.cdef(header)
+        ffi_class = FFI()
+        ffi_class.set_unicode(True)
+        ffi_class.cdef(header)
         cls._pywincffi = InlineModule(
-            ffi=ffi,
-            library=ffi.verify(source, libraries=cls.LIBRARIES)
+            ffi=ffi_class,
+            library=ffi_class.verify(source, libraries=cls.LIBRARIES)
         )
 
         return cls._pywincffi.ffi, cls._pywincffi.library
@@ -160,16 +160,16 @@ class Distribution(object):
         logger.debug("Compiling out of line")
         header, source = cls.load_definitions()
 
-        ffi = FFI()
-        ffi.set_unicode(True)
-        ffi.set_source(cls.MODULE_NAME, source)
-        ffi.cdef(header)
+        ffi_class = FFI()
+        ffi_class.set_unicode(True)
+        ffi_class.set_source(cls.MODULE_NAME, source)
+        ffi_class.cdef(header)
 
         built_path = None
         if compile_:
-            built_path = ffi.compile()
+            built_path = ffi_class.compile()
 
-        return ffi, built_path
+        return ffi_class, built_path
 
     @classmethod
     def load(cls):
