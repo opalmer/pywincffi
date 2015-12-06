@@ -40,12 +40,12 @@ class Configuration(object):
         self.parser = RawConfigParser()
         self.parser.read(self.FILES)
 
-    def compiled(self):
+    def precompiled(self):
         """
-        Returns True if the configuration states that
-        we should be loading the compiled library.
+        Returns True if the configuration states that we should be using
+        the precompiled library rather than trying to compile inline.
         """
-        return self.parser.get("pywincffi", "library_mode") == "compiled"
+        return self.parser.get("pywincffi", "library") == "precompiled"
 
     def logging_level(self):
         """
