@@ -199,7 +199,7 @@ class Distribution(object):
             return cls.inline()
 
         try:
-            from pywincffi import _pywincffi
+            import _pywincffi
             cls._pywincffi = _pywincffi
             return cls._pywincffi.ffi, cls._pywincffi.lib
 
