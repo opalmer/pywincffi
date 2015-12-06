@@ -141,7 +141,7 @@ class Distribution(object):
         return cls._pywincffi.ffi, cls._pywincffi.library
 
     @classmethod
-    def out_of_line(cls, compile_=True):
+    def out_of_line(cls, compile_=True, tmpdir="."):
         """
         Compiles pywincffi in out of line mode.  This is used to create a
         distribution of pywcinffi and more specifically is used by
@@ -151,6 +151,10 @@ class Distribution(object):
             If True then perform the compile step as well.  By default calling
             this executes :func:`FFI.compile` which will build the underlying
             library.
+
+        :param str tmpdir:
+            An alternate directory for cffi to output build artifacts
+            to.  Defaults to ``"."``.
 
         :returns:
             Returns a tuple of elements containing an instance of
@@ -167,7 +171,7 @@ class Distribution(object):
 
         built_path = None
         if compile_:
-            built_path = ffi_class.compile()
+            built_path = ffi_class.compile(tmpdir=tmpdir)
 
         return ffi_class, built_path
 
