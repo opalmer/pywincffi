@@ -43,13 +43,13 @@ try:
 except ImportError:
     install_requires_extras.append("enum34")
 
-setup(
+
+setup_keywords = dict(
     name="pywincffi",
     version="0.1.0",
     packages=find_packages(
         include=("pywincffi*", )
     ),
-    cffi_modules=["pywincffi/core/dist.py:compile_"],
     include_package_data=True,
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
@@ -74,3 +74,13 @@ setup(
         "Topic :: Software Development :: Libraries"
     ]
 )
+
+# Only add cffi_modules if we're running on Windows.  Otherwise
+# things like the documentation build, which can run on Linux, may
+# not work.
+if os.name == "nt":
+    setup_keywords.update(
+        cffi_modules=["pywincffi/core/dist.py:compile_"]
+    )
+
+setup(**setup_keywords)
