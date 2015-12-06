@@ -33,7 +33,7 @@ from pywincffi.exceptions import ResourceNotFoundError
 
 
 logger = get_logger("core.dist")
-InlineModule = namedtuple("InlineModule", ("ffi", "library"))
+InlineModule = namedtuple("InlineModule", ("ffi", "lib"))
 
 
 def get_filepath(root, filename):
@@ -135,10 +135,10 @@ class Distribution(object):
         ffi_class.cdef(header)
         cls._pywincffi = InlineModule(
             ffi=ffi_class,
-            library=ffi_class.verify(source, libraries=cls.LIBRARIES)
+            lib=ffi_class.verify(source, libraries=cls.LIBRARIES)
         )
 
-        return cls._pywincffi.ffi, cls._pywincffi.library
+        return cls._pywincffi.ffi, cls._pywincffi.lib
 
     @classmethod
     def out_of_line(cls, compile_=True, tmpdir="."):
@@ -201,7 +201,7 @@ class Distribution(object):
         try:
             from pywincffi import _pywincffi
             cls._pywincffi = _pywincffi
-            return cls._pywincffi.ffi, cls._pywincffi.library
+            return cls._pywincffi.ffi, cls._pywincffi.lib
 
         except ImportError:
             logger.warning(
