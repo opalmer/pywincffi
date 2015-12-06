@@ -8,7 +8,7 @@ purposes.  The first is to serve as the main means of loading
 the pywincffi library:
 
 >>> from pywincffi.core import dist
->>> ffi, library = dist.load()
+>>> ffi, lib = dist.load()
 
 The second is to facilitate a means of building a static
 library.  This is used by the setup.py during the install
@@ -193,7 +193,7 @@ class Distribution(object):
         # Return the pre-cached library if we've
         # already loaded one below.
         if cls._pywincffi is not None:
-            return cls._pywincffi.ffi, cls._pywincffi.library
+            return cls._pywincffi.ffi, cls._pywincffi.lib
 
         if os.environ.get("PYWINCFFI_DEV") == "1":
             return cls.inline()

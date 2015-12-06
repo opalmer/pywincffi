@@ -107,4 +107,3 @@ class TestCase(_TestCase):
 
         self.addCleanup(remove, path)
         return path
-
