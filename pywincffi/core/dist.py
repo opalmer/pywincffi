@@ -208,7 +208,7 @@ class Distribution(object):
 
 # Entrypoints for setup.py and the rest of pywincffi.  These
 # are provided some of the internal details are abstracted away.
-compile_ = Distribution.out_of_line
+build = Distribution.out_of_line
 load = Distribution.load
 
-__all__ = ("compile_", "load")
+__all__ = ("build", "load")
