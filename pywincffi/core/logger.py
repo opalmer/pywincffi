@@ -28,6 +28,8 @@ except AttributeError:  # pragma: no cover
         def createLock(self):
             self.lock = None
 
+from pywincffi.core.config import config
+
 UNSET = object()
 
 logger = logging.getLogger("pywincffi")
@@ -41,6 +43,24 @@ def get_logger(name):
 
     if sys.version_info[0:2] <= (2, 6):
         return logging.getLogger(logger.name + "." + name)
+
+    level = config.logging_level()
+
+    # Root logging configuration has changed, reconfigure.
+    if logger.level != level:
+        if level == logging.NOTSET:
+            logger.handles[:] = []
+            logger.setLevel(logging.CRITICAL)
+            logger.addHandler(NullHandler())
+        else:
+            formatter = logging.Formatter(
+                "%(asctime)s %(name)s %(levelname)9s %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S"
+            )
+            handler = logging.StreamHandler()
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            logger.setLevel(level)
 
     return logger.getChild(name)
 
