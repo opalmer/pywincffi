@@ -61,7 +61,7 @@ class Configuration(object):
         Returns the logging level that the configuration currently
         dictates.
         """
-        level = self.parser.getint("pywincffi", "log_level")
+        level = self.parser.get("pywincffi", "log_level")
 
         if level not in self.LOGGER_LEVEL_MAPPINGS:
             raise ConfigurationError(
