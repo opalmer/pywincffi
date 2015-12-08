@@ -54,17 +54,22 @@ def get_logger(name):
     if name.startswith("."):
         raise ValueError("`name` cannot start with '.'")
 
-    if sys.version_info[0:2] <= (2, 6):
-        return logging.getLogger(logger.name + "." + name)
+    try:
+        child_logger = logger.getChild(name)
 
-    level = config.logging_level()
+    # getChild was introduced in Python 2.6
+    except AttributeError:
+        child_logger = logging.getLogger(logger.name + "." + name)
+
+    configured_level = config.logging_level()
 
     # Root logging configuration has changed, reconfigure.
-    if logger.level != level:
-        if level == logging.NOTSET:
+    if logger.level != configured_level:
+        if configured_level == logging.NOTSET:
             logger.handles[:] = []  # pylint: disable=no-member
-            logger.setLevel(logging.CRITICAL)
+            logger.setLevel(configured_level)
             logger.addHandler(NullHandler())
+
         else:
             formatter = logging.Formatter(
                 "%(asctime)s %(name)s %(levelname)9s %(message)s",
@@ -73,9 +78,10 @@ def get_logger(name):
             handler = logging.StreamHandler()
             handler.setFormatter(formatter)
             logger.addHandler(handler)
-            logger.setLevel(level)
 
-    return logger.getChild(name)
+        logger.setLevel(configured_level)
+
+    return child_logger
 
 
 def configure(level, handler=None, formatter=None):
