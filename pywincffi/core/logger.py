@@ -9,6 +9,8 @@ configure the logger at runtime.
 import logging
 import sys
 
+from pywincffi.core.config import config
+
 try:
     NullHandler = logging.NullHandler
 
@@ -27,8 +29,6 @@ except AttributeError:  # pragma: no cover
 
         def createLock(self):
             self.lock = None
-
-from pywincffi.core.config import config
 
 UNSET = object()
 
@@ -49,7 +49,7 @@ def get_logger(name):
     # Root logging configuration has changed, reconfigure.
     if logger.level != level:
         if level == logging.NOTSET:
-            logger.handles[:] = []
+            logger.handles[:] = []  # pylint: disable=no-member
             logger.setLevel(logging.CRITICAL)
             logger.addHandler(NullHandler())
         else:

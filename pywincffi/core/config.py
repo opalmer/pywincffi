@@ -69,4 +69,4 @@ class Configuration(object):
 
         return self.LOGGER_LEVEL_MAPPINGS[level]
 
-config = Configuration()
+config = Configuration()  # pylint: disable=invalid-name
