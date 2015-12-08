@@ -35,6 +35,14 @@ class Configuration(object):
         expanduser(join("~", "pywincffi.ini")),
         "pywincffi.ini"
     )
+    LOGGER_LEVEL_MAPPINGS = {
+        "notset": logging.NOTSET,
+        "debug": logging.DEBUG,
+        "warning": logging.WARNING,
+        "info": logging.INFO,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL
+    }
 
     def __init__(self):
         self.parser = RawConfigParser()
@@ -53,10 +61,12 @@ class Configuration(object):
         dictates.
         """
         level = self.parser.getint("pywincffi", "log_level")
-        if level not in logging._levelToName:
+
+        if level not in self.LOGGER_LEVEL_MAPPINGS:
             raise ConfigurationError(
                 "Invalid level %s, valid levels are %s" % (
-                    level, " ".join(logging._levelToName.keys())))
-        return level
+                    level, " ".join(self.LOGGER_LEVEL_MAPPINGS.keys())))
+
+        return self.LOGGER_LEVEL_MAPPINGS[level]
 
 config = Configuration()
