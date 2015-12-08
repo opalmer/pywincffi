@@ -7,7 +7,6 @@ configure the logger at runtime.
 """
 
 import logging
-import sys
 
 from pywincffi.core.config import config
 
