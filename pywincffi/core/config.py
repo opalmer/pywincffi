@@ -5,7 +5,7 @@ Configuration
 Simple module for loading pywincffi's configuration, intended
 for internal use. A configuration file which is reasonable for
 every day use ships with pywincffi but can be overridden at
-runtime by  dropping a file named ``pywincffi.ini`` in the
+runtime by dropping a file named ``pywincffi.ini`` in the
 current working directory or the current users's home directory.
 """
 
