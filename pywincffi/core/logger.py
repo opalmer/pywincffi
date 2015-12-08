@@ -82,4 +82,3 @@ def get_logger(name):
         logger.setLevel(configured_level)
 
     return child_logger
-
