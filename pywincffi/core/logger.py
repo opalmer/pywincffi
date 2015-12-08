@@ -37,7 +37,20 @@ logger.addHandler(NullHandler())
 
 
 def get_logger(name):
-    """Returns a child of the parent logger for pywincffi"""
+    """
+    Returns an instance of :class:`logging.Logger` as a child of
+    pywincffi's main logger.
+
+    :param str name:
+        The name of the child logger to return. For example,
+        if you provide `foo` for the name the resulting name
+        will be `pywincffi.foo`.
+
+    :raises ValueError:
+        Raised if ``name`` starts with a dot.
+
+    :rtype: :class:`logging.Logger`
+    """
     if name.startswith("."):
         raise ValueError("`name` cannot start with '.'")
 
