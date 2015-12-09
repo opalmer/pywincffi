@@ -29,13 +29,11 @@ except AttributeError:  # pragma: no cover
         def createLock(self):
             self.lock = None
 
-HANDLER = logging.StreamHandler()
-HANDLER.setFormatter(
-    logging.Formatter(
-        "%(asctime)s %(name)s %(levelname)9s %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
-    )
-)
+FORMATTER = logging.Formatter(
+    "%(asctime)s %(name)s %(levelname)9s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S")
+STREAM_HANDLER = logging.StreamHandler()
+STREAM_HANDLER.setFormatter(FORMATTER)
 
 logger = logging.getLogger("pywincffi")
 logger.addHandler(NullHandler())
@@ -76,8 +74,8 @@ def get_logger(name):
             logger.addHandler(NullHandler())
 
         else:
-            if HANDLER not in logger.handlers:
-                logger.addHandler(HANDLER)
+            if STREAM_HANDLER not in logger.handlers:
+                logger.addHandler(STREAM_HANDLER)
 
         logger.setLevel(configured_level)
 
