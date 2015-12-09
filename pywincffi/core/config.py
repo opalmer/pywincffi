@@ -23,7 +23,7 @@ from pkg_resources import resource_filename
 from pywincffi.exceptions import ConfigurationError
 
 
-class Configuration(object):
+class Configuration(RawConfigParser):
     """
     Class responsible for loading and retrieving
     data from the configuration files.  This is used
@@ -46,22 +46,27 @@ class Configuration(object):
     }
 
     def __init__(self):
-        self.parser = RawConfigParser()
-        self.parser.read(self.FILES)
+        super(Configuration, self).__init__()
+        self.load()
+
+    def load(self):
+        """Loads the configuration from disk"""
+        self.clear()
+        self.read(self.FILES)
 
     def precompiled(self):
         """
         Returns True if the configuration states that we should be using
         the precompiled library rather than trying to compile inline.
         """
-        return self.parser.get("pywincffi", "library") == "precompiled"
+        return self.get("pywincffi", "library") == "precompiled"
 
     def logging_level(self):
         """
         Returns the logging level that the configuration currently
         dictates.
         """
-        level = self.parser.get("pywincffi", "log_level")
+        level = self.get("pywincffi", "log_level")
 
         if level not in self.LOGGER_LEVEL_MAPPINGS:
             raise ConfigurationError(
