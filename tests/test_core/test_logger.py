@@ -26,13 +26,6 @@ class TestDefaultLogger(TestCase):
     def test_type(self):
         self.assertIsInstance(logger, logging.Logger)
 
-    def test_default_handler(self):
-        for handler in logger.handlers:
-            if isinstance(handler, NullHandler):
-                break
-        else:
-            self.fail("Default logger does not have a NullHandler()")
-
     def test_name(self):
         self.assertEqual(logger.name, "pywincffi")
 
