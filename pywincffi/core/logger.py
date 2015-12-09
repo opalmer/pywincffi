@@ -69,7 +69,7 @@ def get_logger(name):
     # Root logging configuration has changed, reconfigure.
     if logger.level != configured_level:
         if configured_level == logging.NOTSET:
-            logger.handles[:] = []  # pylint: disable=no-member
+            logger.handlers[:] = []
             logger.setLevel(configured_level)
             logger.addHandler(NullHandler())
 
