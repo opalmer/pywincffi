@@ -57,7 +57,8 @@ class Configuration(RawConfigParser):
 
     def load(self):
         """Loads the configuration from disk"""
-        self.clear()
+        if PY3:
+            self.clear()
         self.read(self.FILES)
 
     def precompiled(self):
