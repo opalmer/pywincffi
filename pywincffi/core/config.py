@@ -11,6 +11,7 @@ current working directory or the current users's home directory.
 
 import logging
 from os.path import join, expanduser
+from six import PY2
 
 try:
     from configparser import RawConfigParser
@@ -46,7 +47,12 @@ class Configuration(RawConfigParser):
     }
 
     def __init__(self):
-        super(Configuration, self).__init__()
+        if PY2:
+            Configuration.__init__(self)
+        else:
+            # pylint: disable=super-on-old-class
+            super(Configuration, self).__init__()
+
         self.load()
 
     def load(self):
