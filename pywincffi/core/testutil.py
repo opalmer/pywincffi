@@ -41,13 +41,14 @@ class TestCase(_TestCase):
     core test case just provides some extra functionality.
     """
     def setUp(self):
-        if kernel32 is None:
-            self.fail("kernel32 was never defined")
+        if os.name == "nt":
+            if kernel32 is None:
+                self.fail("kernel32 was never defined")
 
-        # Always reset the last error to 0 between tests.  This
-        # ensures that any error we intentionally throw in one
-        # test does not causes an error to be raised in another.
-        kernel32.SetLastError(ffi.cast("DWORD", 0))
+            # Always reset the last error to 0 between tests.  This
+            # ensures that any error we intentionally throw in one
+            # test does not causes an error to be raised in another.
+            kernel32.SetLastError(ffi.cast("DWORD", 0))
 
     def remove(self, path, onexit=True):
         """
