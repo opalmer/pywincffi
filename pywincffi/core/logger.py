@@ -69,15 +69,11 @@ def get_logger(name):
 
     # Root logging configuration has changed, reconfigure.
     if logger.level != configured_level:
-        for handler in logger.handlers[:]:
-            logger.removeHandler(handler)
-
         if configured_level == logging.NOTSET:
-            handler = NULL_HANDLER
+            logger.handlers[:] = [NULL_HANDLER]
         else:
-            handler = STREAM_HANDLER
+            logger.handlers[:] = [STREAM_HANDLER]
 
-        logger.addHandler(handler)
         logger.setLevel(configured_level)
 
     return child_logger
