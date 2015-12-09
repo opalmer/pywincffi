@@ -34,9 +34,10 @@ FORMATTER = logging.Formatter(
     datefmt="%Y-%m-%d %H:%M:%S")
 STREAM_HANDLER = logging.StreamHandler()
 STREAM_HANDLER.setFormatter(FORMATTER)
+NULL_HANDLER = NullHandler()
 
 logger = logging.getLogger("pywincffi")
-logger.addHandler(NullHandler())
+logger.addHandler(NULL_HANDLER)
 
 
 def get_logger(name):
@@ -70,8 +71,7 @@ def get_logger(name):
     if logger.level != configured_level:
         if configured_level == logging.NOTSET:
             logger.handlers[:] = []
-            logger.setLevel(configured_level)
-            logger.addHandler(NullHandler())
+            logger.addHandler(NULL_HANDLER)
 
         else:
             if STREAM_HANDLER not in logger.handlers:
