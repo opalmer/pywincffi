@@ -4,7 +4,7 @@ from mock import patch
 
 from pywincffi.core.config import config
 from pywincffi.core.logger import (
-    STREAM_HANDLER, FORMATTER, NULL_HANDLER, logger, get_logger)
+    STREAM_HANDLER, FORMATTER, NULL_HANDLER, NullHandler, logger, get_logger)
 from pywincffi.core.testutil import TestCase
 
 
@@ -28,7 +28,7 @@ class TestDefaultLogger(TestCase):
 
     def test_default_handler(self):
         for handler in logger.handlers:
-            if handler is NULL_HANDLER:
+            if isinstance(handler, NullHandler):
                 break
         else:
             self.fail("Default logger does not have a NullHandler()")
