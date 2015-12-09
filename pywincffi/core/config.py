@@ -19,7 +19,7 @@ except ImportError:
     from ConfigParser import RawConfigParser
 
 from pkg_resources import resource_filename
-from six import PY2
+from six import PY3
 
 from pywincffi.exceptions import ConfigurationError
 
@@ -47,11 +47,11 @@ class Configuration(RawConfigParser):
     }
 
     def __init__(self):
-        if PY2:
-            Configuration.__init__(self)
-        else:
+        if PY3:
             # pylint: disable=super-on-old-class
             super(Configuration, self).__init__()
+        else:
+            RawConfigParser.__init__(self)
 
         self.load()
 
