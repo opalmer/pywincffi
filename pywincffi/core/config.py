@@ -46,9 +46,8 @@ class Configuration(RawConfigParser):
         "critical": logging.CRITICAL
     }
 
-    def __init__(self):
+    def __init__(self):  # pylint: disable=super-on-old-class
         if PY3:
-            # pylint: disable=super-on-old-class
             super(Configuration, self).__init__()
         else:
             RawConfigParser.__init__(self)
