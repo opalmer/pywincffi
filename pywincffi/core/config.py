@@ -11,7 +11,6 @@ current working directory or the current users's home directory.
 
 import logging
 from os.path import join, expanduser
-from six import PY2
 
 try:
     from configparser import RawConfigParser
@@ -20,6 +19,7 @@ except ImportError:
     from ConfigParser import RawConfigParser
 
 from pkg_resources import resource_filename
+from six import PY2
 
 from pywincffi.exceptions import ConfigurationError
 
