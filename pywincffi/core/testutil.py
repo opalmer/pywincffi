@@ -35,6 +35,26 @@ if not os.environ.get("READTHEDOCS"):
     kernel32 = ffi.dlopen("kernel32")
 
 
+class TemporarilyMoveFile(object):
+    """
+    Moves ``path`` to ``path`` + '.bak' if it exists.  Useful
+    mainly for testing the configuration if someone has local
+    overrides.
+    """
+    def __init__(self, path):
+        self.path = path
+
+    def __enter__(self):
+        if isfile(self.path):
+            os.rename(self.path, self.path + ".bak")
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if isfile(self.path + ".bak"):
+            os.rename(self.path + ".bak", self.path)
+
+
 class TestCase(_TestCase):
     """
     A base class for all test cases.  By default the
