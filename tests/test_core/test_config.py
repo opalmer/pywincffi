@@ -1,5 +1,11 @@
+from __future__ import print_function
+
 import logging
-from os.path import isfile
+import os
+from os.path import isfile, join, expanduser
+
+from six import PY3
+from mock import patch
 
 from pywincffi.core.config import Configuration
 from pywincffi.core.testutil import TestCase
@@ -49,3 +55,58 @@ class TestLoggerLevelMappings(TestCase):
         # There should not be any extra mappings
         # remaining.
         self.assertEqual(mappings, {})
+
+
+class TestLoad(TestCase):
+    """
+    Tests for ``pywincffi.core.config.Configuration.load``
+    """
+    def write_config(self, path, log_level):
+        with open(path, "w") as config:
+            print("[pywincffi]", file=config)
+            print("library=precompiled", file=config)
+            print("log_level=%s" % log_level, file=config)
+        self.addCleanup(os.remove, path)
+
+    def test_clear_only_exists_on_py3(self):
+        config = Configuration()
+        hasattr_ = hasattr(config, "clear")
+
+        if PY3:
+            self.assertTrue(hasattr_)
+        else:
+            self.assertFalse(hasattr_)
+
+    def test_read_loads_files(self):
+        with patch.object(Configuration, "read") as mocked:
+            Configuration()
+
+        mocked.assert_called_once_with(Configuration.FILES)
+
+    def test_default_log_level(self):
+        config = Configuration()
+        self.assertEqual(config.logging_level(), logging.WARNING)
+
+    def test_override_home(self):
+        path = join(expanduser("~"), "pywincffi.ini")
+
+        # This will always run on AppVeyor, it's less complicated
+        # to test locally this way.
+        if isfile(path):
+            self.skipTest("Local configuration %s exists" % path)
+
+        self.write_config(path, "debug")
+        config = Configuration()
+        self.assertEqual(config.logging_level(), logging.DEBUG)
+
+    def test_override_working_directory(self):
+        path = "pywincffi.ini"
+
+        # This will always run on AppVeyor, it's less complicated
+        # to test locally this way.
+        if isfile(path):
+            self.skipTest("Local configuration %s exists" % path)
+
+        self.write_config(path, "notset")
+        config = Configuration()
+        self.assertEqual(config.logging_level(), logging.NOTSET)
