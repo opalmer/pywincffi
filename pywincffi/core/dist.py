@@ -190,13 +190,13 @@ class Distribution(object):
             * If :mod:`pywincffi._pywincffi` can't be loaded, call
               :meth:`inline` to try and compile the module instead.
         """
+        if not config.precompiled():
+            return cls.inline()
+
         # Return the pre-cached library if we've
         # already loaded one below.
         if cls._pywincffi is not None:
             return cls._pywincffi.ffi, cls._pywincffi.lib
-
-        if not config.precompiled():
-            return cls.inline()
 
         try:
             import _pywincffi
