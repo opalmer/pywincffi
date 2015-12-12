@@ -230,17 +230,6 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
 
 
 class TestDistributionLoad(TestDistributionLoadBaseTest):
-    def test_return_cached(self):
-        value = InlineModule(ffi=1, lib=2)
-        Distribution._pywincffi = value
-        self.assertEqual(Distribution.load(), (value.ffi, value.lib))
-
-    def test_pywincffi_dev_in_env_calls_inline_compile(self):
-        os.environ.update(PYWINCFFI_DEV="1")
-        Distribution._pywincffi = None
-        Distribution.load()
-        self.assertIsInstance(Distribution._pywincffi, InlineModule)
-
     def test_imports_module_if_precompiled(self):
         with patch.object(config, "precompiled", return_value=True):
             module = new_module(Distribution.MODULE_NAME)
