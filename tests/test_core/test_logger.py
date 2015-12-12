@@ -1,84 +1,95 @@
 import logging
-import os
 
+from mock import patch
+
+from pywincffi.core.config import config
 from pywincffi.core.logger import (
-    UNSET, NullHandler, configure, logger, get_logger)
+    STREAM_HANDLER, FORMATTER, NULL_HANDLER, NullHandler, logger, get_logger)
 from pywincffi.core.testutil import TestCase
 
 
-class LoggerTestCase(TestCase):
+class TestStreamHandler(TestCase):
+    """
+    Tests for ``pywincffi.core.logger.STREAM_HANDLER``
+    """
+    def test_type(self):
+        self.assertIsInstance(STREAM_HANDLER, logging.StreamHandler)
+
+    def test_formatter(self):
+        self.assertIs(STREAM_HANDLER.formatter, FORMATTER)
+
+
+class TestDefaultLogger(TestCase):
+    """
+    Tests for ``pywincffi.core.logger.logger``
+    """
+    def test_type(self):
+        self.assertIsInstance(logger, logging.Logger)
+
+    def test_name(self):
+        self.assertEqual(logger.name, "pywincffi")
+
+
+class TestGetLogger(TestCase):
+    """
+    Tests for ``pywincffi.core.logger.get_logger``
+    """
+    count = 0
+
     def setUp(self):
-        self.handlers = logger.handlers[:]
+        super(TestGetLogger, self).setUp()
         self.level = logger.level
+        self.handlers = logger.handlers[:]
+        self.count += 1
 
     def tearDown(self):
+        super(TestGetLogger, self).tearDown()
+        logger.level = self.level
         logger.handlers[:] = self.handlers
-        logger.setLevel(self.level)
 
+    def test_return_type(self):
+        self.assertIsInstance(
+            get_logger("foo.%s" % self.count), logging.Logger)
 
-class TestDefaultHandler(LoggerTestCase):
-    def test_default_handlers(self):
-        self.assertEqual(
-            [type(handler) for handler in logger.handlers],
-            [type(NullHandler())]
-        )
-
-
-class TestConfigureLevels(LoggerTestCase):
-    def test_level(self):
-        configure(logging.CRITICAL)
-        self.assertEqual(logger.level, logging.CRITICAL)
-
-    def test_level_unset(self):
-        configure(logging.CRITICAL)
-        configure(UNSET)
-        self.assertEqual(
-            [type(handler) for handler in logger.handlers],
-            [type(NullHandler())]
-        )
-
-
-class TestConfigureFormatter(LoggerTestCase):
-    def test_custom_formatter(self):
-        formatter = logging.Formatter(fmt="1234", datefmt="4567")
-        configure(logging.CRITICAL, formatter=formatter)
-        handler = logger.handlers[-1]
-        self.assertEqual(handler.formatter._fmt, "1234")
-        self.assertEqual(handler.formatter.datefmt, "4567")
-
-    def test_default_formatter(self):
-        configure(logging.CRITICAL)
-        handler = logger.handlers[-1]
-        self.assertEqual(
-            handler.formatter._fmt,
-            "%(asctime)s %(name)s %(levelname)9s %(message)s"
-        )
-        self.assertEqual(
-            handler.formatter.datefmt, "%Y-%m-%d %H:%M:%S"
-        )
-
-
-class TestConfigureHandlers(LoggerTestCase):
-    def test_default_handler(self):
-        configure(logging.CRITICAL)
-        self.assertEqual(
-            [type(handler) for handler in logger.handlers],
-            [type(NullHandler()), type(logging.StreamHandler())]
-        )
-
-    def test_custom_handler(self):
-        handler = logging.FileHandler(os.devnull)
-        self.addCleanup(handler.close)
-        configure(logging.CRITICAL, handler)
-        self.assertIs(logger.handlers[-1], handler)
-
-
-class TestGetLogger(LoggerTestCase):
-    def test_invalid_name(self):
+    def test_disallows_name_starting_with_dot(self):
         with self.assertRaises(ValueError):
-            get_logger(".foo")
+            get_logger(".foo.%s" % self.count)
 
-    def test_get_child(self):
-        expected_name = logger.name + "." + "hello.world"
-        child_logger = get_logger("hello.world")
-        self.assertEqual(expected_name, child_logger.name)
+    def test_child_logger_name(self):
+        child = get_logger("foo.%s" % self.count)
+        self.assertEqual(child.name, logger.name + "." + "foo.%s" % self.count)
+
+    def test_child_logger_has_no_handlers(self):
+        child = get_logger("foo.%s" % self.count)
+        self.assertEqual(child.handlers, [])
+
+    def test_child_logger_propagation(self):
+        child = get_logger("foo.%s" % self.count)
+        self.assertEqual(child.propagate, 1)
+
+    def test_get_logger_configures_level(self):
+        logger.level = False
+        get_logger("foo.%s" % self.count)
+        self.assertEqual(config.logging_level(), logger.level)
+
+    def test_level_not_set(self):
+        logger.handlers.append(True)
+        logger.level = logging.DEBUG
+
+        with patch.object(
+            config, "logging_level", return_value=logging.NOTSET):
+            get_logger("foo.%s" % self.count)
+
+        self.assertEqual(logger.level, logging.NOTSET)
+        self.assertEqual(logger.handlers, [NULL_HANDLER])
+
+    def test_other_level(self):
+        logger.level = logging.NOTSET
+        logger.handlers.append(True)
+
+        with patch.object(
+            config, "logging_level", return_value=logging.CRITICAL):
+            get_logger("foo.%s" % self.count)
+
+        self.assertEqual(logger.level, logging.CRITICAL)
+        self.assertEqual(logger.handlers, [STREAM_HANDLER])

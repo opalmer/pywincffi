@@ -71,3 +71,7 @@ class WindowsAPIError(PyWinCFFIError):
 
 class ResourceNotFoundError(PyWinCFFIError):
     """Raised when we fail to locate a specific resource"""
+
+
+class ConfigurationError(PyWinCFFIError):
+    """Raised when there was a problem with the configuration file"""

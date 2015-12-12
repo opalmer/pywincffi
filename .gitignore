@@ -11,3 +11,4 @@
 /.vagrant
 /.provision
 /.ci/vagrant/sshd/files/authorized_keys
+/pywincffi.ini
