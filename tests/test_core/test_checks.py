@@ -5,6 +5,7 @@ import types
 
 from six import PY3, PY2
 from mock import Mock, patch
+from cffi import FFI
 
 from pywincffi.core import dist
 from pywincffi.core.checks import (
@@ -23,26 +24,26 @@ class TestCheckErrorCode(TestCase):
     def test_default_code_does_match_expected(self):
         ffi, _ = dist.load()
 
-        with patch.object(ffi, "getwinerror", return_value=(0, "GTG")):
+        with patch.object(FFI, "getwinerror", return_value=(0, "GTG")):
             error_check("Foobar")
 
     def test_default_code_does_not_match_expected(self):
         ffi, _ = dist.load()
 
-        with patch.object(ffi, "getwinerror", return_value=(0, "NGTG")):
+        with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
             with self.assertRaises(WindowsAPIError):
                 error_check("Foobar", expected=2)
 
     def test_non_zero(self):
         ffi, _ = dist.load()
 
-        with patch.object(ffi, "getwinerror", return_value=(1, "NGTG")):
+        with patch.object(FFI, "getwinerror", return_value=(1, "NGTG")):
             error_check("Foobar", expected=Enums.NON_ZERO)
 
     def test_non_zero_success(self):
         ffi, _ = dist.load()
 
-        with patch.object(ffi, "getwinerror", return_value=(0, "NGTG")):
+        with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
             error_check("Foobar", code=1, expected=Enums.NON_ZERO)
 
 
