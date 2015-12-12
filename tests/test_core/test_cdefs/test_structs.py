@@ -1,13 +1,13 @@
 from os.path import isfile, join
 
-from pywincffi.core.ffi import Library
+from pywincffi.core import dist
 from pywincffi.core.testutil import TestCase
 
 
 # TODO: it would be better if we had a parser to parse the header
 class TestStructsHeader(TestCase):
     def test_file_exists(self):
-        for path in Library.HEADERS:
+        for path in dist.Distribution.HEADERS:
             if path.endswith("structs.h"):
                 self.assertTrue(isfile(path))
                 break
@@ -15,23 +15,25 @@ class TestStructsHeader(TestCase):
             self.fail("Failed to locate header in Library.HEADERS")
 
     def test_get_structs(self):
-        with open(join(Library.HEADERS_ROOT, "structs.h"), "r") as header:
-            for line in header:
-                line = line.strip()
-                if not line or line.startswith("//"):
-                    continue
+        for path in dist.Distribution.HEADERS:
+            if path.endswith("structs.h"):
+                with open(path, "r") as header:
+                    for line in header:
+                        line = line.strip()
+                        if not line or line.startswith("//"):
+                            continue
 
-                # This is a bit hacky but it's effective...
-                if line.startswith("}") and line.endswith(";"):
+                        # This is a bit hacky but it's effective...
+                        if line.startswith("}") and line.endswith(";"):
 
-                    for char in ("}", ";", "*", " "):
-                        line = line.replace(char, "")
+                            for char in ("}", ";", "*", " "):
+                                line = line.replace(char, "")
 
-                    for entry in filter(bool, line.strip().split(",")):
-                        yield entry
+                            for entry in filter(bool, line.strip().split(",")):
+                                yield entry
 
     def test_library_has_attributes_defined_in_header(self):
-        ffi, library = Library.load()
+        ffi, library = dist.load()
         
         for struct_name in self.test_get_structs():
             try:

@@ -1,6 +1,6 @@
 import os
 
-from pywincffi.core.ffi import Library
+from pywincffi.core import dist
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32.process import OpenProcess
@@ -11,7 +11,7 @@ class TestOpenProcess(TestCase):
     Tests for :func:`pywincffi.kernel32.OpenProcess`
     """
     def test_returns_handle(self):
-        ffi, library = Library.load()
+        ffi, library = dist.load()
 
         handle = OpenProcess(
             library.PROCESS_QUERY_LIMITED_INFORMATION,
