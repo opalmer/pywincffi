@@ -13,7 +13,7 @@ from collections import namedtuple
 import enum
 from six import PY3, string_types
 
-from pywincffi.core.ffi import Library
+from pywincffi.core import dist
 from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import WindowsAPIError, InputError
 
@@ -71,7 +71,7 @@ def error_check(api_function, code=None, expected=0):
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
     """
-    ffi, _ = Library.load()
+    ffi, _ = dist.load()
 
     if code is None:
         result, api_error_message = ffi.getwinerror()
@@ -130,7 +130,7 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
     """
     assert isinstance(name, string_types)
     assert allowed_values is None or isinstance(allowed_values, tuple)
-    ffi, _ = Library.load()
+    ffi, _ = dist.load()
 
     logger.debug(
         "input_check(name=%r, value=%r, allowed_types=%r, allowed_values=%r",
