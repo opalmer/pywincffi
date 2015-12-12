@@ -9,6 +9,8 @@ from pywincffi.core.testutil import TestCase
 
 # TODO: it would be better if we had a parser to parse the header
 class TestConstantsHeader(TestCase):
+    LIBRARY_MODE = "inline"
+
     def test_file_exists(self):
         for path in dist.Distribution.HEADERS:
             if path.endswith("constants.h"):
