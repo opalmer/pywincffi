@@ -25,9 +25,10 @@ except ImportError:
 from cffi import FFI
 from mock import patch
 
-from pywincffi.core.testutil import TestCase
+from pywincffi.core.config import config
 from pywincffi.core.dist import (
     __all__, Distribution, InlineModule, get_filepath, ffi, load)
+from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
 
 
@@ -240,13 +241,20 @@ class TestDistributionLoad(TestDistributionLoadBaseTest):
         Distribution.load()
         self.assertIsInstance(Distribution._pywincffi, InlineModule)
 
-    def test_imports_module(self):
-        module = new_module(Distribution.MODULE_NAME)
-        module.ffi = 3
-        module.lib = 4
-        sys.modules.update({Distribution.MODULE_NAME: module})
-        self.assertEqual(Distribution.load(), (3, 4))
-        self.assertIs(Distribution._pywincffi, module)
+    def test_imports_module_if_precompiled(self):
+        with patch.object(config, "precompiled", return_value=True):
+            module = new_module(Distribution.MODULE_NAME)
+            module.ffi = 3
+            module.lib = 4
+            sys.modules.update({Distribution.MODULE_NAME: module})
+            self.assertEqual(Distribution.load(), (3, 4))
+            self.assertIs(Distribution._pywincffi, module)
+
+    def test_compiles_module_if_not_precompiled(self):
+        with patch.object(config, "precompiled", return_value=False):
+            ffi, library = Distribution.load()
+            self.assertIsInstance(ffi, FFI)
+            self.assertEqual(library.__class__.__name__, "FFILibrary")
 
     def test_calls_inline_for_compile_error(self):
         tempdir = self.tempdir()
