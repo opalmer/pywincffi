@@ -21,13 +21,13 @@ test as well as perform some additional testing/development
 on non-windows platforms.
 """
 
-import os
 from collections import namedtuple
 from os.path import join, isfile
 from pkg_resources import resource_filename
 
 from cffi import FFI
 
+from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import ResourceNotFoundError
 
@@ -195,7 +195,7 @@ class Distribution(object):
         if cls._pywincffi is not None:
             return cls._pywincffi.ffi, cls._pywincffi.lib
 
-        if os.environ.get("PYWINCFFI_DEV") == "1":
+        if not config.precompiled():
             return cls.inline()
 
         try:
