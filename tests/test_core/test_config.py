@@ -9,6 +9,7 @@ from mock import patch
 
 from pywincffi.core.config import Configuration
 from pywincffi.core.testutil import TestCase
+from pywincffi.exceptions import ConfigurationError
 
 
 class TestFiles(TestCase):
@@ -125,3 +126,21 @@ class TestPrecompiled(TestCase):
         config = Configuration()
         config.set("pywincffi", "library", "foo")
         self.assertFalse(config.precompiled())
+
+
+class TestLoggingLevel(TestCase):
+    """
+    Tests for ``pywincffi.core.config.Configuration.logging_level``
+    """
+    def test_unknown_level(self):
+        config = Configuration()
+        config.set("pywincffi", "log_level", "foobar")
+
+        with self.assertRaises(ConfigurationError):
+            config.logging_level()
+
+    def test_mappings(self):
+        for key, value in Configuration.LOGGER_LEVEL_MAPPINGS.items():
+            config = Configuration()
+            config.set("pywincffi", "log_level", key)
+            self.assertEqual(config.logging_level(), value)
