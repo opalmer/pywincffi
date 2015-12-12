@@ -35,6 +35,7 @@ if not os.environ.get("READTHEDOCS"):
     ffi.cdef("void SetLastError(DWORD);")
     kernel32 = ffi.dlopen("kernel32")
 
+from pywincffi.core.config import config
 
 def remove(path, onexit=True):
     """
@@ -72,6 +73,10 @@ class TestCase(_TestCase):
     A base class for all test cases.  By default the
     core test case just provides some extra functionality.
     """
+    # If set, use this as the library mode for the test
+    # module.
+    LIBRARY_MODE = None
+
     def setUp(self):
         if os.name == "nt":
             if kernel32 is None:
@@ -81,6 +86,15 @@ class TestCase(_TestCase):
             # ensures that any error we intentionally throw in one
             # test does not causes an error to be raised in another.
             kernel32.SetLastError(ffi.cast("DWORD", 0))
+
+        self._library_mode = None
+        if self.LIBRARY_MODE is not None:
+            self._library_mode = config.get("pywincffi", "library")
+            config.set("pywincffi", "library", self.LIBRARY_MODE)
+
+    def tearDown(self):
+        if self._library_mode is not None:
+            config.set("pywincffi", "library", self._library_mode)
 
     def tempdir(self):
         """

@@ -18,6 +18,8 @@ class TestCheckErrorCode(TestCase):
     """
     Tests for :func:`pywincffi.core.ffi.check_error_code`
     """
+    LIBRARY_MODE = "inline"
+
     def test_default_code_does_match_expected(self):
         ffi, _ = dist.load()
 
