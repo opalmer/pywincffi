@@ -4,11 +4,7 @@ import tempfile
 import types
 
 from six import PY3, PY2
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
+from mock import Mock, patch
 
 from pywincffi.core.checks import (
     INPUT_CHECK_MAPPINGS, FileType, CheckMapping, Enums,

@@ -48,7 +48,9 @@ install:
 
 test_script:
   - ps: cd C:\\project
-  - "%WITH_COMPILER% %PYTHON%\\Scripts\\coverage.exe run setup.py test"
+  - "set PYWINCFFI_DEV=1 && %WITH_COMPILER% %PYTHON%\\Scripts\\coverage.exe run setup.py test"
+  - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py clean install"
+  - "set PYWINCFFI_DEV=0 && %WITH_COMPILER% %PYTHON%\\Scripts\\coverage.exe run setup.py test"
   - "%PYTHON%\\Scripts\\coverage.exe report"
 
 after_test:

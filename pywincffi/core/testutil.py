@@ -9,8 +9,9 @@ import atexit
 import os
 import shutil
 import sys
-from errno import ENOENT
-from os.path import isfile, isdir  # pylint: disable=ungrouped-imports
+import tempfile
+from errno import ENOENT, EACCES, EAGAIN, EIO
+from os.path import isfile, isdir
 
 from cffi import FFI
 
@@ -35,6 +36,37 @@ if not os.environ.get("READTHEDOCS"):
     kernel32 = ffi.dlopen("kernel32")
 
 
+def remove(path, onexit=True):
+    """
+    Removes the request ``path`` from disk.  This is meant to
+    be used as a cleanup function by a test case.
+
+    :param str path:
+        The file or directory to remove.
+
+    :param bool onexit:
+        If we can't remove the request ``path``, try again
+        when Python exists to remove it.
+    """
+    if isdir(path):
+        try:
+            shutil.rmtree(path)
+        except (WindowsError, OSError, IOError) as error:
+            if error.errno == ENOENT:
+                return
+            if error.errno in (EACCES, EAGAIN, EIO) and onexit:
+                atexit.register(remove, path, onexit=False)
+
+    elif isfile(path):
+        try:
+            os.remove(path)
+        except (WindowsError, OSError, IOError) as error:
+            if error.errno == ENOENT:
+                return
+            if error.errno in (EACCES, EAGAIN, EIO) and onexit:
+                atexit.register(remove, path, onexit=False)
+
+
 class TestCase(_TestCase):
     """
     A base class for all test cases.  By default the
@@ -50,21 +82,29 @@ class TestCase(_TestCase):
             # test does not causes an error to be raised in another.
             kernel32.SetLastError(ffi.cast("DWORD", 0))
 
-    def remove(self, path, onexit=True):
+    def tempdir(self):
         """
-        Single function to remove a file or directory.  If there are
-        problems while attempting to remove the path we'll try again
-        when the tests exit.
+        Creates a temporary directory and returns the path.  Best attempts
+        will be made to cleanup the directory at the end of the test run.
         """
-        if isfile(path):
-            remove = os.remove
-        elif isdir(path):
-            remove = shutil.rmtree
-        else:
-            return
+        path = tempfile.mkdtemp()
+        self.addCleanup(remove, path)
+        return path
 
-        try:
-            remove(path)
-        except (OSError, IOError, WindowsError) as error:
-            if error.errno != ENOENT and onexit:
-                atexit.register(self.remove, path, onexit=False)
+    def tempfile(self, data=None):
+        """
+        Creates a temporary file and returns the path.  Best attempts
+        will be made to cleanup the file at the end of the test run.
+
+        :param str data:
+            Optionally write the provided data to the file on disk.
+        """
+        fd, path = tempfile.mkstemp()
+        if data is None:
+            os.close(fd)
+        else:
+            with os.fdopen(fd, "w") as file_:
+                file_.write(data)
+
+        self.addCleanup(remove, path)
+        return path
