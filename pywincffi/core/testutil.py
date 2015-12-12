@@ -8,18 +8,21 @@ This module is used by the unittests.
 import atexit
 import os
 import shutil
-import sys
 import tempfile
 from errno import ENOENT, EACCES, EAGAIN, EIO
 from os.path import isfile, isdir
 
 from cffi import FFI
 
-if sys.version_info[0:2] != (2, 6):
+try:
+    # The setup.py file installs unittest2 for Python 2.6
+    # which backports test framework features from 2.7+.
+    from unittest2 import TestCase as _TestCase
+except ImportError:
     # pylint: disable=wrong-import-order
     from unittest import TestCase as _TestCase
-else:
-    from unittest2 import TestCase as _TestCase
+
+from pywincffi.core.config import config
 
 # To keep lint on non-windows platforms happy.
 try:
@@ -35,7 +38,6 @@ if not os.environ.get("READTHEDOCS"):
     ffi.cdef("void SetLastError(DWORD);")
     kernel32 = ffi.dlopen("kernel32")
 
-from pywincffi.core.config import config
 
 def remove(path, onexit=True):
     """
