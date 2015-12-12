@@ -62,14 +62,14 @@ class TestTypeCheck(TestCase):
     def test_not_a_handle(self):
         ffi, _ = dist.load()
         typeof = Mock(kind="", cname="")
-        with patch.object(ffi, "typeof", return_value=typeof):
+        with patch.object(FFI, "typeof", return_value=typeof):
             with self.assertRaises(InputError):
                 input_check("", None, Enums.HANDLE)
 
     def test_handle_type_success(self):
         ffi, _ = dist.load()
         typeof = Mock(kind="pointer", cname="void *")
-        with patch.object(ffi, "typeof", return_value=typeof):
+        with patch.object(FFI, "typeof", return_value=typeof):
             # The value does not matter here since we're
             # mocking out typeof()
             input_check("", None, Enums.HANDLE)
@@ -97,7 +97,7 @@ class TestEnumMapping(TestCase):
         # should not fail the input check
         ffi, _ = dist.load()
         typeof = Mock(kind="pointer", cname="void *")
-        with patch.object(ffi, "typeof", return_value=typeof):
+        with patch.object(FFI, "typeof", return_value=typeof):
             input_check("", ffi.NULL, "mapping")
 
     def test_not_nullable(self):
@@ -113,7 +113,7 @@ class TestEnumMapping(TestCase):
         # If something is nullable but kind/cname don't match it
         # should not fail the input check
         typeof = Mock(kind="foo", cname="bar")
-        with patch.object(ffi, "typeof", return_value=typeof):
+        with patch.object(FFI, "typeof", return_value=typeof):
             input_check("", ffi.NULL, "mapping")
 
     def test_kind_and_cname(self):
@@ -129,7 +129,7 @@ class TestEnumMapping(TestCase):
         # should not fail the input check
         ffi, _ = dist.load()
         typeof = Mock(kind="foo", cname="bar")
-        with patch.object(ffi, "typeof", return_value=typeof):
+        with patch.object(FFI, "typeof", return_value=typeof):
             input_check("", "", "mapping")
 
 
