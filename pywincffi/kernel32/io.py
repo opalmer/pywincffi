@@ -9,7 +9,7 @@ from collections import namedtuple
 
 from six import integer_types
 
-from pywincffi.core.ffi import Library
+from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
 
@@ -34,7 +34,7 @@ def handle_from_file(python_file):
         Returns a Windows handle object which is pointing at
         the provided ``python_file`` object.
     """
-    _, library = Library.load()
+    _, library = dist.load()
     input_check("python_file", python_file, Enums.PYFILE)
 
     # WARNING:
@@ -54,8 +54,8 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         https://msdn.microsoft.com/en-us/library/aa365152
         https://msdn.microsoft.com/en-us/library/aa379560
 
-    >>> from pywincffi.core.ffi import Library
-    >>> ffi, library = Library.load()
+    >>> from pywincffi.core import dist
+    >>> ffi, library = dist.load()
     >>> lpPipeAttributes = ffi.new(
     ...     "SECURITY_ATTRIBUTES[1]", [{
     ...     "nLength": ffi.sizeof("SECURITY_ATTRIBUTES"),
@@ -82,7 +82,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     """
     input_check("nSize", nSize, integer_types)
     input_check("lpPipeAttributes", lpPipeAttributes, (NoneType, dict))
-    ffi, library = Library.load()
+    ffi, library = dist.load()
 
     hReadPipe = ffi.new("PHANDLE")
     hWritePipe = ffi.new("PHANDLE")
@@ -128,7 +128,7 @@ def SetNamedPipeHandleState(
         remote named pipe transfers information
     """
     input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
-    ffi, library = Library.load()
+    ffi, library = dist.load()
 
     if lpMode is None:
         lpMode = ffi.NULL
@@ -181,7 +181,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
     """
     input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
     input_check("nBufferSize", nBufferSize, integer_types)
-    ffi, library = Library.load()
+    ffi, library = dist.load()
 
     # Outputs
     lpBuffer = ffi.new("LPVOID[%d]" % nBufferSize)
@@ -229,8 +229,8 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         documentation for intended usage and below for an example of this
         struct.
 
-        >>> from pywincffi.core.ffi import Library
-        >>> ffi, library = Library.load()
+        >>> from pywincffi.core import dist
+        >>> ffi, library = dist.load()
         >>> hFile = None # normally, this would be a handle
         >>> lpOverlapped = ffi.new(
         ...     "OVERLAPPED[1]", [{
@@ -243,7 +243,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     :returns:
         Returns the number of bytes written
     """
-    ffi, library = Library.load()
+    ffi, library = dist.load()
 
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
@@ -284,8 +284,8 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         documentation for intended usage and below for an example of this
         struct.
 
-        >>> from pywincffi.core.ffi import Library
-        >>> ffi, library = Library.load()
+        >>> from pywincffi.core import dist
+        >>> ffi, library = dist.load()
         >>> hFile = None # normally, this would be a handle
         >>> lpOverlapped = ffi.new(
         ...     "OVERLAPPED[1]", [{
@@ -298,7 +298,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     :returns:
         Returns the data read from ``hFile``
     """
-    ffi, library = Library.load()
+    ffi, library = dist.load()
 
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
@@ -328,7 +328,7 @@ def CloseHandle(hObject):
         The handle object to close.
     """
     input_check("hObject", hObject, Enums.HANDLE)
-    _, library = Library.load()
+    _, library = dist.load()
 
     code = library.CloseHandle(hObject)
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
@@ -350,7 +350,7 @@ def GetStdHandle(nStdHandle):
     :return:
         Returns a handle to the standard device retrieved.
     """
-    _, library = Library.load()
+    _, library = dist.load()
     input_check("nStdHandle", nStdHandle,
                 allowed_values=(library.STD_INPUT_HANDLE,
                                 library.STD_OUTPUT_HANDLE,
