@@ -110,3 +110,18 @@ class TestLoad(TestCase):
         self.write_config(path, "notset")
         config = Configuration()
         self.assertEqual(config.logging_level(), logging.NOTSET)
+
+
+class TestPrecompiled(TestCase):
+    """
+    Tests for ``pywincffi.core.config.Configuration.precompiled``
+    """
+    def test_precompiled(self):
+        config = Configuration()
+        config.set("pywincffi", "library", "precompiled")
+        self.assertTrue(config.precompiled())
+
+    def test_not_precompiled(self):
+        config = Configuration()
+        config.set("pywincffi", "library", "foo")
+        self.assertFalse(config.precompiled())
