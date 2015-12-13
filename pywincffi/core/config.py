@@ -11,6 +11,7 @@ current working directory or the current users's home directory.
 
 import logging
 import os
+import sys
 import tempfile
 from errno import EEXIST
 from os.path import join, expanduser
@@ -22,7 +23,6 @@ except ImportError:
     from ConfigParser import RawConfigParser
 
 from pkg_resources import resource_filename
-from six import PY3
 
 from pywincffi.exceptions import ConfigurationError
 
@@ -55,7 +55,7 @@ class Configuration(RawConfigParser):
     }
 
     def __init__(self):  # pylint: disable=super-on-old-class
-        if PY3:
+        if sys.version_info[0] == 3:
             super(Configuration, self).__init__()
         else:
             RawConfigParser.__init__(self)
@@ -67,9 +67,7 @@ class Configuration(RawConfigParser):
         try:
             self.clear()
         except AttributeError:
-            for section, data in self.items():
-                if section != "DEFAULT":
-                   self.remove_section(section)
+            self.remove_section("pywincffi")
 
         self.read(self.FILES)
 
