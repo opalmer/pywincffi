@@ -85,8 +85,9 @@ class TestLoad(TestCase):
         mocked.assert_called_once_with(Configuration.FILES)
 
     def test_default_log_level(self):
-        config = Configuration()
-        self.assertEqual(config.logging_level(), logging.WARNING)
+        with patch.object(Configuration, "FILES", (Configuration.FILES[0], )):
+            config = Configuration()
+            self.assertEqual(config.logging_level(), logging.WARNING)
 
     def test_override_home(self):
         path = join(expanduser("~"), "pywincffi.ini")
