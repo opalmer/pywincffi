@@ -7,7 +7,9 @@ if [[ $PYLINT == "1" ]]; then
     # Run pylint on the tests too but disable some of the
     # more noisy checks that don't effect quality for testing
     # purposes.
-    pylint tests --disable missing-docstring,invalid-name,no-self-use
+    pylint tests \
+        --disable missing-docstring,invalid-name \
+        --disable protected-access,no-self-use
 fi
 
 if [[ $READTHEDOCS == "1" ]]; then
