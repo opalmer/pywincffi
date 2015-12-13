@@ -7,7 +7,6 @@ from os.path import isfile, dirname, basename, join
 from cffi import FFI
 from mock import patch
 
-from pywincffi.core.config import config
 from pywincffi.core.dist import (
     __all__, Distribution, InlineModule, get_filepath, ffi, load)
 from pywincffi.core.testutil import TestCase
@@ -156,6 +155,11 @@ class TestDistributionInline(TestDistributionLoadBaseTest):
     """
     Tests for :meth:`pywincffi.core.dist.Distribution.inline`
     """
+    def configure(self, config):
+        super(TestDistributionInline, self).configure(config)
+        config.set("pywincffi", "library", "inline")
+        config.set("pywincffi", "tempdir", self.tempdir())
+
     def test_sets_unicode(self):
         ffi_, _ = Distribution.inline()
         with self.assertRaises(ValueError):
@@ -185,6 +189,11 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
     """
     Tests for :meth:`pywincffi.core.dist.Distribution.out_of_line`
     """
+    def configure(self, config):
+        super(TestDistributionOutOfLine, self).configure(config)
+        config.set("pywincffi", "library", "precompiled")
+        config.set("pywincffi", "tempdir", self.tempdir())
+
     def test_sets_unicode(self):
         ffi_, _ = Distribution.out_of_line()
 
@@ -225,19 +234,17 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
 
 class TestDistributionLoad(TestDistributionLoadBaseTest):
     def test_imports_module_if_precompiled(self):
-        with patch.object(config, "precompiled", return_value=True):
-            module = new_module(Distribution.MODULE_NAME)
-            module.ffi = 3
-            module.lib = 4
-            sys.modules.update({Distribution.MODULE_NAME: module})
-            self.assertEqual(Distribution.load(), (3, 4))
-            self.assertIs(Distribution._pywincffi, module)
+        module = new_module(Distribution.MODULE_NAME)
+        module.ffi = 3
+        module.lib = 4
+        sys.modules.update({Distribution.MODULE_NAME: module})
+        self.assertEqual(Distribution.load(), (3, 4))
+        self.assertIs(Distribution._pywincffi, module)
 
     def test_compiles_module_if_not_precompiled(self):
-        with patch.object(config, "precompiled", return_value=False):
-            ffi_, library = Distribution.load()
-            self.assertIsInstance(ffi_, FFI)
-            self.assertEqual(library.__class__.__name__, "FFILibrary")
+        ffi_, library = Distribution.load()
+        self.assertIsInstance(ffi_, FFI)
+        self.assertEqual(library.__class__.__name__, "FFILibrary")
 
     def test_calls_inline_for_compile_error(self):
         tempdir = self.tempdir()
