@@ -6,6 +6,7 @@ from os.path import isfile, join, expanduser
 
 from six import PY3
 from mock import patch
+from textwrap import dedent
 
 from pywincffi.core.config import Configuration
 from pywincffi.core.testutil import TestCase
@@ -89,29 +90,25 @@ class TestLoad(TestCase):
             config = Configuration()
             self.assertEqual(config.logging_level(), logging.WARNING)
 
-    def test_override_home(self):
+    def test_contains_override_path_home(self):
         path = join(expanduser("~"), "pywincffi.ini")
+        self.assertIn(path, Configuration.FILES)
 
-        # This will always run on AppVeyor, it's less complicated
-        # to test locally this way.
-        if isfile(path):
-            self.skipTest("Local configuration %s exists" % path)
-
-        self.write_config(path, "debug")
-        config = Configuration()
-        self.assertEqual(config.logging_level(), logging.DEBUG)
-
-    def test_override_working_directory(self):
+    def test_contains_override_path_local(self):
         path = "pywincffi.ini"
+        self.assertIn(path, Configuration.FILES)
 
-        # This will always run on AppVeyor, it's less complicated
-        # to test locally this way.
-        if isfile(path):
-            self.skipTest("Local configuration %s exists" % path)
-
-        self.write_config(path, "notset")
-        config = Configuration()
-        self.assertEqual(config.logging_level(), logging.NOTSET)
+    def test_loads_override(self):
+        paths = (
+            Configuration.FILES[0],
+            self.tempfile(data=dedent("""
+            [pywincffi]
+            log_level=-1
+            """))
+        )
+        with patch.object(Configuration, "FILES", paths):
+            config = Configuration()
+            self.assertEqual(config.getint("pywincffi", "log_level"), -1)
 
 
 class TestPrecompiled(TestCase):
