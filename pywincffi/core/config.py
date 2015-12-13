@@ -10,6 +10,9 @@ current working directory or the current users's home directory.
 """
 
 import logging
+import os
+import tempfile
+from errno import EEXIST
 from os.path import join, expanduser
 
 try:
@@ -22,6 +25,11 @@ from pkg_resources import resource_filename
 from six import PY3
 
 from pywincffi.exceptions import ConfigurationError
+
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
 
 
 class Configuration(RawConfigParser):
@@ -56,8 +64,13 @@ class Configuration(RawConfigParser):
 
     def load(self):
         """Loads the configuration from disk"""
-        if PY3:
+        try:
             self.clear()
+        except AttributeError:
+            for section, data in self.items():
+                if section != "DEFAULT":
+                   self.remove_section(section)
+
         self.read(self.FILES)
 
     def precompiled(self):
@@ -80,5 +93,26 @@ class Configuration(RawConfigParser):
                     level, " ".join(self.LOGGER_LEVEL_MAPPINGS.keys())))
 
         return self.LOGGER_LEVEL_MAPPINGS[level]
+
+    def tempdir(self):
+        """
+        Returns the directory which :class:`cffi.FFI` should use
+        to store temporary files.
+        """
+        entry = self.get("pywincffi", "tempdir")
+
+        try:
+            path = entry.format(tempdir=tempfile.gettempdir())
+        except KeyError as error:
+            raise ConfigurationError(
+                "Unknown key %r in pywincffi.tempdir" % error.args[0])
+
+        try:
+            os.makedirs(path)
+        except (OSError, IOError, WindowsError) as error:
+            if error.errno != EEXIST:
+                raise
+
+        return path
 
 config = Configuration()  # pylint: disable=invalid-name

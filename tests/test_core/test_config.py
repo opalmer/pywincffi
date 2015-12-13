@@ -2,8 +2,9 @@ from __future__ import print_function
 
 import logging
 import os
+import tempfile
 from textwrap import dedent
-from os.path import isfile, join, expanduser
+from os.path import isfile, join, expanduser, isdir
 
 from mock import patch
 from six import PY3
@@ -142,3 +143,35 @@ class TestLoggingLevel(TestCase):
             config = Configuration()
             config.set("pywincffi", "log_level", key)
             self.assertEqual(config.logging_level(), value)
+
+
+class TestTempdir(TestCase):
+    """
+    Tests for ``pywincffi.core.config.Configuration.tempdir``
+    """
+    def test_unknown_key(self):
+        config = Configuration()
+        config.set("pywincffi", "tempdir", "{foobar}")
+
+        with self.assertRaises(ConfigurationError):
+            config.tempdir()
+
+    def test_creates_directory(self):
+        tempdir = join(self.tempdir(), "pywincffi")
+        config = Configuration()
+        config.set("pywincffi", "tempdir", tempdir)
+        self.assertFalse(isdir(tempdir))
+        config.tempdir()
+        self.assertTrue(isdir(tempdir))
+        config.tempdir()  # calling again should not raise exception
+
+    def test_return_value(self):
+        tempdir = join(self.tempdir(), "pywincffi")
+        config = Configuration()
+        config.set("pywincffi", "tempdir", tempdir)
+        self.assertEqual(tempdir, config.tempdir())
+
+    def test_tempdir_substitution(self):
+        config = Configuration()
+        config.set("pywincffi", "tempdir", "{tempdir}")
+        self.assertEqual(tempfile.gettempdir(), config.tempdir())
