@@ -186,8 +186,7 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
     Tests for :meth:`pywincffi.core.dist.Distribution.out_of_line`
     """
     def test_sets_unicode(self):
-        tmpdir = self.tempdir()
-        ffi_, _ = Distribution.out_of_line(tmpdir=tmpdir)
+        ffi_, _ = Distribution.out_of_line()
 
         with self.assertRaises(ValueError):
             ffi_.set_unicode(True)
@@ -197,33 +196,28 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
         self.assertIsInstance(ffi_, FFI)
 
     def test_library_path(self):
-        tmpdir = self.tempdir()
-        _, path = Distribution.out_of_line(tmpdir=tmpdir)
+        _, path = Distribution.out_of_line()
         self.assertTrue(isfile(path))
 
     def test_can_import_compiled_module(self):
-        tmpdir = self.tempdir()
-        _, path = Distribution.out_of_line(tmpdir=tmpdir)
+        _, path = Distribution.out_of_line()
         import_module(Distribution.MODULE_NAME, path)
 
     def test_compiled_module_has_ffi_instance(self):
-        tmpdir = self.tempdir()
-        _, path = Distribution.out_of_line(tmpdir=tmpdir)
+        _, path = Distribution.out_of_line()
         module = import_module(Distribution.MODULE_NAME, path)
         self.assertTrue(hasattr(module, "ffi"))
         self.assertEqual(
             module.ffi.__class__.__name__, "CompiledFFI")
 
     def test_compiled_module_has_library_instance(self):
-        tmpdir = self.tempdir()
-        _, path = Distribution.out_of_line(tmpdir=tmpdir)
+        _, path = Distribution.out_of_line()
         module = import_module(Distribution.MODULE_NAME, path)
         self.assertTrue(hasattr(module, "lib"))
         self.assertEqual(type(module.lib).__name__, "CompiledLib")
 
     def test_compiled_module_produces_function(self):
-        tmpdir = self.tempdir()
-        _, path = Distribution.out_of_line(tmpdir=tmpdir)
+        _, path = Distribution.out_of_line()
         module = import_module(Distribution.MODULE_NAME, path)
         func = getattr(module.lib, self.function_name)
         self.assertEqual(func(1), 2)

@@ -109,6 +109,8 @@ class TestCase(_TestCase):
             if libtest is None:
                 self.fail("`libtest` was never defined")
 
+            config.set("pywincffi", "tempdir", self.tempdir())
+
             # Always reset the last error to 0 between tests.  This
             # ensures that any error we intentionally throw in one
             # test does not causes an error to be raised in another.
