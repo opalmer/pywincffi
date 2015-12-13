@@ -27,11 +27,12 @@ class TestStructsHeader(TestCase):
                     for char in ("}", ";", "*", " "):
                         line = line.replace(char, "")
 
+                    # pylint: disable=bad-builtin
                     for entry in filter(bool, line.strip().split(",")):
                         yield entry
 
     def test_library_has_attributes_defined_in_header(self):
-        ffi, library = Library.load()
+        ffi, _ = Library.load()
 
         for struct_name in self.test_get_structs():
             try:

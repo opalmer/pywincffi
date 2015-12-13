@@ -4,11 +4,7 @@ import tempfile
 import types
 
 from six import PY3, PY2
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
+from mock import Mock, patch
 
 from pywincffi.core.checks import (
     INPUT_CHECK_MAPPINGS, FileType, CheckMapping, Enums,
@@ -181,6 +177,7 @@ class TestEnumPyFile(TestCase):
         if PY3:
             self.assertIs(FileType, io.IOBase)
         elif PY2:
+            # pylint: disable=no-member
             self.assertIs(FileType, types.FileType)
         else:
             self.fail("This is neither Python 2 or 3")

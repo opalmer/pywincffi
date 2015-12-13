@@ -1,16 +1,18 @@
 from textwrap import dedent
-from os.path import dirname, join
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
 
 from cffi import FFI
+from mock import patch
 
 from pywincffi.core.ffi import Library
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
+
+
+# For pylint on non-windows platforms
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
 
 
 class TestFFI(TestCase):
@@ -68,9 +70,9 @@ class TestLibraryLoad(TestCase):
         #define HELLO_WORLD 42
         """)
         with patch.object(Library, "_load_files", return_value=fake_header):
-            ffi, library = Library.load()
+            _, library = Library.load()
 
-        self.assertEqual(library.HELLO_WORLD, 42)
+        self.assertEqual(library.HELLO_WORLD, 42)  # pylint: disable=no-member
 
     def test_caches_library(self):
         fake_header = dedent("""
