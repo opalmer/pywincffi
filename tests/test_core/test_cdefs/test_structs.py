@@ -27,12 +27,13 @@ class TestStructsHeader(TestCase):
                     for char in ("}", ";", "*", " "):
                         line = line.replace(char, "")
 
+                    # pylint: disable=bad-builtin
                     for entry in filter(bool, line.strip().split(",")):
                         yield entry
 
     def test_library_has_attributes_defined_in_header(self):
-        ffi, library = Library.load()
-        
+        ffi, _ = Library.load()
+
         for struct_name in self.test_get_structs():
             try:
                 ffi.new(struct_name)
@@ -44,6 +45,6 @@ class TestStructsHeader(TestCase):
             except TypeError as error:
                 self.assertEqual(
                     str(error),
-                    "expected a pointer or array ctype, got '%s'" % struct_name)
+                    "expected a pointer or array "
+                    "ctype, got '%s'" % struct_name)
                 ffi.new("%s[0]" % struct_name)
-

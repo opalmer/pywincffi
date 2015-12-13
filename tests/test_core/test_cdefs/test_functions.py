@@ -22,20 +22,19 @@ class TestFunctionsHeader(TestCase):
                 if not line or line.startswith("//"):
                     continue
 
-                match = re.match("^[A-Z]* ([A-Za-z]*)\(.*\);$", line)
+                match = re.match(r"^[A-Z]* ([A-Za-z]*)\(.*\);$", line)
                 if match is not None:
                     yield match.group(1)
 
     def test_library_has_attributes_defined_in_header(self):
-        ffi, library = Library.load()
+        _, library = Library.load()
 
         for function_name in self.get_header_functions():
             self.assertTrue(hasattr(library, function_name))
 
     def test_library_has_functions_defined_in_header(self):
-        ffi, library = Library.load()
+        _, library = Library.load()
 
         for function_name in self.get_header_functions():
             function = getattr(library, function_name)
             self.assertTrue(callable(function))
-

@@ -14,6 +14,7 @@ class TestOpenProcess(TestCase):
         ffi, library = Library.load()
 
         handle = OpenProcess(
+            # pylint: disable=no-member
             library.PROCESS_QUERY_LIMITED_INFORMATION,
             False,
             os.getpid()
@@ -28,5 +29,3 @@ class TestOpenProcess(TestCase):
             OpenProcess(0, False, os.getpid())
 
         self.assertEqual(error.exception.code, 5)
-
-

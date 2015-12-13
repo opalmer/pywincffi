@@ -24,18 +24,18 @@ class TestConstantsHeader(TestCase):
                 if not line or line.startswith("//"):
                     continue
 
-                match = re.match("^#define ([A-Z_]*) \.\.\..*$", line)
+                match = re.match(r"^#define ([A-Z_]*) \.\.\..*$", line)
                 if match is not None:
                     yield match.group(1)
 
     def test_library_has_attributes_defined_in_header(self):
-        ffi, library = Library.load()
+        _, library = Library.load()
 
         for constant_name in self.get_constants():
             self.assertTrue(hasattr(library, constant_name))
 
     def test_constant_type(self):
-        ffi, library = Library.load()
+        _, library = Library.load()
         valid_types = tuple(list(integer_types) + [bool])
 
         for constant_name in self.get_constants():
