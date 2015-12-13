@@ -15,8 +15,8 @@ from os.path import isfile, isdir
 from cffi import FFI
 
 try:
-    # The setup.py file installs unittest2 for Python 2.6
-    # which backports test framework features from 2.7+.
+    # The setup.py file installs unittest2 for Python 2
+    # which backports newer test framework features.
     from unittest2 import TestCase as _TestCase
 except ImportError:
     # pylint: disable=wrong-import-order
@@ -33,7 +33,7 @@ except NameError:
 # Load in our own kernel32 with the function(s) we need
 # so we don't have to rely on pywincffi.core
 kernel32 = None
-if not os.environ.get("READTHEDOCS"):
+if os.name == "nt":
     ffi = FFI()
     ffi.cdef("void SetLastError(DWORD);")
     kernel32 = ffi.dlopen("kernel32")
