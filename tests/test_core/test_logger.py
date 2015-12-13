@@ -76,8 +76,8 @@ class TestGetLogger(TestCase):
         logger.handlers.append(True)
         logger.level = logging.DEBUG
 
-        with patch.object(
-            config, "logging_level", return_value=logging.NOTSET):
+        with patch.object(config,
+                          "logging_level", return_value=logging.NOTSET):
             get_logger("foo.%s" % self.count)
 
         self.assertEqual(logger.level, logging.NOTSET)
@@ -87,8 +87,8 @@ class TestGetLogger(TestCase):
         logger.level = logging.NOTSET
         logger.handlers.append(True)
 
-        with patch.object(
-            config, "logging_level", return_value=logging.CRITICAL):
+        with patch.object(config,
+                          "logging_level", return_value=logging.CRITICAL):
             get_logger("foo.%s" % self.count)
 
         self.assertEqual(logger.level, logging.CRITICAL)

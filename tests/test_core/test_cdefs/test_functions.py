@@ -38,4 +38,3 @@ class TestFunctionsHeader(TestCase):
         for function_name in self.get_header_functions():
             function = getattr(library, function_name)
             self.assertTrue(callable(function))
-
