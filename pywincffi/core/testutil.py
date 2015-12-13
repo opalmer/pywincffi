@@ -98,33 +98,24 @@ class TestCase(_TestCase):
     A base class for all test cases.  By default the
     core test case just provides some extra functionality.
     """
-    # If set, use this as the library mode for the test
-    # module.
-    LIBRARY_MODE = None
-
     def setUp(self):
-        self._old_library_mode = None
-
         if os.name == "nt":
             if libtest is None:
                 self.fail("`libtest` was never defined")
-
-            config.set("pywincffi", "tempdir", self.tempdir())
 
             # Always reset the last error to 0 between tests.  This
             # ensures that any error we intentionally throw in one
             # test does not causes an error to be raised in another.
             libtest.SetLastError(ffi.cast("DWORD", 0))
 
-            # If LIBRARY_MODE was set use this to drive how dist.load()
-            # will load the library.
-            if self.LIBRARY_MODE is not None:
-                self._old_library_mode = config.get("pywincffi", "library")
-                config.set("pywincffi", "library", self.LIBRARY_MODE)
+        self.configure(config)
 
-    def tearDown(self):
-        if self._old_library_mode is not None:
-            config.set("pywincffi", "library", self._old_library_mode)
+    def configure(self, config):
+        config.load()
+
+        if "PYWINCFFI_TEST_LIBRARY" in os.environ:
+            config.set(
+                "pywincffi", "library", os.environ["PYWINCFFI_TEST_LIBRARY"])
 
     def tempdir(self):
         """
