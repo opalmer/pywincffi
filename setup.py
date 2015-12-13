@@ -21,7 +21,8 @@ install_requires_extras = []
 if "READTHEDOCS" in os.environ:
     install_requires_extras = ["sphinx"]
 
-tests_require = ["nose", "coverage", "setuptools>=17.1"]
+cffi_requirement = "cffi>=1.0.0"
+tests_require = ["nose", "coverage", "setuptools>=17.1", cffi_requirement]
 
 if sys.version_info[0:2] == (2, 6):
     # later versions of mock don't work with 2.6
@@ -50,9 +51,9 @@ setup_keywords = dict(
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
+    setup_requires=[cffi_requirement, "six"],
     install_requires=[
-        "cffi",
-        "six"
+        cffi_requirement, "six"
     ] + install_requires_extras,
     tests_require=tests_require,
     test_suite="nose.collector",
