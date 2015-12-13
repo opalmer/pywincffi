@@ -24,12 +24,15 @@ if "READTHEDOCS" in os.environ:
 tests_require = ["nose", "coverage", "setuptools>=17.1"]
 
 if sys.version_info[0:2] == (2, 6):
-    # mock - later versions of mock don't work with 2.6
-    # unittest2 - backports for new unittest framework features.
-    tests_require.extend(["mock==1.0.1", "unittest2"])
-
+    # later versions of mock don't work with 2.6
+    tests_require.append("mock==1.0.1")
 else:
     tests_require.append("mock")
+
+if sys.version_info[0] == 2:
+    # Backports several unittest features from
+    # later Python versions.
+    tests_require.append("unittest2")
 
 try:
     import enum
