@@ -10,7 +10,7 @@ import os
 import shutil
 import tempfile
 from errno import ENOENT, EACCES, EAGAIN, EIO
-from os.path import isfile, isdir
+from os.path import isfile, isdir, abspath, dirname, join
 
 from cffi import FFI
 
@@ -103,7 +103,7 @@ class TestCase(_TestCase):
     LIBRARY_MODE = None
 
     def setUp(self):
-        self._library_mode = None
+        self._old_library_mode = None
 
         if os.name == "nt":
             if libtest is None:
