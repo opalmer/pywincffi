@@ -127,7 +127,7 @@ class Distribution(object):
         doing development and is conditionally called by :meth:`load`
         below.
         """
-        logger.debug("Compiling inline")
+        logger.debug("Compiling inline to %s", config.tempdir())
         header, source = cls.load_definitions()
 
         ffi_class = FFI()
@@ -135,7 +135,8 @@ class Distribution(object):
         ffi_class.cdef(header)
         cls._pywincffi = InlineModule(
             ffi=ffi_class,
-            lib=ffi_class.verify(source, libraries=cls.LIBRARIES)
+            lib=ffi_class.verify(
+                source, libraries=cls.LIBRARIES, tmpdir=config.tempdir())
         )
 
         return cls._pywincffi.ffi, cls._pywincffi.lib
@@ -187,13 +188,13 @@ class Distribution(object):
             * If :mod:`pywincffi._pywincffi` can't be loaded, call
               :meth:`inline` to try and compile the module instead.
         """
-        if not config.precompiled():
-            return cls.inline()
-
         # Return the pre-cached library if we've
         # already loaded one below.
         if cls._pywincffi is not None:
             return cls._pywincffi.ffi, cls._pywincffi.lib
+
+        if not config.precompiled():
+            return cls.inline()
 
         try:
             import _pywincffi
