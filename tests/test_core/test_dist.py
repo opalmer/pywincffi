@@ -1,26 +1,8 @@
+import imp
 import os
 import sys
 import types
 from os.path import isfile, dirname, basename, join
-
-try:
-    from importlib.machinery import ExtensionFileLoader
-
-    def import_module(module_name, path):
-        loader = ExtensionFileLoader(module_name, path)
-        return loader.load_module()
-
-    def new_module(name):
-        return types.ModuleType(name)
-
-except ImportError:
-    import imp
-
-    def import_module(module_name, path):
-        return imp.load_dynamic(module_name, path)
-
-    def new_module(name):
-        return imp.new_module(name)
 
 from cffi import FFI
 from mock import patch
@@ -30,6 +12,25 @@ from pywincffi.core.dist import (
     __all__, Distribution, InlineModule, get_filepath, ffi, load)
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
+
+
+try:
+    # pylint: disable=wrong-import-order
+    from importlib.machinery import ExtensionFileLoader
+
+    def import_module(module_name, path):
+        loader = ExtensionFileLoader(module_name, path)
+        return loader.load_module(module_name)
+
+    def new_module(name):
+        return types.ModuleType(name)
+
+except ImportError:
+    def import_module(module_name, path):
+        return imp.load_dynamic(module_name, path)
+
+    def new_module(name):
+        return imp.new_module(name)
 
 
 class TestGetFilepath(TestCase):
@@ -116,7 +117,6 @@ class TestDistributionLoadBaseTest(TestCase):
         self._sources = Distribution.SOURCES
         self.count += 1
         self.function_name = "add%s" % self.count
-        self._pywincffi_environ = os.environ.pop("PYWINCFFI_DEV", None)
         self._pywincffi_module = sys.modules.pop(
             Distribution.MODULE_NAME, None)
 
@@ -142,9 +142,6 @@ class TestDistributionLoadBaseTest(TestCase):
         if self._pywincffi_module is not None:
             sys.modules.update(_pywincffi=self._pywincffi_module)
 
-        if self._pywincffi_environ is not None:
-            os.environ.update(PYWINCFFI_DEV=self._pywincffi_environ)
-
     def generate_headers(self):
         path = self.tempfile("int %s(int);" % self.function_name)
         return path,
@@ -160,12 +157,13 @@ class TestDistributionInline(TestDistributionLoadBaseTest):
     Tests for :meth:`pywincffi.core.dist.Distribution.inline`
     """
     def test_sets_unicode(self):
-        ffi, _ = Distribution.inline()
-        self.assertTrue(ffi._windows_unicode)
+        ffi_, _ = Distribution.inline()
+        with self.assertRaises(ValueError):
+            ffi_.set_unicode(True)
 
     def test_ffi_type(self):
-        ffi, _ = Distribution.inline()
-        self.assertIsInstance(ffi, FFI)
+        ffi_, _ = Distribution.inline()
+        self.assertIsInstance(ffi_, FFI)
 
     def test_caches_inline_module(self):
         Distribution.inline()
@@ -178,7 +176,7 @@ class TestDistributionInline(TestDistributionLoadBaseTest):
         self.assertIsNot(Distribution._pywincffi, module)
 
     def test_inline_produces_function(self):
-        ffi, library = Distribution.inline()
+        _, library = Distribution.inline()
         func = getattr(library, self.function_name)
         self.assertEqual(func(1), 2)
 
@@ -189,12 +187,14 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
     """
     def test_sets_unicode(self):
         tmpdir = self.tempdir()
-        ffi, _ = Distribution.out_of_line(tmpdir=tmpdir)
-        self.assertTrue(ffi._windows_unicode)
+        ffi_, _ = Distribution.out_of_line(tmpdir=tmpdir)
+
+        with self.assertRaises(ValueError):
+            ffi_.set_unicode(True)
 
     def test_ffi_type(self):
-        ffi, _ = Distribution.out_of_line()
-        self.assertIsInstance(ffi, FFI)
+        ffi_, _ = Distribution.out_of_line()
+        self.assertIsInstance(ffi_, FFI)
 
     def test_library_path(self):
         tmpdir = self.tempdir()
@@ -241,8 +241,8 @@ class TestDistributionLoad(TestDistributionLoadBaseTest):
 
     def test_compiles_module_if_not_precompiled(self):
         with patch.object(config, "precompiled", return_value=False):
-            ffi, library = Distribution.load()
-            self.assertIsInstance(ffi, FFI)
+            ffi_, library = Distribution.load()
+            self.assertIsInstance(ffi_, FFI)
             self.assertEqual(library.__class__.__name__, "FFILibrary")
 
     def test_calls_inline_for_compile_error(self):
@@ -256,7 +256,7 @@ class TestDistributionLoad(TestDistributionLoadBaseTest):
         sys.path.insert(0, tempdir)
         self.addCleanup(sys.path.remove, tempdir)
 
-        ffi, lib = Distribution.load()
+        _, lib = Distribution.load()
         self.assertIsInstance(Distribution._pywincffi, InlineModule)
         func = getattr(lib, self.function_name)
         self.assertEqual(func(1), 2)

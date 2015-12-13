@@ -9,6 +9,12 @@ from pywincffi.kernel32.io import (
     CreatePipe, CloseHandle, WriteFile, ReadFile, GetStdHandle,
     PeekNamedPipe, PeekNamedPipeResult, handle_from_file)
 
+# For pylint on non-windows platforms
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
+
 
 class PipeBaseTestCase(TestCase):
     def create_anonymous_pipes(self):
@@ -44,7 +50,7 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
     :func:`pywincffi.files.ReadPipe`
     """
     def test_bytes_written(self):
-        reader, writer = self.create_anonymous_pipes()
+        _, writer = self.create_anonymous_pipes()
 
         data = b"hello world".decode("utf-8")
         bytes_written = WriteFile(writer, data)
@@ -87,7 +93,7 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     Tests for :func:`pywincffi.kernel32.io.PeekNamedPipe`.
     """
     def test_return_type(self):
-        reader, writer = self.create_anonymous_pipes()
+        reader, _ = self.create_anonymous_pipes()
         self.assertIsInstance(PeekNamedPipe(reader, 0), PeekNamedPipeResult)
 
     def test_peek_does_not_remove_data(self):
@@ -142,21 +148,21 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
 class TestGetStdHandle(TestCase):
     def test_stdin_handle(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
         self.assertEqual(
             GetStdHandle(library.STD_INPUT_HANDLE),
             library.GetStdHandle(library.STD_INPUT_HANDLE)
         )
 
     def test_stdout_handle(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
         self.assertEqual(
             GetStdHandle(library.STD_OUTPUT_HANDLE),
             library.GetStdHandle(library.STD_OUTPUT_HANDLE)
         )
 
     def test_stderr_handle(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
         self.assertEqual(
             GetStdHandle(library.STD_ERROR_HANDLE),
             library.GetStdHandle(library.STD_ERROR_HANDLE)
@@ -169,7 +175,7 @@ class TestGetHandleFromFile(TestCase):
             handle_from_file(0)
 
     def test_fails_if_file_is_not_open(self):
-        fd, path = tempfile.mkstemp()
+        fd, _ = tempfile.mkstemp()
         test_file = os.fdopen(fd, "r")
         test_file.close()
 

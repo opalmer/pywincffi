@@ -1,6 +1,7 @@
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import PyWinCFFIError, InputError, WindowsAPIError
 
+
 class TestBaseClasses(TestCase):
     """
     Tests the base classes of our custom exceptions
@@ -59,6 +60,3 @@ class TestWindowsAPIError(TestCase):
     def test_str(self):
         error = WindowsAPIError("function", "there was a problem", 1, 0)
         self.assertEqual(str(error), error.message)
-
-
-

@@ -70,6 +70,22 @@ def remove(path, onexit=True):
                 atexit.register(remove, path, onexit=False)
 
 
+def c_file(path):
+    """
+    A generator which yields lines from a C header or source
+    file.
+
+    :param str path:
+        The filepath to read from.
+    """
+    with open(path, "r") as header:
+        for line in header:
+            line = line.strip()
+            if not line or line.startswith("//"):
+                continue
+            yield line
+
+
 class TestCase(_TestCase):
     """
     A base class for all test cases.  By default the

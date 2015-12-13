@@ -2,11 +2,11 @@ from __future__ import print_function
 
 import logging
 import os
+from textwrap import dedent
 from os.path import isfile, join, expanduser
 
-from six import PY3
 from mock import patch
-from textwrap import dedent
+from six import PY3
 
 from pywincffi.core.config import Configuration
 from pywincffi.core.testutil import TestCase
@@ -30,9 +30,9 @@ class TestLoggerLevelMappings(TestCase):
     """
     def levels(self):
         try:
-            levels = logging._levelToName
+            levels = logging._levelToName  # pylint: disable=no-member
         except AttributeError:
-            levels = logging._levelNames
+            levels = logging._levelNames  # pylint: disable=no-member
 
         for key, value in levels.items():
             if isinstance(key, int):
@@ -49,7 +49,7 @@ class TestLoggerLevelMappings(TestCase):
         mappings = Configuration.LOGGER_LEVEL_MAPPINGS.copy()
         known_keys = []
 
-        for key, value in self.levels():
+        for key, _ in self.levels():
             known_keys.append(key)
             self.assertIn(key, mappings)
             mappings.pop(key)

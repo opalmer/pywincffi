@@ -1,8 +1,8 @@
 import re
-from os.path import isfile, join
+from os.path import isfile
 
 from pywincffi.core import dist
-from pywincffi.core.testutil import TestCase
+from pywincffi.core.testutil import TestCase, c_file
 
 
 # TODO: it would be better if we had a parser to parse the header
@@ -15,31 +15,25 @@ class TestFunctionsHeader(TestCase):
                 self.assertTrue(isfile(path))
                 break
         else:
-            self.fail("Failed to locate header in Library.HEADERS")
+            self.fail("Failed to locate header in dist.Distribution.HEADERS")
 
     def get_header_functions(self):
         for path in dist.Distribution.HEADERS:
             if path.endswith("functions.h"):
-                with open(path, "r") as header:
-                    for line in header:
-                        line = line.strip()
-                        if not line or line.startswith("//"):
-                            continue
-
-                        match = re.match("^[A-Z]* ([A-Za-z]*)\(.*\);$", line)
-                        if match is not None:
-                            yield match.group(1)
+                for line in c_file(path):
+                    match = re.match(r"^[A-Z]* ([A-Za-z]*)\(.*\);$", line)
+                    if match is not None:
+                        yield match.group(1)
 
     def test_library_has_attributes_defined_in_header(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
 
         for function_name in self.get_header_functions():
             self.assertTrue(hasattr(library, function_name))
 
     def test_library_has_functions_defined_in_header(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
 
         for function_name in self.get_header_functions():
             function = getattr(library, function_name)
             self.assertTrue(callable(function))
-

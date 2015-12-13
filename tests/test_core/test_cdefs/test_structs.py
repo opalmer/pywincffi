@@ -1,7 +1,7 @@
-from os.path import isfile, join
+from os.path import isfile
 
 from pywincffi.core import dist
-from pywincffi.core.testutil import TestCase
+from pywincffi.core.testutil import TestCase, c_file
 
 
 # TODO: it would be better if we had a parser to parse the header
@@ -14,29 +14,25 @@ class TestStructsHeader(TestCase):
                 self.assertTrue(isfile(path))
                 break
         else:
-            self.fail("Failed to locate header in Library.HEADERS")
+            self.fail("Failed to locate header in dist.Distribution.HEADERS")
 
     def test_get_structs(self):
         for path in dist.Distribution.HEADERS:
             if path.endswith("structs.h"):
-                with open(path, "r") as header:
-                    for line in header:
-                        line = line.strip()
-                        if not line or line.startswith("//"):
-                            continue
+                for line in c_file(path):
+                    # This is a bit hacky but it's effective...
+                    if line.startswith("}") and line.endswith(";"):
 
-                        # This is a bit hacky but it's effective...
-                        if line.startswith("}") and line.endswith(";"):
+                        for char in ("}", ";", "*", " "):
+                            line = line.replace(char, "")
 
-                            for char in ("}", ";", "*", " "):
-                                line = line.replace(char, "")
-
-                            for entry in filter(bool, line.strip().split(",")):
-                                yield entry
+                        # pylint: disable=bad-builtin
+                        for entry in filter(bool, line.strip().split(",")):
+                            yield entry
 
     def test_library_has_attributes_defined_in_header(self):
-        ffi, library = dist.load()
-        
+        ffi, _ = dist.load()
+
         for struct_name in self.test_get_structs():
             try:
                 ffi.new(struct_name)
@@ -48,6 +44,6 @@ class TestStructsHeader(TestCase):
             except TypeError as error:
                 self.assertEqual(
                     str(error),
-                    "expected a pointer or array ctype, got '%s'" % struct_name)
+                    "expected a pointer or array "
+                    "ctype, got '%s'" % struct_name)
                 ffi.new("%s[0]" % struct_name)
-

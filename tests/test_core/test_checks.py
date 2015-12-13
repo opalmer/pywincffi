@@ -22,27 +22,19 @@ class TestCheckErrorCode(TestCase):
     LIBRARY_MODE = "inline"
 
     def test_default_code_does_match_expected(self):
-        ffi, _ = dist.load()
-
         with patch.object(FFI, "getwinerror", return_value=(0, "GTG")):
             error_check("Foobar")
 
     def test_default_code_does_not_match_expected(self):
-        ffi, _ = dist.load()
-
         with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
             with self.assertRaises(WindowsAPIError):
                 error_check("Foobar", expected=2)
 
     def test_non_zero(self):
-        ffi, _ = dist.load()
-
         with patch.object(FFI, "getwinerror", return_value=(1, "NGTG")):
             error_check("Foobar", expected=Enums.NON_ZERO)
 
     def test_non_zero_success(self):
-        ffi, _ = dist.load()
-
         with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
             error_check("Foobar", code=1, expected=Enums.NON_ZERO)
 
@@ -60,14 +52,12 @@ class TestTypeCheck(TestCase):
             input_check("", None, Enums.HANDLE)
 
     def test_not_a_handle(self):
-        ffi, _ = dist.load()
         typeof = Mock(kind="", cname="")
         with patch.object(FFI, "typeof", return_value=typeof):
             with self.assertRaises(InputError):
                 input_check("", None, Enums.HANDLE)
 
     def test_handle_type_success(self):
-        ffi, _ = dist.load()
         typeof = Mock(kind="pointer", cname="void *")
         with patch.object(FFI, "typeof", return_value=typeof):
             # The value does not matter here since we're
@@ -127,7 +117,6 @@ class TestEnumMapping(TestCase):
 
         # If something is nullable but kind/cname don't match it
         # should not fail the input check
-        ffi, _ = dist.load()
         typeof = Mock(kind="foo", cname="bar")
         with patch.object(FFI, "typeof", return_value=typeof):
             input_check("", "", "mapping")
@@ -180,6 +169,7 @@ class TestEnumPyFile(TestCase):
         if PY3:
             self.assertIs(FileType, io.IOBase)
         elif PY2:
+            # pylint: disable=no-member
             self.assertIs(FileType, types.FileType)
         else:
             self.fail("This is neither Python 2 or 3")
