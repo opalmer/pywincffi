@@ -23,6 +23,9 @@ except ImportError:
     from unittest import TestCase as _TestCase
 
 from pywincffi.core.config import config
+from pywincffi.core.logger import get_logger
+
+logger = get_logger("core.testutil")
 
 # To keep lint on non-windows platforms happy.
 try:
@@ -32,11 +35,15 @@ except NameError:
 
 # Load in our own kernel32 with the function(s) we need
 # so we don't have to rely on pywincffi.core
-kernel32 = None
-if os.name == "nt":
-    ffi = FFI()
+libtest = None
+ffi = FFI()
+
+try:
     ffi.cdef("void SetLastError(DWORD);")
-    kernel32 = ffi.dlopen("kernel32")
+    libtest = ffi.dlopen("kernel32")
+except (AttributeError, OSError):
+    if os.name == "nt":
+        logger.warning("Failed to build SetLastError()")
 
 
 def remove(path, onexit=True):
@@ -96,23 +103,26 @@ class TestCase(_TestCase):
     LIBRARY_MODE = None
 
     def setUp(self):
+        self._library_mode = None
+
         if os.name == "nt":
-            if kernel32 is None:
-                self.fail("kernel32 was never defined")
+            if libtest is None:
+                self.fail("`libtest` was never defined")
 
             # Always reset the last error to 0 between tests.  This
             # ensures that any error we intentionally throw in one
             # test does not causes an error to be raised in another.
-            kernel32.SetLastError(ffi.cast("DWORD", 0))
+            libtest.SetLastError(ffi.cast("DWORD", 0))
 
-        self._library_mode = None
-        if self.LIBRARY_MODE is not None:
-            self._library_mode = config.get("pywincffi", "library")
-            config.set("pywincffi", "library", self.LIBRARY_MODE)
+            # If LIBRARY_MODE was set use this to drive how dist.load()
+            # will load the library.
+            if self.LIBRARY_MODE is not None:
+                self._old_library_mode = config.get("pywincffi", "library")
+                config.set("pywincffi", "library", self.LIBRARY_MODE)
 
     def tearDown(self):
-        if self._library_mode is not None:
-            config.set("pywincffi", "library", self._library_mode)
+        if self._old_library_mode is not None:
+            config.set("pywincffi", "library", self._old_library_mode)
 
     def tempdir(self):
         """
