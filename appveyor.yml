@@ -59,4 +59,4 @@ after_test:
   - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py bdist_wheel"
 
 artifacts:
-  - path: dist\*
+  - path: dist\*.whl
