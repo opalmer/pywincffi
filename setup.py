@@ -43,6 +43,8 @@ if os.environ.get("READTHEDOCS"):
 
 test_requirements += ["nose", "coverage"]
 
+if os.environ.get("CI"):
+    install_requirements += test_requirements
 
 setup_keywords = dict(
     name="pywincffi",

@@ -46,15 +46,13 @@ install:
   # Install some additional Python modules which will be required by
   # the tests.  These can't be installed as part of the setup.py due
   # to file locking issues.
-  - "%PYTHON%\\Scripts\\pip.exe install setuptools coverage nose wheel cffi --upgrade"
+  - "copy /Y C:\\project\\.ci\\appveyor\\pywincffi.ini %HOMEDRIVE%%HOMEPATH%\\pywincffi.ini"
   - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py bdist_wheel"
   - ps: 'Get-ChildItem -File | Foreach {%PYTHON%\\Scripts\\pip.exe install $_.fullname}'
 
 test_script:
-  - ps: cd C:\\project
-  - "copy /Y C:\\project\\.ci\\appveyor\\pywincffi_precompiled.ini %HOMEDRIVE%%HOMEPATH%\\pywincffi.ini"
-  - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py clean install"
-  - "%WITH_COMPILER% %PYTHON%\\Scripts\\nosetests --with-coverage --cover-package pywincffi -v tests"
+  - ps: cd C:\\
+  - "%WITH_COMPILER% %PYTHON%\\Scripts\\nosetests --with-coverage --cover-package pywincffi -v C:\\project\\tests"
 
 artifacts:
   - path: dist\*.whl
