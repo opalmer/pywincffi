@@ -29,6 +29,8 @@ setup_requirements += ["wheel"]
 
 if sys.version_info[0] == 2:
     test_requirements += ["unittest2"]
+
+if sys.version_info[0:2] < (3, 4):
     install_requirements += ["enum34"]
 
 if sys.version_info[0:2] == (2, 6):
