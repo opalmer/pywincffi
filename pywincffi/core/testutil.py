@@ -10,7 +10,7 @@ import os
 import shutil
 import tempfile
 from errno import ENOENT, EACCES, EAGAIN, EIO
-from os.path import isfile, isdir, abspath, dirname, join
+from os.path import isfile, isdir
 
 from cffi import FFI
 
@@ -35,12 +35,12 @@ except NameError:
 
 # Load in our own kernel32 with the function(s) we need
 # so we don't have to rely on pywincffi.core
-libtest = None
+libtest = None  # pylint: disable=invalid-name
 ffi = FFI()
 
 try:
     ffi.cdef("void SetLastError(DWORD);")
-    libtest = ffi.dlopen("kernel32")
+    libtest = ffi.dlopen("kernel32")  # pylint: disable=invalid-name
 except (AttributeError, OSError):
     if os.name == "nt":
         logger.warning("Failed to build SetLastError()")
@@ -110,12 +110,9 @@ class TestCase(_TestCase):
 
         self.configure(config)
 
-    def configure(self, config):
-        config.load()
-
-        if "PYWINCFFI_TEST_LIBRARY" in os.environ:
-            config.set(
-                "pywincffi", "library", os.environ["PYWINCFFI_TEST_LIBRARY"])
+    def configure(self, config_object):  # pylint: disable=no-self-use
+        """Sets up the configuration for the test"""
+        config_object.load()
 
     def tempdir(self):
         """
