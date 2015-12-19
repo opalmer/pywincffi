@@ -12,7 +12,7 @@ import tempfile
 from errno import ENOENT, EACCES, EAGAIN, EIO
 from os.path import isfile, isdir
 
-from cffi import FFI
+from cffi import FFI, CDefError
 
 try:
     # The setup.py file installs unittest2 for Python 2
@@ -41,7 +41,7 @@ ffi = FFI()
 try:
     ffi.cdef("void SetLastError(DWORD);")
     libtest = ffi.dlopen("kernel32")  # pylint: disable=invalid-name
-except (AttributeError, OSError):
+except (AttributeError, OSError, CDefError):
     if os.name == "nt":
         logger.warning("Failed to build SetLastError()")
 
