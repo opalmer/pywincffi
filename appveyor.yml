@@ -49,7 +49,7 @@ install:
   - "copy /Y C:\\project\\.ci\\appveyor\\pywincffi.ini %HOMEDRIVE%%HOMEPATH%\\pywincffi.ini"
   - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install -r dev_requirements.txt"
   - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py bdist_wheel"
-  - ps: 'Get-ChildItem -File | Foreach {%PYTHON%\\Scripts\\pip.exe install $_.fullname}'
+  - "%WITH_COMPILER% %PYTHON%\\pip.exe install ."
 
 test_script:
   - ps: cd C:\\
