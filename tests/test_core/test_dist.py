@@ -7,6 +7,7 @@ from os.path import isfile, dirname, basename, join
 from cffi import FFI
 from mock import patch
 
+from pywincffi.core.config import config
 from pywincffi.core.dist import (
     __all__, Distribution, InlineModule, get_filepath, ffi, load)
 from pywincffi.core.testutil import TestCase
@@ -233,16 +234,22 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
 
 
 class TestDistributionLoad(TestDistributionLoadBaseTest):
-    def test_imports_module_if_precompiled(self):
+    def test_imports_module_cache(self):
+        config.set("pywincffi", "library", "precompiled")
         module = new_module(Distribution.MODULE_NAME)
         module.ffi = 3
         module.lib = 4
         sys.modules.update({Distribution.MODULE_NAME: module})
+        self.addCleanup(sys.modules.pop, Distribution.MODULE_NAME)
         self.assertEqual(Distribution.load(), (3, 4))
         self.assertIs(Distribution._pywincffi, module)
 
-    def test_compiles_module_if_not_precompiled(self):
-        ffi_, library = Distribution.load()
+    def test_compiles_module_inline(self):
+        config.set("pywincffi", "library", "inline")
+
+        with patch.object(Distribution, "_pywincffi", None):
+            ffi_, library = Distribution.load()
+
         self.assertIsInstance(ffi_, FFI)
         self.assertEqual(library.__class__.__name__, "FFILibrary")
 
