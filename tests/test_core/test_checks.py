@@ -39,7 +39,7 @@ class TestCheckErrorCode(TestCase):
             error_check("Foobar", code=1, expected=Enums.NON_ZERO)
 
 
-class TestTypeCheck(TestCase):
+class TestTypeCheckFailure(TestCase):
     """
     Tests for :func:`pywincffi.core.types.input_check`
     """
@@ -52,17 +52,9 @@ class TestTypeCheck(TestCase):
             input_check("", None, Enums.HANDLE)
 
     def test_not_a_handle(self):
-        typeof = Mock(kind="", cname="")
-        with patch.object(FFI, "typeof", return_value=typeof):
-            with self.assertRaises(InputError):
-                input_check("", None, Enums.HANDLE)
-
-    def test_handle_type_success(self):
-        typeof = Mock(kind="pointer", cname="void *")
-        with patch.object(FFI, "typeof", return_value=typeof):
-            # The value does not matter here since we're
-            # mocking out typeof()
-            input_check("", None, Enums.HANDLE)
+        ffi, _ = dist.load()
+        with self.assertRaises(InputError):
+            input_check("", ffi.new("void *[2]"), Enums.HANDLE)
 
 
 class TestEnumMapping(TestCase):
