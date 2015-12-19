@@ -7,6 +7,7 @@ Provides functions that are responsible for internal type checks.
 
 import io
 import os
+import re
 import types
 from collections import namedtuple
 
@@ -39,12 +40,12 @@ CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
 INPUT_CHECK_MAPPINGS = {
     Enums.HANDLE: CheckMapping(
         kind="pointer",
-        cname="void *",
+        cname=re.compile("^void *$"),
         nullable=False
     ),
     Enums.OVERLAPPED: CheckMapping(
         kind="array",
-        cname="OVERLAPPED[1]",
+        cname=re.compile(r"^(?:struct _|)OVERLAPPED\[1\]$"),
         nullable=True
     )
 }
@@ -151,7 +152,8 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             if mapping.nullable and value is ffi.NULL:
                 return
 
-            if typeof.kind != mapping.kind or typeof.cname != mapping.cname:
+            if (typeof.kind != mapping.kind or not
+                    mapping.cname.match(typeof.cname)):
                 raise TypeError
 
         except TypeError:

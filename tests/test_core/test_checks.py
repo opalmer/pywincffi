@@ -68,58 +68,27 @@ class TestTypeCheck(TestCase):
 class TestEnumMapping(TestCase):
     def setUp(self):
         self.original_mappings = INPUT_CHECK_MAPPINGS.copy()
-        INPUT_CHECK_MAPPINGS.clear()
 
     def tearDown(self):
+        super(TestEnumMapping, self).tearDown()
         INPUT_CHECK_MAPPINGS.clear()
         INPUT_CHECK_MAPPINGS.update(self.original_mappings)
 
     def test_nullable(self):
         INPUT_CHECK_MAPPINGS.update(
             mapping=CheckMapping(
-                kind="foo",
-                cname="bar",
+                kind="pointer",
+                cname="void *",
                 nullable=True
             )
         )
 
-        # If something is nullable but kind/cname don't match it
-        # should not fail the input check
         ffi, _ = dist.load()
-        typeof = Mock(kind="pointer", cname="void *")
-        with patch.object(FFI, "typeof", return_value=typeof):
-            input_check("", ffi.NULL, "mapping")
+        input_check("", ffi.NULL, "mapping")
 
-    def test_not_nullable(self):
+    def test_overlapped(self):
         ffi, _ = dist.load()
-        INPUT_CHECK_MAPPINGS.update(
-            mapping=CheckMapping(
-                kind="foo",
-                cname="bar",
-                nullable=False
-            )
-        )
-
-        # If something is nullable but kind/cname don't match it
-        # should not fail the input check
-        typeof = Mock(kind="foo", cname="bar")
-        with patch.object(FFI, "typeof", return_value=typeof):
-            input_check("", ffi.NULL, "mapping")
-
-    def test_kind_and_cname(self):
-        INPUT_CHECK_MAPPINGS.update(
-            mapping=CheckMapping(
-                kind="foo",
-                cname="bar",
-                nullable=True
-            )
-        )
-
-        # If something is nullable but kind/cname don't match it
-        # should not fail the input check
-        typeof = Mock(kind="foo", cname="bar")
-        with patch.object(FFI, "typeof", return_value=typeof):
-            input_check("", "", "mapping")
+        input_check("", ffi.new("OVERLAPPED[1]"), Enums.OVERLAPPED)
 
 
 class TestEnumUTF8(TestCase):
