@@ -40,7 +40,7 @@ CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
 INPUT_CHECK_MAPPINGS = {
     Enums.HANDLE: CheckMapping(
         kind="pointer",
-        cname=re.compile("^void *$"),
+        cname=re.compile(r"^void \*$"),
         nullable=False
     ),
     Enums.OVERLAPPED: CheckMapping(
@@ -141,7 +141,8 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
     if allowed_types is None and isinstance(allowed_values, tuple):
         if value not in allowed_values:
             raise InputError(
-                name, value, allowed_types, allowed_values=allowed_values)
+                name, value, allowed_types,
+                allowed_values=allowed_values, ffi=ffi)
 
     elif allowed_types in INPUT_CHECK_MAPPINGS:
         mapping = INPUT_CHECK_MAPPINGS[allowed_types]
@@ -163,11 +164,11 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
         try:
             value.encode("utf-8")
         except (ValueError, AttributeError):
-            raise InputError(name, value, allowed_types)
+            raise InputError(name, value, allowed_types, ffi=ffi)
 
     elif allowed_types is Enums.PYFILE:
         if not isinstance(value, FileType):
-            raise InputError(name, value, "file type")
+            raise InputError(name, value, "file type", ffi=ffi)
 
         # Make sure the file descriptor itself is valid.  If it's
         # not then we may have trouble working with the file
@@ -178,8 +179,8 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             os.fstat(value.fileno())
         except (OSError, ValueError):
             raise InputError(
-                name, value, "file type (with valid file descriptor)")
+                name, value, "file type (with valid file descriptor)", ffi=ffi)
 
     else:
         if not isinstance(value, allowed_types):
-            raise InputError(name, value, allowed_types)
+            raise InputError(name, value, allowed_types, ffi=ffi)

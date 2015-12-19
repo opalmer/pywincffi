@@ -19,26 +19,22 @@ class InputError(PyWinCFFIError):
     to be sure that the input(s) being provided are what we're expecting so
     we fail early and provide better error messages.
     """
-    def __init__(self, name, value, expected_types, allowed_values=None):
+    def __init__(  # pylint: disable=too-many-arguments
+            self, name, value, expected_types, allowed_values=None, ffi=None):
         self.name = name
         self.value = value
         self.value_repr = value
         self.expected_types = expected_types
         self.allowed_values = allowed_values
 
-        # Try slightly harder to present a better
-        # representation of the value in the error
-        # message.
-        from pywincffi.core import dist
-        ffi, _ = dist.load()
-
-        try:
-            typeof = ffi.typeof(value)
-        except Exception:
-            self.value_repr = repr(value)
-        else:
-            self.value_repr = "%s(kind=%r, cname=%r)" % (
-                value.__class__.__name__, typeof.kind, typeof.cname)
+        if ffi is not None:
+            try:
+                typeof = ffi.typeof(value)
+            except (TypeError, ffi.error):
+                self.value_repr = repr(value)
+            else:
+                self.value_repr = "%s(kind=%r, cname=%r)" % (
+                    value.__class__.__name__, typeof.kind, typeof.cname)
 
         if self.allowed_values is None:
             self.message = "Expected type(s) %r for %s.  Got %s instead." % (

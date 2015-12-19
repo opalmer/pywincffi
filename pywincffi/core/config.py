@@ -29,7 +29,7 @@ from pywincffi.exceptions import ConfigurationError
 try:
     WindowsError
 except NameError:
-    WindowsError = OSError
+    WindowsError = OSError  # pylint: disable=redefined-builtin
 
 
 class Configuration(RawConfigParser):
