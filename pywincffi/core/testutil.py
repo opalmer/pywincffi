@@ -100,15 +100,18 @@ class TestCase(_TestCase):
     """
     def setUp(self):
         if os.name == "nt":
-            if libtest is None:
-                self.fail("`libtest` was never defined")
-
             # Always reset the last error to 0 between tests.  This
             # ensures that any error we intentionally throw in one
             # test does not causes an error to be raised in another.
-            libtest.SetLastError(ffi.cast("DWORD", 0))
+            self.SetLastError(0)
 
         self.configure(config)
+
+    def SetLastError(self, value=0, lib=libtest):
+        if libtest is None:
+            self.fail("`lib` was not defined")
+
+        return libtest.SetLastError(ffi.cast("DWORD", 0))
 
     def configure(self, config_object):  # pylint: disable=no-self-use
         """Sets up the configuration for the test"""

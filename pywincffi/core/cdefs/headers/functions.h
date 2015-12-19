@@ -6,6 +6,7 @@
 
 // Custom functions
 HANDLE handle_from_fd(int);
+VOID SetLastError(DWORD);
 
 // Processes
 HANDLE OpenProcess(DWORD, BOOL, DWORD);
