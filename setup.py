@@ -19,14 +19,13 @@ except (OSError, IOError, WindowsError) as error:
 
 base_requirements = [
     "cffi>=1.0.0",
-    "six",
-    "wheel>=0.26.0",
-    "setuptools>=18.0"
+    "six"
 ]
 
 install_requirements = base_requirements[:]
 setup_requirements = base_requirements[:]
 test_requirements = base_requirements[:]
+setup_requirements += ["wheel"]
 
 if sys.version_info[0] == 2:
     test_requirements += ["unittest2"]
