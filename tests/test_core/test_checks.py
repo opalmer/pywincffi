@@ -122,7 +122,7 @@ class TestAllowedValues(TestCase):
         except InputError as error:
             self.assertEqual(
                 error.message,
-                "Expected value for foo to be in (2,), got 1 instead."
+                "Expected value for foo to be in (2,). Got 1 instead."
             )
 
         else:
