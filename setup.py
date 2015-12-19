@@ -17,28 +17,30 @@ except (OSError, IOError, WindowsError) as error:
     else:
         raise
 
-install_requires_extras = []
-if "READTHEDOCS" in os.environ:
-    install_requires_extras = ["sphinx"]
+base_requirements = [
+    "cffi>=1.0.0",
+    "six",
+    "wheel>=0.26.0",
+    "setuptools>=18.0"
+]
 
-cffi_requirement = "cffi>=1.0.0"
-tests_require = ["nose", "coverage", "setuptools>=17.1", cffi_requirement]
-
-if sys.version_info[0:2] == (2, 6):
-    # later versions of mock don't work with 2.6
-    tests_require.append("mock==1.0.1")
-else:
-    tests_require.append("mock")
+install_requirements = base_requirements[:]
+setup_requirements = base_requirements[:]
+test_requirements = base_requirements[:]
 
 if sys.version_info[0] == 2:
-    # Backports several unittest features from
-    # later Python versions.
-    tests_require.append("unittest2")
+    test_requirements += ["unittest2"]
+    install_requirements += ["enum34"]
 
-try:
-    import enum
-except ImportError:
-    install_requires_extras.append("enum34")
+if sys.version_info[0:2] == (2, 6):
+    test_requirements += ["mock==1.0.1"]
+else:
+    test_requirements += ["mock"]
+
+if os.environ.get("READTHEDOCS"):
+    install_requirements += ["sphinx"]
+
+test_requirements += ["nose", "coverage"]
 
 
 setup_keywords = dict(
@@ -51,11 +53,9 @@ setup_keywords = dict(
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
-    setup_requires=[cffi_requirement, "six"],
-    install_requires=[
-        cffi_requirement, "six"
-    ] + install_requires_extras,
-    tests_require=tests_require,
+    setup_requires=setup_requirements,
+    install_requires=install_requirements,
+    tests_require=test_requirements,
     test_suite="nose.collector",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
