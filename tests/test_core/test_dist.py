@@ -156,8 +156,8 @@ class TestDistributionInline(TestDistributionLoadBaseTest):
     """
     Tests for :meth:`pywincffi.core.dist.Distribution.inline`
     """
-    def configure(self, config):
-        super(TestDistributionInline, self).configure(config)
+    def configure(self, config_):
+        super(TestDistributionInline, self).configure(config_)
         config.set("pywincffi", "library", "inline")
         config.set("pywincffi", "tempdir", self.tempdir())
 
@@ -190,8 +190,8 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
     """
     Tests for :meth:`pywincffi.core.dist.Distribution.out_of_line`
     """
-    def configure(self, config):
-        super(TestDistributionOutOfLine, self).configure(config)
+    def configure(self, config_):
+        super(TestDistributionOutOfLine, self).configure(config_)
         config.set("pywincffi", "library", "precompiled")
         config.set("pywincffi", "tempdir", self.tempdir())
 
