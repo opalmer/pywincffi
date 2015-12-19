@@ -17,34 +17,13 @@ except (OSError, IOError, WindowsError) as error:
     else:
         raise
 
-base_requirements = [
+requirements = [
     "cffi>=1.0.0",
     "six"
 ]
 
-install_requirements = base_requirements[:]
-setup_requirements = base_requirements[:]
-test_requirements = base_requirements[:]
-setup_requirements += ["wheel"]
-
-if sys.version_info[0] == 2:
-    test_requirements += ["unittest2"]
-
 if sys.version_info[0:2] < (3, 4):
-    install_requirements += ["enum34"]
-
-if sys.version_info[0:2] == (2, 6):
-    test_requirements += ["mock==1.0.1"]
-else:
-    test_requirements += ["mock"]
-
-if os.environ.get("READTHEDOCS"):
-    install_requirements += ["sphinx"]
-
-test_requirements += ["nose", "coverage"]
-
-if os.environ.get("CI"):
-    install_requirements += test_requirements
+    requirements += ["enum34"]
 
 setup_keywords = dict(
     name="pywincffi",
@@ -56,9 +35,8 @@ setup_keywords = dict(
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
-    setup_requires=setup_requirements,
-    install_requires=install_requirements,
-    tests_require=test_requirements,
+    setup_requires=requirements,
+    install_requires=requirements,
     test_suite="nose.collector",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

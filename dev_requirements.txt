@@ -1,0 +1,9 @@
+nose
+unittest2
+pylint
+pep8
+mock
+sphinx
+wheel
+setuptools
+coverage
