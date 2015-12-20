@@ -50,7 +50,7 @@ install:
   - "%PYTHON%\\Scripts\\virtualenv.exe C:\\virtualenv\\precompiled"
   - "%PYTHON%\\Scripts\\virtualenv.exe C:\\virtualenv\\inline"
   - "%WITH_COMPILER% C:\\virtualenv\\precompiled\\Scripts\\pip.exe install -r dev_requirements.txt"
-  - "%WITH_COMPILER% C:\\virtualenv\\inline\\Scripts\\pip.exe install -r dev_ requirements.txt"
+  - "%WITH_COMPILER% C:\\virtualenv\\inline\\Scripts\\pip.exe install -r dev_requirements.txt"
 
 test_script:
   # Precompiled test
