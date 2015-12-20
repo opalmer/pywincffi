@@ -29,8 +29,13 @@ class InputError(PyWinCFFIError):
 
         if ffi is not None:
             try:
+                exceptions = (TypeError, ffi.error)
+            except AttributeError:
+                exceptions = (TypeError, )
+
+            try:
                 typeof = ffi.typeof(value)
-            except (TypeError, ffi.error):
+            except exceptions:
                 self.value_repr = repr(value)
             else:
                 self.value_repr = "%s(kind=%r, cname=%r)" % (
