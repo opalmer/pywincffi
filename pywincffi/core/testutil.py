@@ -22,6 +22,7 @@ except ImportError:
     # pylint: disable=wrong-import-order
     from unittest import TestCase as _TestCase
 
+from pywincffi.core import dist
 from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 
@@ -107,11 +108,16 @@ class TestCase(_TestCase):
 
         self.configure(config)
 
-    def SetLastError(self, value=0, lib=libtest):
-        if libtest is None:
+    # pylint: ignore=invalid-name
+    def SetLastError(self, value=0, lib=None):
+        """Calls the Windows API function SetLastError()"""
+        if lib is None:
+            lib = libtest
+
+        if lib is None:
             self.fail("`lib` was not defined")
 
-        return libtest.SetLastError(ffi.cast("DWORD", 0))
+        return lib.SetLastError(ffi.cast("DWORD", 0))
 
     def configure(self, config_object):  # pylint: disable=no-self-use
         """Sets up the configuration for the test"""
