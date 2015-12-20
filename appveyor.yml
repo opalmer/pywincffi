@@ -56,12 +56,13 @@ test_script:
   # Precompiled test
   - ps: cd C:\\project
   - "copy /Y .ci\\appveyor\\precompiled.ini %HOMEDRIVE%%HOMEPATH%\\pywincffi.ini"
-  - "%WITH_COMPILER% C:\\virtualenv\\precompiled\\Scripts\\python.exe bdist_wheel"
+  - "%WITH_COMPILER% C:\\virtualenv\\precompiled\\Scripts\\python.exe setup.py bdist_wheel"
   - "%WITH_COMPILER% C:\\virtualenv\\precompiled\\Scripts\\python.exe setup.py install"
   - ps: C:\\
   - "C:\\virtualenv\\precompiled\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
 
   # Inline test
+  - ps: cd C:\\project
   - "copy /Y C:\\project\\.ci\\appveyor\\inline.ini %HOMEDRIVE%%HOMEPATH%\\pywincffi.ini"
   - "%WITH_COMPILER% C:\\virtualenv\\inline\\Scripts\\python.exe setup.py develop"
   - ps: C:\\
