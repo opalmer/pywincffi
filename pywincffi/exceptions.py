@@ -5,6 +5,8 @@ Exceptions
 Custom exceptions that ``pywincffi`` can throw.
 """
 
+from cffi.api import CDefError
+
 
 class PyWinCFFIError(Exception):
     """
@@ -29,9 +31,9 @@ class InputError(PyWinCFFIError):
 
         if ffi is not None:
             try:
-                exceptions = (TypeError, ffi.error)
+                exceptions = (TypeError, CDefError, ffi.error)
             except AttributeError:
-                exceptions = (TypeError, )
+                exceptions = (TypeError, CDefError)
 
             try:
                 typeof = ffi.typeof(value)
