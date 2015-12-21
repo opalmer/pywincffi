@@ -2,10 +2,12 @@ from __future__ import print_function
 
 import logging
 import os
-from os.path import isfile, join, expanduser
+import tempfile
+from textwrap import dedent
+from os.path import isfile, join, expanduser, isdir
 
-from six import PY3
 from mock import patch
+from six import PY3
 
 from pywincffi.core.config import Configuration
 from pywincffi.core.testutil import TestCase
@@ -85,32 +87,29 @@ class TestLoad(TestCase):
         mocked.assert_called_once_with(Configuration.FILES)
 
     def test_default_log_level(self):
-        config = Configuration()
-        self.assertEqual(config.logging_level(), logging.WARNING)
+        with patch.object(Configuration, "FILES", (Configuration.FILES[0], )):
+            config = Configuration()
+            self.assertEqual(config.logging_level(), logging.WARNING)
 
-    def test_override_home(self):
+    def test_contains_override_path_home(self):
         path = join(expanduser("~"), "pywincffi.ini")
+        self.assertIn(path, Configuration.FILES)
 
-        # This will always run on AppVeyor, it's less complicated
-        # to test locally this way.
-        if isfile(path):
-            self.skipTest("Local configuration %s exists" % path)
-
-        self.write_config(path, "debug")
-        config = Configuration()
-        self.assertEqual(config.logging_level(), logging.DEBUG)
-
-    def test_override_working_directory(self):
+    def test_contains_override_path_local(self):
         path = "pywincffi.ini"
+        self.assertIn(path, Configuration.FILES)
 
-        # This will always run on AppVeyor, it's less complicated
-        # to test locally this way.
-        if isfile(path):
-            self.skipTest("Local configuration %s exists" % path)
-
-        self.write_config(path, "notset")
-        config = Configuration()
-        self.assertEqual(config.logging_level(), logging.NOTSET)
+    def test_loads_override(self):
+        paths = (
+            Configuration.FILES[0],
+            self.tempfile(data=dedent("""
+            [pywincffi]
+            log_level=-1
+            """))
+        )
+        with patch.object(Configuration, "FILES", paths):
+            config = Configuration()
+            self.assertEqual(config.getint("pywincffi", "log_level"), -1)
 
 
 class TestPrecompiled(TestCase):
@@ -144,3 +143,35 @@ class TestLoggingLevel(TestCase):
             config = Configuration()
             config.set("pywincffi", "log_level", key)
             self.assertEqual(config.logging_level(), value)
+
+
+class TestTempdir(TestCase):
+    """
+    Tests for ``pywincffi.core.config.Configuration.tempdir``
+    """
+    def test_unknown_key(self):
+        config = Configuration()
+        config.set("pywincffi", "tempdir", "{foobar}")
+
+        with self.assertRaises(ConfigurationError):
+            config.tempdir()
+
+    def test_creates_directory(self):
+        tempdir = join(self.tempdir(), "pywincffi")
+        config = Configuration()
+        config.set("pywincffi", "tempdir", tempdir)
+        self.assertFalse(isdir(tempdir))
+        config.tempdir()
+        self.assertTrue(isdir(tempdir))
+        config.tempdir()  # calling again should not raise exception
+
+    def test_return_value(self):
+        tempdir = join(self.tempdir(), "pywincffi")
+        config = Configuration()
+        config.set("pywincffi", "tempdir", tempdir)
+        self.assertEqual(tempdir, config.tempdir())
+
+    def test_tempdir_substitution(self):
+        config = Configuration()
+        config.set("pywincffi", "tempdir", "{tempdir}")
+        self.assertEqual(tempfile.gettempdir(), config.tempdir())

@@ -17,7 +17,7 @@ documentation for the constant names and their purpose:
 
 import six
 
-from pywincffi.core.ffi import Library
+from pywincffi.core import dist
 from pywincffi.core.checks import input_check, error_check
 
 
@@ -46,7 +46,7 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     input_check("dwDesiredAccess", dwDesiredAccess, six.integer_types)
     input_check("bInheritHandle", bInheritHandle, bool)
     input_check("dwProcessId", dwProcessId, six.integer_types)
-    ffi, library = Library.load()
+    ffi, library = dist.load()
 
     handle_id = library.OpenProcess(
         ffi.cast("DWORD", dwDesiredAccess),

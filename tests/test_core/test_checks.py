@@ -4,47 +4,51 @@ import tempfile
 import types
 
 from six import PY3, PY2
-from mock import Mock, patch
+from mock import patch
+from cffi import FFI
 
+from pywincffi.core import dist
 from pywincffi.core.checks import (
     INPUT_CHECK_MAPPINGS, FileType, CheckMapping, Enums,
     input_check, error_check)
-from pywincffi.core.ffi import Library
+from pywincffi.core.config import config
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError, InputError
 
 
+# TODO: rewrite this so it works for both precompiled and inline modules
 class TestCheckErrorCode(TestCase):
     """
     Tests for :func:`pywincffi.core.ffi.check_error_code`
     """
-    def test_default_code_does_match_expected(self):
-        ffi, _ = Library.load()
+    LIBRARY_MODE = "inline"
 
-        with patch.object(ffi, "getwinerror", return_value=(0, "GTG")):
+    def setUp(self):
+        super(TestCheckErrorCode, self).setUp()
+        if config.precompiled():
+            self.skipTest("inline only")
+
+        # TODO: build inline here, replace dist.load()
+
+    def test_default_code_does_match_expected(self):
+        with patch.object(FFI, "getwinerror", return_value=(0, "GTG")):
             error_check("Foobar")
 
     def test_default_code_does_not_match_expected(self):
-        ffi, _ = Library.load()
-
-        with patch.object(ffi, "getwinerror", return_value=(0, "NGTG")):
+        with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
             with self.assertRaises(WindowsAPIError):
                 error_check("Foobar", expected=2)
 
     def test_non_zero(self):
-        ffi, _ = Library.load()
-
-        with patch.object(ffi, "getwinerror", return_value=(1, "NGTG")):
+        with patch.object(FFI, "getwinerror", return_value=(1, "NGTG")):
             error_check("Foobar", expected=Enums.NON_ZERO)
 
     def test_non_zero_success(self):
-        ffi, _ = Library.load()
-
-        with patch.object(ffi, "getwinerror", return_value=(0, "NGTG")):
+        with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
             error_check("Foobar", code=1, expected=Enums.NON_ZERO)
 
 
-class TestTypeCheck(TestCase):
+class TestTypeCheckFailure(TestCase):
     """
     Tests for :func:`pywincffi.core.types.input_check`
     """
@@ -57,77 +61,35 @@ class TestTypeCheck(TestCase):
             input_check("", None, Enums.HANDLE)
 
     def test_not_a_handle(self):
-        ffi, _ = Library.load()
-        typeof = Mock(kind="", cname="")
-        with patch.object(ffi, "typeof", return_value=typeof):
-            with self.assertRaises(InputError):
-                input_check("", None, Enums.HANDLE)
-
-    def test_handle_type_success(self):
-        ffi, _ = Library.load()
-        typeof = Mock(kind="pointer", cname="void *")
-        with patch.object(ffi, "typeof", return_value=typeof):
-            # The value does not matter here since we're
-            # mocking out typeof()
-            input_check("", None, Enums.HANDLE)
+        ffi, _ = dist.load()
+        with self.assertRaises(InputError):
+            input_check("", ffi.new("void *[2]"), Enums.HANDLE)
 
 
 class TestEnumMapping(TestCase):
     def setUp(self):
         self.original_mappings = INPUT_CHECK_MAPPINGS.copy()
-        INPUT_CHECK_MAPPINGS.clear()
 
     def tearDown(self):
+        super(TestEnumMapping, self).tearDown()
         INPUT_CHECK_MAPPINGS.clear()
         INPUT_CHECK_MAPPINGS.update(self.original_mappings)
 
     def test_nullable(self):
         INPUT_CHECK_MAPPINGS.update(
             mapping=CheckMapping(
-                kind="foo",
-                cname="bar",
+                kind="pointer",
+                cname="void *",
                 nullable=True
             )
         )
 
-        # If something is nullable but kind/cname don't match it
-        # should not fail the input check
-        ffi, _ = Library.load()
-        typeof = Mock(kind="pointer", cname="void *")
-        with patch.object(ffi, "typeof", return_value=typeof):
-            input_check("", ffi.NULL, "mapping")
+        ffi, _ = dist.load()
+        input_check("", ffi.NULL, "mapping")
 
-    def test_not_nullable(self):
-        ffi, _ = Library.load()
-        INPUT_CHECK_MAPPINGS.update(
-            mapping=CheckMapping(
-                kind="foo",
-                cname="bar",
-                nullable=False
-            )
-        )
-
-        # If something is nullable but kind/cname don't match it
-        # should not fail the input check
-        typeof = Mock(kind="foo", cname="bar")
-        with patch.object(ffi, "typeof", return_value=typeof):
-            input_check("", ffi.NULL, "mapping")
-
-    def test_kind_and_cname(self):
-        INPUT_CHECK_MAPPINGS.update(
-            mapping=CheckMapping(
-                kind="foo",
-                cname="bar",
-                nullable=True
-            )
-        )
-
-        # If something is nullable but kind/cname don't match it
-        # should not fail the input check
-        ffi, _ = Library.load()
-        typeof = Mock(kind="foo", cname="bar")
-        with patch.object(ffi, "typeof", return_value=typeof):
-            input_check("", "", "mapping")
+    def test_overlapped(self):
+        ffi, _ = dist.load()
+        input_check("", ffi.new("OVERLAPPED[1]"), Enums.OVERLAPPED)
 
 
 class TestEnumUTF8(TestCase):
@@ -161,7 +123,7 @@ class TestAllowedValues(TestCase):
         except InputError as error:
             self.assertEqual(
                 error.message,
-                "Expected value for foo to be in (2,), got 1 instead."
+                "Expected value for foo to be in (2,). Got 1 instead."
             )
 
         else:

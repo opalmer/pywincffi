@@ -17,30 +17,15 @@ except (OSError, IOError, WindowsError) as error:
     else:
         raise
 
-install_requires_extras = []
-if "READTHEDOCS" in os.environ:
-    install_requires_extras = ["sphinx"]
+requirements = [
+    "cffi>=1.0.0",
+    "six"
+]
 
-tests_require = ["nose", "coverage", "setuptools>=17.1"]
+if sys.version_info[0:2] < (3, 4):
+    requirements += ["enum34"]
 
-py_major, py_minor = sys.version_info[0:2]
-
-if py_major == 2:
-    tests_require.append("unittest2")
-
-if py_major == 2 and py_minor == 6:
-    # Later versions don't work with 2.6
-    tests_require.append("mock==1.0.1")
-
-else:
-    tests_require.append("mock")
-
-try:
-    import enum
-except ImportError:
-    install_requires_extras.append("enum34")
-
-setup(
+setup_keywords = dict(
     name="pywincffi",
     version="0.1.0",
     packages=find_packages(
@@ -50,11 +35,8 @@ setup(
     author="Oliver Palmer",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
-    install_requires=[
-        "cffi",
-        "six"
-    ] + install_requires_extras,
-    tests_require=tests_require,
+    setup_requires=requirements,
+    install_requires=requirements,
     test_suite="nose.collector",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
@@ -70,3 +52,13 @@ setup(
         "Topic :: Software Development :: Libraries"
     ]
 )
+
+# Only add cffi_modules if we're running on Windows.  Otherwise
+# things like the documentation build, which can run on Linux, may
+# not work.
+if os.name == "nt":
+    setup_keywords.update(
+        cffi_modules=["pywincffi/core/dist.py:ffi"]
+    )
+
+setup(**setup_keywords)

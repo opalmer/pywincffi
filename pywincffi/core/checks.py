@@ -7,13 +7,14 @@ Provides functions that are responsible for internal type checks.
 
 import io
 import os
+import re
 import types
 from collections import namedtuple
 
 import enum
 from six import PY3, string_types
 
-from pywincffi.core.ffi import Library
+from pywincffi.core import dist
 from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import WindowsAPIError, InputError
 
@@ -39,12 +40,12 @@ CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
 INPUT_CHECK_MAPPINGS = {
     Enums.HANDLE: CheckMapping(
         kind="pointer",
-        cname="void *",
+        cname=re.compile(r"^void \*$"),
         nullable=False
     ),
     Enums.OVERLAPPED: CheckMapping(
         kind="array",
-        cname="OVERLAPPED[1]",
+        cname=re.compile(r"^(?:struct _|)OVERLAPPED\[1\]$"),
         nullable=True
     )
 }
@@ -71,7 +72,7 @@ def error_check(api_function, code=None, expected=0):
     :raises pywincffi.exceptions.WindowsAPIError:
         Raised if we receive an unexpected result from a Windows API call
     """
-    ffi, _ = Library.load()
+    ffi, _ = dist.load()
 
     if code is None:
         result, api_error_message = ffi.getwinerror()
@@ -130,7 +131,7 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
     """
     assert isinstance(name, string_types)
     assert allowed_values is None or isinstance(allowed_values, tuple)
-    ffi, _ = Library.load()
+    ffi, _ = dist.load()
 
     logger.debug(
         "input_check(name=%r, value=%r, allowed_types=%r, allowed_values=%r",
@@ -140,7 +141,8 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
     if allowed_types is None and isinstance(allowed_values, tuple):
         if value not in allowed_values:
             raise InputError(
-                name, value, allowed_types, allowed_values=allowed_values)
+                name, value, allowed_types,
+                allowed_values=allowed_values, ffi=ffi)
 
     elif allowed_types in INPUT_CHECK_MAPPINGS:
         mapping = INPUT_CHECK_MAPPINGS[allowed_types]
@@ -151,7 +153,8 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             if mapping.nullable and value is ffi.NULL:
                 return
 
-            if typeof.kind != mapping.kind or typeof.cname != mapping.cname:
+            if (typeof.kind != mapping.kind or not
+                    mapping.cname.match(typeof.cname)):
                 raise TypeError
 
         except TypeError:
@@ -161,11 +164,11 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
         try:
             value.encode("utf-8")
         except (ValueError, AttributeError):
-            raise InputError(name, value, allowed_types)
+            raise InputError(name, value, allowed_types, ffi=ffi)
 
     elif allowed_types is Enums.PYFILE:
         if not isinstance(value, FileType):
-            raise InputError(name, value, "file type")
+            raise InputError(name, value, "file type", ffi=ffi)
 
         # Make sure the file descriptor itself is valid.  If it's
         # not then we may have trouble working with the file
@@ -176,8 +179,8 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             os.fstat(value.fileno())
         except (OSError, ValueError):
             raise InputError(
-                name, value, "file type (with valid file descriptor)")
+                name, value, "file type (with valid file descriptor)", ffi=ffi)
 
     else:
         if not isinstance(value, allowed_types):
-            raise InputError(name, value, allowed_types)
+            raise InputError(name, value, allowed_types, ffi=ffi)
