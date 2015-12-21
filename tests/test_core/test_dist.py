@@ -159,7 +159,6 @@ class TestDistributionInline(TestDistributionLoadBaseTest):
     def configure(self, config_):
         super(TestDistributionInline, self).configure(config_)
         config.set("pywincffi", "library", "inline")
-        config.set("pywincffi", "tempdir", self.tempdir())
 
     def test_sets_unicode(self):
         ffi_, _ = Distribution.inline()
@@ -193,7 +192,6 @@ class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
     def configure(self, config_):
         super(TestDistributionOutOfLine, self).configure(config_)
         config.set("pywincffi", "library", "precompiled")
-        config.set("pywincffi", "tempdir", self.tempdir())
 
     def test_sets_unicode(self):
         ffi_, _ = Distribution.out_of_line()
