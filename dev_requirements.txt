@@ -1,6 +1,7 @@
 nose
 unittest2
-pylint
+pylint==1.5.2
+astroid==1.4.1
 pep8
 mock
 sphinx
