@@ -52,7 +52,7 @@ def get_filepath(root, filename):
         Raised if the function could not find the requested file.
     """
     logger.debug("get_filepath(%r, %r)", root, filename)
-    path = resource_filename(
+    path = resource_filename(  # pylint: disable=assignment-from-no-return
         "pywincffi", join("core", "cdefs", root, filename))
 
     if not isfile(path):
