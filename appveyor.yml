@@ -61,13 +61,6 @@ test_script:
   - ps: cd ..
   - "C:\\virtualenv\\precompiled\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
 
-  # Inline test
-  - ps: cd C:\\project
-  - "copy /Y C:\\project\\.ci\\appveyor\\inline.ini %HOMEDRIVE%%HOMEPATH%\\pywincffi.ini"
-  - "%WITH_COMPILER% C:\\virtualenv\\inline\\Scripts\\pip.exe install -e ."
-  - ps: cd ..
-  - "C:\\virtualenv\\inline\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
-
 
 artifacts:
   - path: dist\*.whl
