@@ -10,9 +10,6 @@ current working directory or the current users's home directory.
 """
 
 import logging
-import os
-import tempfile
-from errno import EEXIST
 from os.path import join, expanduser
 
 try:

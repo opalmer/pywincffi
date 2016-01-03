@@ -33,18 +33,19 @@ from cffi import FFI
 from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import ResourceNotFoundError
 
-imp = None
-ExtensionFileLoader = None
+imp = None  # pylint: disable=invalid-name
+ExtensionFileLoader = None  # pylint: disable=invalid-name
 try:
-    # pylint: disable=wrong-import-order
+    # pylint: disable=wrong-import-order,wrong-import-position
     from importlib.machinery import ExtensionFileLoader
 except ImportError:
-    import imp
+    import imp  # pylint: disable=wrong-import-position,wrong-import-order
+
 
 try:
     WindowsError
 except NameError:
-    WindowsError = OSError
+    WindowsError = OSError  # pylint: disable=redefined-builtin
 
 __all__ = ("load", )
 
@@ -63,7 +64,7 @@ SOURCE_FILES = [
         "pywincffi", join("core", "cdefs", "sources", "main.c"))]
 
 
-class Module(object):
+class Module(object):  # pylint: disable=too-few-public-methods
     """
     Used and returned by :func:`load`.  This class stores information
     about a loaded module and is

@@ -74,7 +74,7 @@ class TestImportPath(TestCase):
         self.header = "int add(int, int);"
         self.source = "int add(int a, int b) {return a + b;}"
 
-    def build(self, name=None):
+    def build(self):
         ffi = FFI()
         ffi.set_source(self.module_name, self.source)
         ffi.cdef(self.header)
