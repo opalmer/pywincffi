@@ -85,25 +85,4 @@ class Configuration(RawConfigParser):
 
         return self.LOGGER_LEVEL_MAPPINGS[level]
 
-    def tempdir(self):
-        """
-        Returns the directory which :class:`cffi.FFI` should use
-        to store temporary files.
-        """
-        entry = self.get("pywincffi", "tempdir")
-
-        try:
-            path = entry.format(tempdir=tempfile.gettempdir())
-        except KeyError as error:
-            raise ConfigurationError(
-                "Unknown key %r in pywincffi.tempdir" % error.args[0])
-
-        try:
-            os.makedirs(path)
-        except (OSError, IOError, WindowsError) as error:
-            if error.errno != EEXIST:
-                raise
-
-        return path
-
 config = Configuration()  # pylint: disable=invalid-name
