@@ -263,5 +263,3 @@ def load():
         Module.cache = Module(_compile(_ffi()), "compiled")
 
     return Module.cache
-
-

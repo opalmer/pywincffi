@@ -69,7 +69,8 @@ class TestImportPath(TestCase):
     """Tests for :func:`pywincffi.core.dist._import_path`"""
     def setUp(self):
         super(TestImportPath, self).setUp()
-        self.module_name = "m" + binascii.b2a_hex(os.urandom(6)).decode("utf-8")
+        self.module_name = \
+            "m" + binascii.b2a_hex(os.urandom(6)).decode("utf-8")
         self.header = "int add(int, int);"
         self.source = "int add(int a, int b) {return a + b;}"
 
@@ -234,4 +235,3 @@ class TestLoad(TestCase):
         sys.modules["_pywincffi"] = None
         loaded = load()
         self.assertEqual(loaded.mode, "compiled")
-
