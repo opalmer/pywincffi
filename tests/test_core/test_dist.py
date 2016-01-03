@@ -1,328 +1,237 @@
-import imp
+import binascii
 import os
-import platform
+import shutil
 import sys
-import types
-from os.path import isfile, dirname, basename, join
+import tempfile
+import warnings
+from os.path import isfile, dirname
 
 from cffi import FFI
-from mock import patch
+from mock import Mock, patch
 
-from pywincffi.core.config import config
 from pywincffi.core.dist import (
-    __all__, Distribution, InlineModule, get_filepath, ffi, load)
+    MODULE_NAME, HEADER_FILES, SOURCE_FILES, Module, _import_path, _silence,
+    _ffi, _compile, _read, load)
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
 
 
-try:
-    # pylint: disable=wrong-import-order
-    from importlib.machinery import ExtensionFileLoader
+class TestConstants(TestCase):
+    def test_module_name(self):
+        self.assertEqual(MODULE_NAME, "_pywincffi")
 
-    def import_module(module_name, path):
-        loader = ExtensionFileLoader(module_name, path)
-        return loader.load_module(module_name)
+    def test_header_files_exist(self):
+        for path in HEADER_FILES:
+            self.assertTrue(isfile(path))
 
-    def new_module(name):
-        return types.ModuleType(name)
-
-except ImportError:
-    def import_module(module_name, path):
-        return imp.load_dynamic(module_name, path)
-
-    def new_module(name):
-        return imp.new_module(name)
+    def test_source_files_exist(self):
+        for path in SOURCE_FILES:
+            self.assertTrue(isfile(path))
 
 
-class TestGetFilepath(TestCase):
+class TestModule(TestCase):
     """
-    Tests for ``pywincffi.core.get_filepath``
+    Tests for :class:`pywincffi.core.dist.Module`
     """
-    def test_headers(self):
-        for path in Distribution.HEADERS:
-            root = dirname(path)
-            filename = basename(path)
-            self.assertTrue(isfile(get_filepath(root, filename)))
-
-    def test_sources(self):
-        for path in Distribution.SOURCES:
-            root = dirname(path)
-            filename = basename(path)
-            self.assertTrue(isfile(get_filepath(root, filename)))
-
-    def test_file_does_not_exist(self):
-        with self.assertRaises(ResourceNotFoundError):
-            get_filepath("", "")
-
-
-class TestDistributionHeaders(TestCase):
-    """
-    Tests for ``pywincffi.core.dist.Distribution.HEADERS``
-    """
-    def test_variable_type(self):
-        self.assertIsInstance(Distribution.HEADERS, tuple)
-
-    def test_value_types(self):
-        for value in Distribution.HEADERS:
-            self.assertIsInstance(value, str)
-
-    def test_is_file(self):
-        for value in Distribution.HEADERS:
-            self.assertTrue(isfile(value))
-
-
-class TestDistributionSources(TestCase):
-    """
-    Tests for ``pywincffi.core.dist.Distribution.SOURCES``
-    """
-    def test_variable_type(self):
-        self.assertIsInstance(Distribution.SOURCES, tuple)
-
-    def test_value_types(self):
-        for value in Distribution.SOURCES:
-            self.assertIsInstance(value, str)
-
-    def test_is_file(self):
-        for value in Distribution.SOURCES:
-            self.assertTrue(isfile(value))
-
-
-class TestDistributionLoadDefinitions(TestCase):
-    def test_header(self):
-        expected = ""
-        for path in Distribution.HEADERS:
-            with open(path, "r") as file_:
-                expected += file_.read()
-
-        self.assertEqual(expected, Distribution.load_definitions()[0])
-
-    def test_source(self):
-        expected = ""
-        for path in Distribution.SOURCES:
-            with open(path, "r") as file_:
-                expected += file_.read()
-
-        self.assertEqual(expected, Distribution.load_definitions()[1])
-
-
-class TestDistributionLoadBaseTest(TestCase):
-    HEADERS = None
-    SOURCES = None
-    count = 0
-
     def setUp(self):
-        super(TestDistributionLoadBaseTest, self).setUp()
+        super(TestModule, self).setUp()
+        Module.cache = None
 
-        if hasattr(sys, "maxsize"):
-            if sys.maxsize > 2**32:
-                python_arch = 64
-            else:
-                python_arch = 32
-        else:
-            # Python < 2.6, not as accurate as the above
-            if platform.architecture()[0] == "64bits":
-                python_arch = 64
-            else:
-                python_arch = 32
+    def test_cache_default(self):
+        self.assertIsNone(Module.cache)
 
-        # These tests are broken for some reason.  The ability to
-        # genera inline/out-of-line modules is already tested however
-        # so there's something else going on here.
-        # TODO: fix this...
-        if (python_arch == 64 and
-                sys.version_info[0] == 3 and os.environ.get("APPVEYOR")):
-            self.skipTest(
-                "This test does not currently support Python 3 64-bit on "
-                "Appveyor")
+    def test_double_cache_produces_warning(self):
+        Module.cache = ""
 
-        # Capture the existing values
-        self._pywincffi = Distribution._pywincffi
-        self._headers = Distribution.HEADERS
-        self._sources = Distribution.SOURCES
-        self.count += 1
-        self.function_name = "add%s" % self.count
-        self._pywincffi_module = sys.modules.pop(
-            Distribution.MODULE_NAME, None)
+        with warnings.catch_warnings(record=True) as caught:
+            Module(Mock(ffi=None, lib=None), None)
 
-        headers = self.HEADERS
-        if self.HEADERS is None:
-            headers = self.generate_headers()
+        warning = caught.pop(0)
+        self.assertIs(warning.category, RuntimeWarning)
+        self.assertEqual(
+            warning.message.args[0], "Module() was instanced multiple times")
 
-        sources = self.SOURCES
-        if self.SOURCES is None:
-            sources = self.generate_sources()
+    def test_attributes(self):
+        m = Module(Mock(ffi=1, lib=2), "foo")
+        self.assertEqual(m.ffi, 1)
+        self.assertEqual(m.lib, 2)
+        self.assertEqual(m.mode, "foo")
 
-        # Reset the to something we can test with
-        Distribution._pywincffi = None
-        Distribution.HEADERS = headers
-        Distribution.SOURCES = sources
+    def test_tuple_unpacking(self):
+        m = Module(Mock(ffi=1, lib=2), "foo")
+        unpacked = tuple(m)
+        self.assertEqual(len(unpacked), 2)
+        self.assertEqual(unpacked[0], 1)
+        self.assertEqual(unpacked[1], 2)
+
+
+class TestImportPath(TestCase):
+    """Tests for :func:`pywincffi.core.dist._import_path`"""
+    def setUp(self):
+        super(TestImportPath, self).setUp()
+        self.module_name = "m" + binascii.b2a_hex(os.urandom(6)).decode("utf-8")
+        self.header = "int add(int, int);"
+        self.source = "int add(int a, int b) {return a + b;}"
+
+    def build(self, name=None):
+        ffi = FFI()
+        ffi.set_source(self.module_name, self.source)
+        ffi.cdef(self.header)
+        tmpdir = tempfile.mkdtemp(prefix="pywincffi-tests-")
+        self.addCleanup(shutil.rmtree, tmpdir, ignore_errors=True)
+
+        with _silence(sys.stdout) as out_path:
+            self.addCleanup(os.remove, out_path)
+
+            try:
+                return self.module_name, ffi.compile(tmpdir=tmpdir)
+
+            except Exception:
+                with open(out_path) as file_:
+                    print(file_.read(), file=sys.stderr)
+                raise
+
+    def test_invalid_path(self):
+        with self.assertRaises(ResourceNotFoundError):
+            _import_path("")
+
+    def test_imported_module(self):
+        name, path = self.build()
+        module = _import_path(path, module_name=name)
+        self.assertTrue(hasattr(module, "lib"))
+        self.assertTrue(hasattr(module.lib, "add"))
+        self.assertEqual(module.lib.add(1, 2), 3)
+
+
+class TestRead(TestCase):
+    """Tests for :func:`pywincffi.core.dist._read`"""
+    def test_loads_files(self):
+        temp_files = []
+        expected_output = ""
+        for i in range(10):
+            expected_output += str(i)
+            fd, path = tempfile.mkstemp()
+            self.addCleanup(os.remove, path)
+            with os.fdopen(fd, "w") as file_:
+                file_.write(str(i))
+            temp_files.append(path)
+
+        self.assertEqual(_read(*temp_files), expected_output)
+
+    def test_raises_resource_not_found_error(self):
+        with self.assertRaises(ResourceNotFoundError):
+            _read("")
+
+
+class TestFFI(TestCase):
+    """Tests for :func:`pywincffi.core.dist._ffi`"""
+    def test_sets_unicode(self):
+        with patch.object(FFI, "set_unicode") as mocked_set_unicode:
+            _ffi()
+
+        mocked_set_unicode.assert_called_once_with(True)
+
+    def test_set_source(self):
+        with patch.object(FFI, "set_source") as mocked_set_source:
+            _ffi()
+
+        mocked_set_source.assert_called_once_with(
+            MODULE_NAME, _read(*SOURCE_FILES))
+
+    def test_cdef(self):
+        with patch.object(FFI, "cdef") as mocked_cdef:
+            _ffi()
+
+        mocked_cdef.assert_called_with(_read(*HEADER_FILES))
+
+
+class TestCompile(TestCase):
+    """Tests for :func:`pywincffi.core.dist._compile`"""
+    def setUp(self):
+        super(TestCompile, self).setUp()
+        self.header_files = HEADER_FILES[:]
+        self.source_files = SOURCE_FILES[:]
 
     def tearDown(self):
-        super(TestDistributionLoadBaseTest, self).tearDown()
-        Distribution._pywincffi = self._pywincffi
-        Distribution.HEADERS = self._headers
-        Distribution.SOURCES = self._sources
+        super(TestCompile, self).tearDown()
+        HEADER_FILES[:] = self.header_files
+        SOURCE_FILES[:] = self.source_files
 
-        if self._pywincffi_module is not None:
-            sys.modules.update(_pywincffi=self._pywincffi_module)
+    def test_compile(self):
+        # Create fake header
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        HEADER_FILES[:] = [path]
 
-    def generate_headers(self):
-        path = self.tempfile("int %s(int);" % self.function_name)
-        return path,
+        with os.fdopen(fd, "w") as header:
+            header.write("int add(int, int);")
 
-    def generate_sources(self):
-        path = self.tempfile(
-            "int %s(int value) {return value + 1;}" % self.function_name)
-        return path,
+        # Create fake source
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        SOURCE_FILES[:] = [path]
+        with os.fdopen(fd, "w") as source:
+            source.write("int add(int a, int b) {return a + b;}")
 
+        ffi = _ffi()
+        module = _compile(ffi)
+        self.assertEqual(module.lib.add(1, 2), 3)
 
-class TestDistributionInline(TestDistributionLoadBaseTest):
-    """
-    Tests for :meth:`pywincffi.core.dist.Distribution.inline`
-    """
-    def configure(self, config_):
-        super(TestDistributionInline, self).configure(config_)
-        config.set("pywincffi", "library", "inline")
-        config.set("pywincffi", "tempdir", self.tempdir())
+    def test_compile_uses_provided_tempdir(self):
+        # Create fake header
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        HEADER_FILES[:] = [path]
 
-    def test_sets_unicode(self):
-        ffi_, _ = Distribution.inline()
-        with self.assertRaises(ValueError):
-            ffi_.set_unicode(True)
+        with os.fdopen(fd, "w") as header:
+            header.write("int add(int, int);")
 
-    def test_ffi_type(self):
-        ffi_, _ = Distribution.inline()
-        self.assertIsInstance(ffi_, FFI)
+        # Create fake source
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        SOURCE_FILES[:] = [path]
+        with os.fdopen(fd, "w") as source:
+            source.write("int add(int a, int b) {return a + b;}")
 
-    def test_caches_inline_module(self):
-        Distribution.inline()
-        self.assertIsInstance(Distribution._pywincffi, InlineModule)
+        tmpdir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmpdir, ignore_errors=True)
 
-    def test_calling_inline_resets_cache(self):
-        Distribution.inline()
-        module = Distribution._pywincffi
-        Distribution.inline()
-        self.assertIsNot(Distribution._pywincffi, module)
-
-    def test_inline_produces_function(self):
-        _, library = Distribution.inline()
-        func = getattr(library, self.function_name)
-        self.assertEqual(func(1), 2)
+        ffi = _ffi()
+        module = _compile(ffi, tmpdir=tmpdir)
+        self.assertEqual(dirname(module.__file__), tmpdir)
 
 
-class TestDistributionOutOfLine(TestDistributionLoadBaseTest):
-    """
-    Tests for :meth:`pywincffi.core.dist.Distribution.out_of_line`
-    """
-    def configure(self, config_):
-        super(TestDistributionOutOfLine, self).configure(config_)
-        config.set("pywincffi", "library", "precompiled")
-        config.set("pywincffi", "tempdir", self.tempdir())
+class TestLoad(TestCase):
+    """Tests for :func:`pywincffi.core.dist.load`"""
+    def setUp(self):
+        super(TestLoad, self).setUp()
+        if "_pywincffi" in sys.modules:
+            self.addCleanup(
+                sys.modules.__setitem__,
+                "_pywincffi", sys.modules.pop("_pywincffi"))
+        else:
+            self.addCleanup(sys.modules.pop, "_pywincffi")
 
-    def test_sets_unicode(self):
-        ffi_, _ = Distribution.out_of_line()
+    def tearDown(self):
+        super(TestLoad, self).tearDown()
+        Module.cache = None
 
-        with self.assertRaises(ValueError):
-            ffi_.set_unicode(True)
+    def test_cache(self):
+        cached = object()
+        Module.cache = cached
+        self.assertIs(load(), cached)
 
-    def test_ffi_type(self):
-        ffi_, _ = Distribution.out_of_line()
-        self.assertIsInstance(ffi_, FFI)
+    def test_prebuilt(self):
+        fake_module = Mock(ffi=1, lib=2)
+        sys.modules["_pywincffi"] = fake_module
+        loaded = load()
+        self.assertEqual(loaded.mode, "prebuilt")
 
-    def test_library_path(self):
-        _, path = Distribution.out_of_line()
-        self.assertTrue(isfile(path))
+    def test_compiled(self):
+        # Setting _pywincffi to None in sys.modules will force
+        # 'import _pywincffi' to fail forcing load() to
+        # compile the module.
+        sys.modules["_pywincffi"] = None
+        loaded = load()
+        self.assertEqual(loaded.mode, "compiled")
 
-    def test_can_import_compiled_module(self):
-        _, path = Distribution.out_of_line()
-        import_module(Distribution.MODULE_NAME, path)
-
-    def test_compiled_module_has_ffi_instance(self):
-        _, path = Distribution.out_of_line()
-        module = import_module(Distribution.MODULE_NAME, path)
-        self.assertTrue(hasattr(module, "ffi"))
-        self.assertEqual(
-            module.ffi.__class__.__name__, "CompiledFFI")
-
-    def test_compiled_module_has_library_instance(self):
-        _, path = Distribution.out_of_line()
-        module = import_module(Distribution.MODULE_NAME, path)
-        self.assertTrue(hasattr(module, "lib"))
-        self.assertEqual(type(module.lib).__name__, "CompiledLib")
-
-    def test_compiled_module_produces_function(self):
-        _, path = Distribution.out_of_line()
-        module = import_module(Distribution.MODULE_NAME, path)
-        func = getattr(module.lib, self.function_name)
-        self.assertEqual(func(1), 2)
-
-
-class TestDistributionLoad(TestDistributionLoadBaseTest):
-    def test_imports_module_cache(self):
-        config.set("pywincffi", "library", "precompiled")
-        module = new_module(Distribution.MODULE_NAME)
-        module.ffi = 3
-        module.lib = 4
-        sys.modules.update({Distribution.MODULE_NAME: module})
-        self.addCleanup(sys.modules.pop, Distribution.MODULE_NAME)
-        self.assertEqual(Distribution.load(), (3, 4))
-        self.assertIs(Distribution._pywincffi, module)
-
-    def test_compiles_module_inline(self):
-        config.set("pywincffi", "library", "inline")
-
-        with patch.object(Distribution, "_pywincffi", None):
-            ffi_, library = Distribution.load()
-
-        self.assertIsInstance(ffi_, FFI)
-        self.assertEqual(library.__class__.__name__, "FFILibrary")
-
-    def test_calls_inline_for_compile_error(self):
-        tempdir = self.tempdir()
-        with open(join(tempdir, "__init__.py"), "w"):
-            pass
-
-        with open(join(tempdir, "_pywincffi.py"), "w") as _pywincffi:
-            _pywincffi.write("raise ImportError('fail')" + os.linesep)
-
-        sys.path.insert(0, tempdir)
-        self.addCleanup(sys.path.remove, tempdir)
-
-        _, lib = Distribution.load()
-        self.assertIsInstance(Distribution._pywincffi, InlineModule)
-        func = getattr(lib, self.function_name)
-        self.assertEqual(func(1), 2)
-
-
-class TestFFIFunction(TestDistributionLoadBaseTest):
-    def test_all_export(self):
-        self.assertIn("ffi", __all__)
-
-    def test_calls_implementation_function(self):
-        with patch.object(Distribution, "out_of_line") as mocked:
-            ffi()
-
-        mocked.assert_called_with(compile_=False)
-
-    def test_return_value(self):
-        with patch.object(Distribution, "out_of_line", return_value=(1, 2)):
-            result = ffi()
-
-        self.assertEqual(result, 1)
-
-
-class TestLoadFunction(TestDistributionLoadBaseTest):
-    def test_all_export(self):
-        self.assertIn("load", __all__)
-
-    def test_calls_implementation_function(self):
-        with patch.object(Distribution, "load") as mocked:
-            load()
-
-        mocked.assert_called_once_with()
-
-    def test_return_value(self):
-        with patch.object(Distribution, "load", return_value=(1, 2)):
-            result = load()
-
-        self.assertEqual(result, (1, 2))

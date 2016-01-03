@@ -14,205 +14,236 @@ The second is to facilitate a means of building a static
 library.  This is used by the setup.py during the install
 process to build and install pywincffi as well as a wheel
 for distribution.
-
-The reason for this setup is so that pywincffi can handle
-the underlying load process inline. This makes it easier to
-test as well as perform some additional testing/development
-on non-windows platforms.
 """
 
-from collections import namedtuple
+from __future__ import print_function
+
+import shutil
+import os
+import sys
+import tempfile
+import warnings
+from contextlib import contextmanager
+from errno import ENOENT
 from os.path import join, isfile
 from pkg_resources import resource_filename
 
 from cffi import FFI
 
-from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import ResourceNotFoundError
 
+imp = None
+ExtensionFileLoader = None
+try:
+    # pylint: disable=wrong-import-order
+    from importlib.machinery import ExtensionFileLoader
+except ImportError:
+    import imp
+
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
+
+__all__ = ("load", )
 
 logger = get_logger("core.dist")
-InlineModule = namedtuple("InlineModule", ("ffi", "lib"))
+
+MODULE_NAME = "_pywincffi"
+HEADER_FILES = [
+    resource_filename(
+        "pywincffi", join("core", "cdefs", "headers", "constants.h")),
+    resource_filename(
+        "pywincffi", join("core", "cdefs", "headers", "structs.h")),
+    resource_filename(
+        "pywincffi", join("core", "cdefs", "headers", "functions.h"))]
+SOURCE_FILES = [
+    resource_filename(
+        "pywincffi", join("core", "cdefs", "sources", "main.c"))]
 
 
-def get_filepath(root, filename):
+class Module(object):
     """
-    Returns the filepath to the requested header or source
-    file.
-
-    :param str root:
-        The root directory under ``pywincffi/core/cdefs``. 'headers'
-        for example would be a valid entry here.
-
-    :param str filename:
-        The name of the file you want to retrieve under ``root``.
-
-    :raises ResourceNotFoundError:
-        Raised if the function could not find the requested file.
+    Used and returned by :func:`load`.  This class stores information
+    about a loaded module and is
     """
-    logger.debug("get_filepath(%r, %r)", root, filename)
-    path = resource_filename(
-        "pywincffi", join("core", "cdefs", root, filename))
+    cache = None
 
-    if not isfile(path):
-        raise ResourceNotFoundError(
-            "Failed to locate %s/%s" % (root, filename))
+    def __init__(self, module, mode):
+        if self.cache is not None:
+            warnings.warn(
+                "Module() was instanced multiple times", RuntimeWarning)
 
-    return path
+        self.module = module
+        self.mode = mode
+        self.ffi = module.ffi
+        self.lib = module.lib
+
+    def __repr__(self):
+        return "%r (%s)" % (self.module, self.mode)
+
+    def __iter__(self):
+        """
+        Override the original __iter__ so tuple unpacking can be
+        used to pull out ffi and lib.  This will allow
+        """
+        yield self.ffi
+        yield self.lib
 
 
-class Distribution(object):
+@contextmanager
+def _silence(silence):  # pragma: no cover
     """
-    A class responsible for building, caching and returning
-    the built artifacts for :mod:`pywincffi`
+    The compile step tends to be noisy so this context manager will silent
+    the output.  It shouldn't be used to silence ``sys.stderr`` and should
+    be used to display data from ``sys.stdout`` if there are problems:
 
-    :ivar str MODULE_NAME:
-        The name of the module to pass to :meth:`FFI.set_source`. This
-        will eventually end up becoming the name of the underlying C-module
-        that is built.
-
-    :ivar tuple HEADERS:
-        A tuple containing all the headers used to build pywincffi.
-
-    :ivar tuple SOURCES:
-        A tuple containing all the C source files to build pywincffi.
-
-    :ivar tuple LIBRARIES:
-        A tuple of Windows library names that :meth:`FFI.verify` should
-        use.
+    >>> import sys, os
+    >>> with _silence(sys.stdout) as out_path:
+    ...     try:
+    ...         print("Foobar", file=sys.stdout)
+    ...         raise Exception("Some failure")
+    ...     except Exception:
+    ...         with open(out_path) as file_:
+    ...             print(file_.read(), file=sys.stderr)
+    ...         raise
+    ...     finally:
+    ...         os.remove(out_path)
     """
-    MODULE_NAME = "_pywincffi"
-    HEADERS = (
-        get_filepath("headers", "constants.h"),
-        get_filepath("headers", "structs.h"),
-        get_filepath("headers", "functions.h")
-    )
-    SOURCES = (get_filepath("sources", "main.c"), )
-    LIBRARIES = ("kernel32", )
+    silence_fd = silence.fileno()
 
-    # Attributes used internally by this class for caching.
-    _pywincffi = None
+    with os.fdopen(os.dup(silence_fd), "wb") as copied:
+        silence.flush()  # Flush library buffers that dup2 knows nothing about
 
-    @classmethod
-    def load_definitions(cls):
-        """
-        Reads in the headers and source files and produces
-        a tuple of strings with the results.
-
-        :rtype: tuple
-        :return:
-            Returns a tuple of strings containing the headers
-            and sources.
-        """
-        header = ""
-        source = ""
-
-        for path in cls.HEADERS:
-            logger.debug("Reading %s", path)
-            with open(path, "r") as file_:
-                header += file_.read()
-
-        for path in cls.SOURCES:
-            logger.debug("Reading %s", path)
-            with open(path, "r") as file_:
-                source += file_.read()
-
-        return header, source
-
-    @classmethod
-    def inline(cls):
-        """
-        Compiles pywincffi in inline mode.  This is mainly used when
-        doing development and is conditionally called by :meth:`load`
-        below.
-        """
-        logger.debug("Compiling inline to %s", config.tempdir())
-        header, source = cls.load_definitions()
-
-        ffi_class = FFI()
-        ffi_class.set_unicode(True)
-        ffi_class.cdef(header)
-        cls._pywincffi = InlineModule(
-            ffi=ffi_class,
-            lib=ffi_class.verify(
-                source, libraries=cls.LIBRARIES, tmpdir=config.tempdir())
-        )
-
-        return cls._pywincffi.ffi, cls._pywincffi.lib
-
-    @classmethod
-    def out_of_line(cls, compile_=True):
-        """
-        Compiles pywincffi in out of line mode.  This is used to create a
-        distribution of pywcinffi and more specifically is used by
-        ``setup.py``.
-
-        :param bool compile_:
-            If True then perform the compile step as well.  By default calling
-            this executes :func:`FFI.compile` which will build the underlying
-            library.
-
-        :returns:
-            Returns a tuple of elements containing an instance of
-            :class:`FFI` and a string pointing at the module that
-            was built.
-        """
-        header, source = cls.load_definitions()
-
-        ffi_class = FFI()
-        ffi_class.set_unicode(True)
-        ffi_class.set_source(cls.MODULE_NAME, source)
-        ffi_class.cdef(header)
-
-        built_path = None
-        if compile_:
-            tempdir = config.tempdir()
-            logger.debug("Compiling out of line to %s", tempdir)
-            built_path = ffi_class.compile(tmpdir=tempdir)
-
-        return ffi_class, built_path
-
-    @classmethod
-    def load(cls):
-        """
-        Responsible for loading an instance of :class:`FFI` and
-        the underlying compiled library.  This class method will
-        have different behaviors depending on a few factors:
-
-            * If ``PYWINCFFI_DEV`` is set to ``1`` in the environment
-              we call and return :meth:`inline`.
-            * Attempt to load :mod:`pywincffi._pywincffi`.  If we can,
-              instance :class:`FFI` and return this plus
-              :mod:`pywincffi._pywincffi`.
-            * If :mod:`pywincffi._pywincffi` can't be loaded, call
-              :meth:`inline` to try and compile the module instead.
-        """
-        # Return the pre-cached library if we've
-        # already loaded one below.
-        if cls._pywincffi is not None:
-            return cls._pywincffi.ffi, cls._pywincffi.lib
-
-        if not config.precompiled():
-            return cls.inline()
+        fd, path = tempfile.mkstemp()
+        os.dup2(fd, silence_fd)
 
         try:
-            import _pywincffi
-            cls._pywincffi = _pywincffi
-            return cls._pywincffi.ffi, cls._pywincffi.lib
-
-        except ImportError:
-            logger.warning(
-                "Failed to load _pywincffi, attempting to compile inline.")
-            return cls.inline()
+            yield path
+        finally:
+            silence.flush()
+            os.dup2(copied.fileno(), silence_fd)
+            os.fsync(fd)
+            os.close(fd)
 
 
-def ffi():
+def _import_path(path, module_name=None):
     """
-    Called by the setup.py to get an out of line instance of :class:`FFI`
-    which can be used to build pywincffi.
+    Function which imports ``path`` and returns it as a module.  This is
+    meant to import pyd files produced by :meth:`Distribution._build` in
+    a Python 2/3 agnostic fashion.
+
+    :param str path:
+        The path to the file to import
+
+    :keyword str module_name:
+        Optional name of the module being imported.  By default
+        this will use ``Module.name`` if no value is provided.
+
+    :raises ResourceNotFoundError:
+        Raised if ``path`` does not exist.
     """
-    return Distribution.out_of_line(compile_=False)[0]
+    if module_name is None:  # pragma: no cover
+        module_name = MODULE_NAME
+
+    logger.debug("_import_path(%r, module_name=%r)", path, module_name)
+
+    if not isfile(path):
+        raise ResourceNotFoundError("Module path %r does not exist" % path)
+
+    elif ExtensionFileLoader is not None:
+        loader = ExtensionFileLoader(module_name, path)
+        return loader.load_module(module_name)
+
+    elif imp is not None:
+        return imp.load_dynamic(module_name, path)
+
+    else:
+        raise NotImplementedError(
+            "Neither `imp` or `ExtensionFileLoader` were imported")
+
+
+def _read(*paths):
+    """
+    Iterates over ``files`` and produces string which combines all inputs
+    into a single string.
+
+    :raises ResourceNotFoundError:
+        Raised if one of the files in ``files`` is missing.
+    """
+    logger.debug("_read(%r)", paths)
+
+    output = ""
+    for path in paths:
+        try:
+            with open(path, "r") as file_:
+                output += file_.read()
+        except (OSError, IOError, WindowsError) as error:
+            if error.errno == ENOENT:
+                raise ResourceNotFoundError("Failed to locate %s" % path)
+            raise
+
+    return output
+
+
+def _ffi():
+    """
+    Returns an instance of :class:`FFI` without compiling
+    the module.  This function is used internally but also
+    as an entrypoint in the setup.py for `cffi_modules`.
+    """
+    logger.debug("_ffi()")
+    header = _read(*HEADER_FILES)
+    source = _read(*SOURCE_FILES)
+
+    ffi = FFI()
+    ffi.set_unicode(True)
+    ffi.set_source(MODULE_NAME, source)
+    ffi.cdef(header)
+
+    return ffi
+
+
+def _compile(ffi, tmpdir=None):
+    """
+    Performs the compile step, loads the resulting module and then
+    return it.
+
+    :param cffi.FFI ffi:
+        An instance of :class:`FFI` which you wish to compile and load
+        the resulting module for.
+
+    :keyword str tmpdir:
+        The path to compile the module to.  By default this will be
+        constructed using ``tempfile.mkdtemp(prefix="pywincffi-")``.
+
+    :returns:
+        Returns the module built by compiling the ``ffi`` object.
+    """
+    if tmpdir is None:
+        tmpdir = tempfile.mkdtemp(prefix="pywincffi-")
+
+    logger.debug("_compile(%r, tmpdir=%r)", ffi, tmpdir)
+
+    with _silence(sys.stdout) as out_path:
+        try:
+            pyd_path = ffi.compile(tmpdir=tmpdir)
+
+        except Exception:  # pragma: no cover
+            with open(out_path) as file_:
+                print(file_.read(), file=sys.stderr)
+            raise
+
+    os.remove(out_path)
+    module = _import_path(pyd_path)
+
+    # Try to cleanup the temp directory that was created
+    # for compiling the module.  In most cases this will
+    # remove everything but the built .pyd file.
+    shutil.rmtree(tmpdir, ignore_errors=True)
+
+    return module
 
 
 def load():
@@ -220,6 +251,17 @@ def load():
     The main function used by pywincffi to load an instance of
     :class:`FFI` and the underlying build library.
     """
-    return Distribution.load()
+    if Module.cache is not None:
+        return Module.cache
 
-__all__ = ("ffi", "load")
+    logger.debug("load()")
+    try:
+        import _pywincffi
+        Module.cache = Module(_pywincffi, "prebuilt")
+
+    except ImportError:
+        Module.cache = Module(_compile(_ffi()), "compiled")
+
+    return Module.cache
+
+
