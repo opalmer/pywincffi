@@ -58,7 +58,7 @@ setup_keywords = dict(
 # not work.
 if os.name == "nt":
     setup_keywords.update(
-        cffi_modules=["pywincffi/core/dist.py:ffi"]
+        cffi_modules=["pywincffi/core/dist.py:_ffi"]
     )
 
 setup(**setup_keywords)
