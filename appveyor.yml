@@ -50,7 +50,7 @@ install:
 
 test_script:
   - ps: cd C:\\project
-  - "%WITH_COMPILER% %PYTHON%\\Scripts\\python.exe setup.py bdist_wheel"
+  - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py bdist_wheel"
   - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install ."
   - ps: cd ..
   - "%WITH_COMPILER% %PYTHON%\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
