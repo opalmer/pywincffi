@@ -2,9 +2,8 @@ from __future__ import print_function
 
 import logging
 import os
-import tempfile
 from textwrap import dedent
-from os.path import isfile, join, expanduser, isdir
+from os.path import isfile, join, expanduser
 
 from mock import patch
 from six import PY3
