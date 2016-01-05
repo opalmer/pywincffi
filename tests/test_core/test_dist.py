@@ -12,8 +12,8 @@ from cffi import FFI
 from mock import Mock, patch
 
 from pywincffi.core.dist import (
-    MODULE_NAME, HEADER_FILES, SOURCE_FILES, Module, _import_path, _silence,
-    _ffi, _compile, _read, load)
+    MODULE_NAME, HEADER_FILES, SOURCE_FILES, Module, _import_path, _ffi,
+    _compile, _read, load)
 from pywincffi.core.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
 
@@ -82,17 +82,7 @@ class TestImportPath(TestCase):
         ffi.cdef(self.header)
         tmpdir = tempfile.mkdtemp(prefix="pywincffi-tests-")
         self.addCleanup(shutil.rmtree, tmpdir, ignore_errors=True)
-
-        with _silence(sys.stdout) as out_path:
-            self.addCleanup(os.remove, out_path)
-
-            try:
-                return self.module_name, ffi.compile(tmpdir=tmpdir)
-
-            except Exception:
-                with open(out_path) as file_:
-                    print(file_.read(), file=sys.stderr)
-                raise
+        return self.module_name, ffi.compile(tmpdir=tmpdir)
 
     def test_invalid_path(self):
         with self.assertRaises(ResourceNotFoundError):
