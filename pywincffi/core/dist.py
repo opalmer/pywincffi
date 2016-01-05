@@ -16,14 +16,9 @@ process to build and install pywincffi as well as a wheel
 for distribution.
 """
 
-from __future__ import print_function
-
 import shutil
-import os
-import sys
 import tempfile
 import warnings
-from contextlib import contextmanager
 from errno import ENOENT
 from os.path import join, isfile
 from pkg_resources import resource_filename
@@ -91,42 +86,6 @@ class Module(object):  # pylint: disable=too-few-public-methods
         """
         yield self.ffi
         yield self.lib
-
-
-@contextmanager
-def _silence(silence):  # pragma: no cover
-    """
-    The compile step tends to be noisy so this context manager will silent
-    the output.  It shouldn't be used to silence ``sys.stderr`` and should
-    be used to display data from ``sys.stdout`` if there are problems:
-
-    >>> import sys, os
-    >>> with _silence(sys.stdout) as out_path:
-    ...     try:
-    ...         print("Foobar", file=sys.stdout)
-    ...         raise Exception("Some failure")
-    ...     except Exception:
-    ...         with open(out_path) as file_:
-    ...             print(file_.read(), file=sys.stderr)
-    ...         raise
-    ...     finally:
-    ...         os.remove(out_path)
-    """
-    silence_fd = silence.fileno()
-
-    with os.fdopen(os.dup(silence_fd), "wb") as copied:
-        silence.flush()  # Flush library buffers that dup2 knows nothing about
-
-        fd, path = tempfile.mkstemp()
-        os.dup2(fd, silence_fd)
-
-        try:
-            yield path
-        finally:
-            silence.flush()
-            os.dup2(copied.fileno(), silence_fd)
-            os.fsync(fd)
-            os.close(fd)
 
 
 def _import_path(path, module_name=None):
@@ -226,17 +185,7 @@ def _compile(ffi, tmpdir=None):
         tmpdir = tempfile.mkdtemp(prefix="pywincffi-")
 
     logger.debug("_compile(%r, tmpdir=%r)", ffi, tmpdir)
-
-    with _silence(sys.stdout) as out_path:
-        try:
-            pyd_path = ffi.compile(tmpdir=tmpdir)
-
-        except Exception:  # pragma: no cover
-            with open(out_path) as file_:
-                print(file_.read(), file=sys.stderr)
-            raise
-
-    os.remove(out_path)
+    pyd_path = ffi.compile(tmpdir=tmpdir)
     module = _import_path(pyd_path)
 
     # Try to cleanup the temp directory that was created
