@@ -43,35 +43,8 @@ def should_continue(question, questions=True):
         sys.exit(1)
 
 
-def main(questions=True):
-    parser = argparse.ArgumentParser(description="Cuts a release of pywincffi")
-    parser.add_argument(
-        "--no-publish", action="store_true", default=False,
-        help="If provided, do everything publish is supposed to do...minus the "
-             "publish part."
-    )
-    parser.add_argument(
-        "--artifact-directory", default=tempfile.mkdtemp(), dest="artifacts",
-        help="The temp. location to download build artifacts to."
-    )
-    args = parser.parse_args()
-
-    if not isdir(args.artifacts):
-        os.makedirs(args.artifacts)
-
-    version = ".".join(map(str, __version__))
-
-    # Make sure we really want to create a release of this version.
-    should_continue(
-        "Create release of version %s? [y/n] " % version, questions=questions)
-
-    # Find the last passing build on the master branch.
-    url = APPVEYOR_API_PROJ + "/branch/master"
-    data = session.get(url).json()
-    build_message = data["build"]["message"]
-
-    should_continue(
-        "Create release from %r? [y/n] " % build_message, questions=questions)
+def get_release_artifacts(args, data):
+    paths = []
 
     # Locate the build artifacts and download them
     print("Downloading build artifacts to %s" % args.artifacts)
@@ -114,6 +87,41 @@ def main(questions=True):
                 raise Exception("Failed to unpack %s" % file_.name)
             finally:
                 shutil.rmtree(unpack_dir, ignore_errors=True)
+
+    return paths
+
+
+
+def main(questions=True):
+    parser = argparse.ArgumentParser(description="Cuts a release of pywincffi")
+    parser.add_argument(
+        "--no-publish", action="store_true", default=False,
+        help="If provided, do everything publish is supposed to do...minus the "
+             "publish part."
+    )
+    parser.add_argument(
+        "--artifact-directory", default=tempfile.mkdtemp(), dest="artifacts",
+        help="The temp. location to download build artifacts to."
+    )
+    args = parser.parse_args()
+
+    if not isdir(args.artifacts):
+        os.makedirs(args.artifacts)
+
+    version = ".".join(map(str, __version__))
+
+    # Make sure we really want to create a release of this version.
+    should_continue(
+        "Create release of version %s? [y/n] " % version, questions=questions)
+
+    # Find the last passing build on the master branch.
+    url = APPVEYOR_API_PROJ + "/branch/master"
+    data = session.get(url).json()
+    build_message = data["build"]["message"]
+
+    should_continue(
+        "Create release from %r? [y/n] " % build_message, questions=questions)
+    paths = get_release_artifacts(args, data)
 
 
 if __name__ == "__main__":
