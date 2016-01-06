@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import logging
 import os
+import tempfile
 from textwrap import dedent
 from os.path import isfile, join, expanduser
 
@@ -99,13 +100,15 @@ class TestLoad(TestCase):
         self.assertIn(path, Configuration.FILES)
 
     def test_loads_override(self):
-        paths = (
-            Configuration.FILES[0],
-            self.tempfile(data=dedent("""
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        with os.fdopen(fd, "w") as file_:
+            file_.write(dedent("""
             [pywincffi]
             log_level=-1
             """))
-        )
+
+        paths = (Configuration.FILES[0], path)
         with patch.object(Configuration, "FILES", paths):
             config = Configuration()
             self.assertEqual(config.getint("pywincffi", "log_level"), -1)

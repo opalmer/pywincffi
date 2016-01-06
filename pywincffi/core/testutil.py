@@ -105,11 +105,13 @@ class TestCase(_TestCase):
             # test does not causes an error to be raised in another.
             self.SetLastError(0)
 
-        self.configure(config)
+        config.load()
 
     # pylint: disable=invalid-name
     def SetLastError(self, value=0, lib=None):
         """Calls the Windows API function SetLastError()"""
+        self.failIf(os.name != "nt")
+        
         if lib is None:
             lib = libtest
 
@@ -120,34 +122,3 @@ class TestCase(_TestCase):
             self.fail("Expected int for `value`")
 
         return lib.SetLastError(ffi.cast("DWORD", value))
-
-    def configure(self, config_object):  # pylint: disable=no-self-use
-        """Sets up the configuration for the test"""
-        config_object.load()
-
-    def tempdir(self):
-        """
-        Creates a temporary directory and returns the path.  Best attempts
-        will be made to cleanup the directory at the end of the test run.
-        """
-        path = tempfile.mkdtemp()
-        self.addCleanup(remove, path)
-        return path
-
-    def tempfile(self, data=None):
-        """
-        Creates a temporary file and returns the path.  Best attempts
-        will be made to cleanup the file at the end of the test run.
-
-        :param str data:
-            Optionally write the provided data to the file on disk.
-        """
-        fd, path = tempfile.mkstemp()
-        if data is None:
-            os.close(fd)
-        else:
-            with os.fdopen(fd, "w") as file_:
-                file_.write(data)
-
-        self.addCleanup(remove, path)
-        return path
