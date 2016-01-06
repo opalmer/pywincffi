@@ -5,12 +5,7 @@ Test Utility
 This module is used by the unittests.
 """
 
-import atexit
 import os
-import shutil
-import tempfile
-from errno import ENOENT, EACCES, EAGAIN, EIO
-from os.path import isfile, isdir
 
 from cffi import FFI, CDefError
 
