@@ -39,6 +39,11 @@ class TestModule(TestCase):
         super(TestModule, self).setUp()
         Module.cache = None
 
+    def tearDown(self):
+        super(TestModule, self).tearDown()
+        Module.cache = None
+        sys.modules.pop("_pywincffi", None)
+
     def test_cache_default(self):
         self.assertIsNone(Module.cache)
 
@@ -149,6 +154,8 @@ class TestCompile(TestCase):
         super(TestCompile, self).tearDown()
         HEADER_FILES[:] = self.header_files
         SOURCE_FILES[:] = self.source_files
+        Module.cache = None
+        sys.modules.pop("_pywincffi", None)
 
     def test_compile(self):
         # Create fake header
@@ -196,18 +203,10 @@ class TestCompile(TestCase):
 
 class TestLoad(TestCase):
     """Tests for :func:`pywincffi.core.dist.load`"""
-    def setUp(self):
-        super(TestLoad, self).setUp()
-        if "_pywincffi" in sys.modules:
-            self.addCleanup(
-                sys.modules.__setitem__,
-                "_pywincffi", sys.modules.pop("_pywincffi"))
-        else:
-            self.addCleanup(sys.modules.pop, "_pywincffi")
-
     def tearDown(self):
         super(TestLoad, self).tearDown()
         Module.cache = None
+        sys.modules.pop("_pywincffi", None)
 
     def test_cache(self):
         cached = object()
