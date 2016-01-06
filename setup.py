@@ -1,7 +1,11 @@
 import os
 import sys
 from errno import ENOENT
+
 from setuptools import setup, find_packages
+
+from pywincffi import __version__
+
 
 try:
     WindowsError
@@ -27,7 +31,7 @@ if sys.version_info[0:2] < (3, 4):
 
 setup_keywords = dict(
     name="pywincffi",
-    version="0.1.0",
+    version=".".join(map(str, __version__)),
     packages=find_packages(
         include=("pywincffi*", )
     ),
