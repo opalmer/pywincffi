@@ -117,8 +117,11 @@ class TestRead(TestCase):
         self.assertEqual(_read(*temp_files), expected_output)
 
     def test_raises_resource_not_found_error(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+        os.remove(path)
         with self.assertRaises(ResourceNotFoundError):
-            _read("")
+            _read(path)
 
 
 class TestFFI(TestCase):
