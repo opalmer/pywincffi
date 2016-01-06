@@ -13,7 +13,7 @@ from pywincffi.kernel32.io import (
 try:
     WindowsError
 except NameError:
-    WindowsError = OSError
+    WindowsError = OSError  # pylint: disable=redefined-builtin
 
 
 class PipeBaseTestCase(TestCase):
