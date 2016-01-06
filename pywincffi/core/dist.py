@@ -33,13 +33,13 @@ ExtensionFileLoader = None  # pylint: disable=invalid-name
 try:
     # pylint: disable=wrong-import-order,wrong-import-position
     from importlib.machinery import ExtensionFileLoader
-except ImportError:
+except ImportError:  # pragma: no cover
     import imp  # pylint: disable=wrong-import-position,wrong-import-order
 
 
 try:
     WindowsError
-except NameError:
+except NameError:  # pragma: no cover
     WindowsError = OSError  # pylint: disable=redefined-builtin
 
 __all__ = ("load", )
@@ -116,10 +116,10 @@ def _import_path(path, module_name=None):
         loader = ExtensionFileLoader(module_name, path)
         return loader.load_module(module_name)
 
-    elif imp is not None:
+    elif imp is not None:  # pragma: no cover
         return imp.load_dynamic(module_name, path)
 
-    else:
+    else:  # pragma: no cover
         raise NotImplementedError(
             "Neither `imp` or `ExtensionFileLoader` were imported")
 
@@ -142,7 +142,7 @@ def _read(*paths):
         except (OSError, IOError, WindowsError) as error:
             if error.errno == ENOENT:
                 raise ResourceNotFoundError("Failed to locate %s" % path)
-            raise
+            raise  # pragma: no cover
 
     return output
 
