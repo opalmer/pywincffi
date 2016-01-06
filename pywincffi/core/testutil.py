@@ -46,53 +46,6 @@ except (AttributeError, OSError, CDefError):
         logger.warning("Failed to build SetLastError()")
 
 
-def remove(path, onexit=True):
-    """
-    Removes the request ``path`` from disk.  This is meant to
-    be used as a cleanup function by a test case.
-
-    :param str path:
-        The file or directory to remove.
-
-    :param bool onexit:
-        If we can't remove the request ``path``, try again
-        when Python exists to remove it.
-    """
-    if isdir(path):
-        try:
-            shutil.rmtree(path)
-        except (WindowsError, OSError, IOError) as error:
-            if error.errno == ENOENT:
-                return
-            if error.errno in (EACCES, EAGAIN, EIO) and onexit:
-                atexit.register(remove, path, onexit=False)
-
-    elif isfile(path):
-        try:
-            os.remove(path)
-        except (WindowsError, OSError, IOError) as error:
-            if error.errno == ENOENT:
-                return
-            if error.errno in (EACCES, EAGAIN, EIO) and onexit:
-                atexit.register(remove, path, onexit=False)
-
-
-def c_file(path):
-    """
-    A generator which yields lines from a C header or source
-    file.
-
-    :param str path:
-        The filepath to read from.
-    """
-    with open(path, "r") as header:
-        for line in header:
-            line = line.strip()
-            if not line or line.startswith("//"):
-                continue
-            yield line
-
-
 class TestCase(_TestCase):
     """
     A base class for all test cases.  By default the
@@ -111,7 +64,7 @@ class TestCase(_TestCase):
     def SetLastError(self, value=0, lib=None):
         """Calls the Windows API function SetLastError()"""
         self.failIf(os.name != "nt")
-        
+
         if lib is None:
             lib = libtest
 
