@@ -4,48 +4,13 @@ import tempfile
 import types
 
 from six import PY3, PY2
-from mock import patch
-from cffi import FFI
 
 from pywincffi.core import dist
 from pywincffi.core.checks import (
     INPUT_CHECK_MAPPINGS, FileType, CheckMapping, Enums,
-    input_check, error_check)
-from pywincffi.core.config import config
+    input_check)
 from pywincffi.core.testutil import TestCase
-from pywincffi.exceptions import WindowsAPIError, InputError
-
-
-# TODO: rewrite this so it works for both precompiled and inline modules
-class TestCheckErrorCode(TestCase):
-    """
-    Tests for :func:`pywincffi.core.ffi.check_error_code`
-    """
-    LIBRARY_MODE = "inline"
-
-    def setUp(self):
-        super(TestCheckErrorCode, self).setUp()
-        if config.precompiled():
-            self.skipTest("inline only")
-
-        # TODO: build inline here, replace dist.load()
-
-    def test_default_code_does_match_expected(self):
-        with patch.object(FFI, "getwinerror", return_value=(0, "GTG")):
-            error_check("Foobar")
-
-    def test_default_code_does_not_match_expected(self):
-        with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
-            with self.assertRaises(WindowsAPIError):
-                error_check("Foobar", expected=2)
-
-    def test_non_zero(self):
-        with patch.object(FFI, "getwinerror", return_value=(1, "NGTG")):
-            error_check("Foobar", expected=Enums.NON_ZERO)
-
-    def test_non_zero_success(self):
-        with patch.object(FFI, "getwinerror", return_value=(0, "NGTG")):
-            error_check("Foobar", code=1, expected=Enums.NON_ZERO)
+from pywincffi.exceptions import InputError
 
 
 class TestTypeCheckFailure(TestCase):

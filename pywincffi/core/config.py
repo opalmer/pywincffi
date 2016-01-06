@@ -10,9 +10,6 @@ current working directory or the current users's home directory.
 """
 
 import logging
-import os
-import tempfile
-from errno import EEXIST
 from os.path import join, expanduser
 
 try:
@@ -71,13 +68,6 @@ class Configuration(RawConfigParser):
 
         self.read(self.FILES)
 
-    def precompiled(self):
-        """
-        Returns True if the configuration states that we should be using
-        the precompiled library rather than trying to compile inline.
-        """
-        return self.get("pywincffi", "library") == "precompiled"
-
     def logging_level(self):
         """
         Returns the logging level that the configuration currently
@@ -91,26 +81,5 @@ class Configuration(RawConfigParser):
                     level, " ".join(self.LOGGER_LEVEL_MAPPINGS.keys())))
 
         return self.LOGGER_LEVEL_MAPPINGS[level]
-
-    def tempdir(self):
-        """
-        Returns the directory which :class:`cffi.FFI` should use
-        to store temporary files.
-        """
-        entry = self.get("pywincffi", "tempdir")
-
-        try:
-            path = entry.format(tempdir=tempfile.gettempdir())
-        except KeyError as error:
-            raise ConfigurationError(
-                "Unknown key %r in pywincffi.tempdir" % error.args[0])
-
-        try:
-            os.makedirs(path)
-        except (OSError, IOError, WindowsError) as error:
-            if error.errno != EEXIST:
-                raise
-
-        return path
 
 config = Configuration()  # pylint: disable=invalid-name

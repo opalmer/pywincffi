@@ -46,20 +46,14 @@ install:
   # Install some additional Python modules which will be required by
   # the tests.  These can't be installed as part of the setup.py due
   # to file locking issues.
-  - "%PYTHON%\\Scripts\\pip.exe install virtualenv"
-  - "%PYTHON%\\Scripts\\virtualenv.exe C:\\virtualenv\\precompiled"
-  - "%PYTHON%\\Scripts\\virtualenv.exe C:\\virtualenv\\inline"
-  - "%WITH_COMPILER% C:\\virtualenv\\precompiled\\Scripts\\pip.exe install -r dev_requirements.txt --upgrade"
-  - "%WITH_COMPILER% C:\\virtualenv\\inline\\Scripts\\pip.exe install -r dev_requirements.txt --upgrade"
+  - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install -r dev_requirements.txt --upgrade"
 
 test_script:
-  # Precompiled test
   - ps: cd C:\\project
-  - "copy /Y .ci\\appveyor\\precompiled.ini %HOMEDRIVE%%HOMEPATH%\\pywincffi.ini"
-  - "%WITH_COMPILER% C:\\virtualenv\\precompiled\\Scripts\\python.exe setup.py bdist_wheel"
-  - "%WITH_COMPILER% C:\\virtualenv\\precompiled\\Scripts\\pip.exe install ."
+  - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py bdist_wheel"
+  - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install ."
   - ps: cd ..
-  - "C:\\virtualenv\\precompiled\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
+  - "%WITH_COMPILER% %PYTHON%\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
 
 
 artifacts:
