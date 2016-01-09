@@ -3,7 +3,6 @@
 
 from __future__ import print_function
 
-import ast
 import os
 import shutil
 import sys
@@ -31,6 +30,8 @@ MODULE_ROOT = join(ROOT, "pywincffi")
 
 # Required so we don't need to have pywincffi installed.
 sys.path.insert(0, ROOT)
+
+from pywincffi import __version__
 
 
 # -- General configuration ------------------------------------------------
@@ -71,21 +72,12 @@ project = "pywincffi"
 copyright = "2015, Oliver Palmer"
 author = "Oliver Palmer"
 
-with open(join(ROOT, "setup.py")) as setup_py:
-    module = ast.parse(setup_py.read())
-
-for node in ast.walk(module):
-    if isinstance(node, ast.keyword) and node.arg == "version":
-        parsed_version = node.value.s.split(".")
-        break
-else:
-    raise ValueError("Failed to find `version` keyword")
-
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-release = ".".join(parsed_version)
-version = ".".join(parsed_version[0:2])
+version = list(map(str, __version__))
+release = ".".join(version)
+version = ".".join(version[0:2])
 
 # Delete the existing doc files first so it
 # sphinx-apidoc is clean every time.
