@@ -72,7 +72,7 @@ def should_continue(question, questions=True):
         sys.exit(1)
 
 
-def download_release_artifacts(output_dir, data):
+def download_build_artifacts(output_dir, data):
     paths = []
 
     # Locate the build artifacts and download them
@@ -158,7 +158,7 @@ def main(questions=True):
 
     should_continue(
         "Create release from %r? [y/n] " % build_message, questions=questions)
-    paths = download_release_artifacts(args.artifacts, data)
+    paths = download_build_artifacts(args.artifacts, data)
     print(paths)
 
 
