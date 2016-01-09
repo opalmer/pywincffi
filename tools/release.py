@@ -8,7 +8,13 @@ import sys
 import subprocess
 import tempfile
 import shutil
-from os.path import dirname, abspath, isdir, basename, join
+from errno import EEXIST
+from os.path import dirname, abspath, basename, join
+
+try:
+    WindowsError
+except NameError:
+    WindowsError = OSError
 
 import requests
 
@@ -28,7 +34,30 @@ session.headers.update({
 })
 
 
+def mkdir(path):
+    try:
+        os.makedirs(path)
+    except (OSError, IOError, WindowsError) as error:
+        if error.errno != EEXIST:
+            raise RuntimeError("Failed to create %s: %s" % (path, error))
+
+
+def save_content(response, path):
+    """
+    Given a response object from the requests library, iterate over the
+    content and save it to ``path``.
+    """
+    assert isinstance(response, requests.Response)
+    with open(path, "wb") as file_:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                file_.write(chunk)
+
+
 def should_continue(question, questions=True):
+    """
+    Asks a question, returns True if the answer is yes.  Calls
+    ``sys.exit(1) if not."""
     if not questions:
         print("%s < 'y'" % question)
         return True
@@ -43,11 +72,11 @@ def should_continue(question, questions=True):
         sys.exit(1)
 
 
-def get_release_artifacts(args, data):
+def download_release_artifacts(output_dir, data):
     paths = []
 
     # Locate the build artifacts and download them
-    print("Downloading build artifacts to %s" % args.artifacts)
+    print("Downloading build artifacts to %s" % output_dir)
     for job in data["build"]["jobs"]:
         job_id = job["jobId"]
         if job["status"] != "success":
@@ -58,7 +87,8 @@ def get_release_artifacts(args, data):
         artifact_url = APPVEYOR_API + "/buildjobs/%s/artifacts" % job_id
         build_artifacts = session.get(artifact_url).json()
         if not build_artifacts:
-            raise Exception("Build %s does not contain any artifacts" % url)
+            raise Exception(
+                "Build %s does not contain any artifacts" % artifact_url)
 
         for artifact in build_artifacts:
             if artifact["type"] != "File" or not \
@@ -67,32 +97,31 @@ def get_release_artifacts(args, data):
 
             file_url = artifact_url + "/%s" % artifact["fileName"]
             print("... download and unpack %s" % artifact["fileName"])
-            local_path = join(args.artifacts, basename(artifact["fileName"]))
+            local_path = join(output_dir, basename(artifact["fileName"]))
             response = session.get(
                 file_url, stream=True, headers={"Content-Type": ""})
 
-            with open(local_path, "wb") as file_:
-                for chunk in response.iter_content(chunk_size=1024):
-                    if chunk:
-                        file_.write(chunk)
+            save_content(response, local_path)
+            paths.append(local_path)
 
             # Unpack the wheel to be sure the structure is correct.  This
-            # helps to ensure that the download not incomplete or corrupt.
+            # helps to ensure that the download not incomplete or
+            # corrupt.  We don't really care about the resulting files.
             unpack_dir = tempfile.mkdtemp()
             try:
                 subprocess.check_call([
-                    "wheel", "unpack", file_.name, "--dest", unpack_dir],
+                    "wheel", "unpack", local_path, "--dest", unpack_dir],
                     stderr=subprocess.PIPE)
             except subprocess.CalledProcessError:
-                raise Exception("Failed to unpack %s" % file_.name)
+                raise Exception("Failed to unpack %s" % local_path)
             finally:
                 shutil.rmtree(unpack_dir, ignore_errors=True)
 
     return paths
 
 
-
-def main(questions=True):
+def parse_arguments():
+    """Constructs an argument parser and returns parsed arguments"""
     parser = argparse.ArgumentParser(description="Cuts a release of pywincffi")
     parser.add_argument(
         "--no-publish", action="store_true", default=False,
@@ -100,13 +129,21 @@ def main(questions=True):
              "publish part."
     )
     parser.add_argument(
-        "--artifact-directory", default=tempfile.mkdtemp(), dest="artifacts",
+        "--artifact-directory", default=None, dest="artifacts",
         help="The temp. location to download build artifacts to."
     )
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    if not isdir(args.artifacts):
-        os.makedirs(args.artifacts)
+    if arguments.artifacts is None:
+        arguments.artifacts = tempfile.mkdtemp()
+    else:
+        mkdir(arguments.artifacts)
+
+    return arguments
+
+
+def main(questions=True):
+    args = parse_arguments()
 
     version = ".".join(map(str, __version__))
 
@@ -121,7 +158,8 @@ def main(questions=True):
 
     should_continue(
         "Create release from %r? [y/n] " % build_message, questions=questions)
-    paths = get_release_artifacts(args, data)
+    paths = download_release_artifacts(args.artifacts, data)
+    print(paths)
 
 
 if __name__ == "__main__":
