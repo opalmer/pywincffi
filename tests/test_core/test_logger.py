@@ -5,7 +5,7 @@ from mock import patch
 from pywincffi.core.config import config
 from pywincffi.core.logger import (
     STREAM_HANDLER, FORMATTER, NULL_HANDLER, logger, get_logger)
-from pywincffi.core.testutil import TestCase
+from pywincffi.dev.testutil import TestCase
 
 
 class TestStreamHandler(TestCase):

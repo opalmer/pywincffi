@@ -9,7 +9,7 @@ from mock import patch
 from six import PY3
 
 from pywincffi.core.config import Configuration
-from pywincffi.core.testutil import TestCase
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import ConfigurationError
 
 
