@@ -58,7 +58,8 @@ class TestCase(_TestCase):
     # pylint: disable=invalid-name
     def SetLastError(self, value=0, lib=None):
         """Calls the Windows API function SetLastError()"""
-        self.failIf(os.name != "nt")
+        if os.name != "nt":
+            self.fail("Only an NT system should call this method")
 
         if lib is None:
             lib = libtest
