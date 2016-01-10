@@ -17,7 +17,8 @@ from os.path import join, basename
 try:
     from http.client import responses, OK
 except ImportError:
-    from httplib import responses, OK  # pylint: disable=import-error
+    # pylint: disable=import-error,wrong-import-order
+    from httplib import responses, OK
 
 import requests
 from requests.adapters import HTTPAdapter
