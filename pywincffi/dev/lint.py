@@ -76,7 +76,6 @@ def register(linter):  # pylint: disable=unused-argument
             if match:
                 functions.add(match.group(1))
 
-    # TODO: needs to change once we FFILibrary returns the prebuilt lib
     MANAGER.register_transform(
         scoped_nodes.Class,
         partial(transform, constants=constants, functions=functions),
