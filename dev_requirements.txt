@@ -8,3 +8,4 @@ sphinx
 wheel
 setuptools
 coverage
+codecov
