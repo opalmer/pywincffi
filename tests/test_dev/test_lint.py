@@ -5,17 +5,17 @@ import sys
 import tempfile
 from os.path import isdir, isfile
 
+from mock import Mock
+
 try:
     from astroid import scoped_nodes
+    from pywincffi.dev.lint import (
+        HEADERS_DIR, SOURCES_DIR, CONSTANTS_HEADER, FUNCTIONS_HEADER,
+        SOURCE_MAIN, REGEX_CONSTANT, REGEX_FUNCTION, transform,
+        functions_in_file, constants_in_file)
 except SyntaxError:
     scoped_nodes = SyntaxError
 
-from mock import Mock
-
-from pywincffi.dev.lint import (
-    HEADERS_DIR, SOURCES_DIR, CONSTANTS_HEADER, FUNCTIONS_HEADER, SOURCE_MAIN,
-    REGEX_CONSTANT, REGEX_FUNCTION, transform,
-    functions_in_file, constants_in_file)
 from pywincffi.dev.testutil import TestCase
 
 
