@@ -47,7 +47,7 @@ def constants_in_file(path):
     """Returns a set of constants in the given file path"""
     # Load constants from header
     constants = set()
-    with open(CONSTANTS_HEADER, "r") as file_:
+    with open(path, "r") as file_:
         for line in file_:
             match = REGEX_CONSTANT.match(line)
             if match:
@@ -76,10 +76,10 @@ def register(linter):  # pylint: disable=unused-argument
     An entrypoint that pylint uses to search for and register
     plugins with the given ``linter``
     """
+    functions = \
+        functions_in_file(FUNCTIONS_HEADER) | functions_in_file(SOURCE_MAIN)
+    constants = constants_in_file(CONSTANTS_HEADER)
     MANAGER.register_transform(
         scoped_nodes.Class,
-        partial(transform,
-                constants=constants_in_file(CONSTANTS_HEADER),
-                functions=functions_in_file(FUNCTIONS_HEADER) |
-                          functions_in_file(SOURCE_MAIN)),
+        partial(transform, constants=constants, functions=functions),
         predicate=lambda node: node.name == "FFILibrary")
