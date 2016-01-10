@@ -9,6 +9,10 @@ Python Windows Wrapper Using CFFI
     :target: https://travis-ci.org/opalmer/pywincffi
     :alt: build status (pylint and pep8)
 
+.. image:: https://codecov.io/github/opalmer/pywincffi/coverage.svg?branch=master
+    :target: https://codecov.io/github/opalmer/pywincffi?branch=master
+    :alt: code coverage
+
 .. image:: https://readthedocs.org/projects/pywincffi/badge/?version=latest
     :target: http://pywincffi.readthedocs.org/en/latest/?badge=latest
     :alt: documentation badge
