@@ -22,8 +22,8 @@ import requests
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from pywincffi import __version__
-from pywincffi.core.logger import logger as _core_logger
-from pywincffi.dev.release import download_build_artifacts, get_appveyor_build
+from pywincffi.core.logger import get_logger
+from pywincffi.dev.release import AppVeyor
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
 APPVEYOR_API_PROJ = APPVEYOR_API + "/projects/opalmer/pywincffi"
@@ -34,34 +34,14 @@ session.headers.update({
     "Content-Type": "application/json"
 })
 
-_core_logger.setLevel(logging.INFO)
+logger = get_logger("dev.release")
 
 
-def mkdir(path):
-    try:
-        os.makedirs(path)
-    except (OSError, IOError, WindowsError) as error:
-        if error.errno != EEXIST:
-            raise RuntimeError("Failed to create %s: %s" % (path, error))
-
-
-def save_content(response, path):
-    """
-    Given a response object from the requests library, iterate over the
-    content and save it to ``path``.
-    """
-    assert isinstance(response, requests.Response)
-    with open(path, "wb") as file_:
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                file_.write(chunk)
-
-
-def should_continue(question, questions=True):
+def should_continue(question, skip=False):
     """
     Asks a question, returns True if the answer is yes.  Calls
     ``sys.exit(1) if not."""
-    if not questions:
+    if skip:
         print("%s < 'y'" % question)
         return True
 
@@ -87,35 +67,31 @@ def parse_arguments():
         "--artifact-directory", default=None, dest="artifacts",
         help="The temp. location to download build artifacts to."
     )
-    arguments = parser.parse_args()
-
-    if arguments.artifacts is None:
-        arguments.artifacts = tempfile.mkdtemp()
-    else:
-        mkdir(arguments.artifacts)
-
-    return arguments
+    return parser.parse_args()
 
 
-def main(questions=True):
+def main(ask_questions=True):
     args = parse_arguments()
 
     version = ".".join(map(str, __version__))
 
     # Make sure we really want to create a release of this version.
     should_continue(
-        "Create release of version %s? [y/n] " % version, questions=questions)
+        "Create release of version %s? [y/n] " % version,
+        skip=not ask_questions
+    )
 
     # Find the last passing build on the master branch.
-    data = get_appveyor_build("master")
-    build_message = data["build"]["message"]
-
+    appveyor = AppVeyor()
     should_continue(
-        "Create release from %r? [y/n] " % build_message, questions=questions)
-    paths = download_build_artifacts(args.artifacts, data["build"]["jobs"])
-    print(paths)
+        "Create release from %r? [y/n] " % appveyor.message,
+        skip=not ask_questions
+    )
+
+    for artifact in appveyor.artifacts(directory=args.artifacts):
+        continue
 
 
 if __name__ == "__main__":
     # TODO: remove `questions=False`
-    main(questions=False)
+    main(ask_questions=False)
