@@ -60,3 +60,4 @@ test_script:
 
 artifacts:
   - path: dist\*.whl
+  - path: .coverage
