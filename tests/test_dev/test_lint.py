@@ -1,10 +1,15 @@
 from __future__ import print_function
 
 import os
+import sys
 import tempfile
 from os.path import isdir, isfile
 
-from astroid import scoped_nodes
+try:
+    from astroid import scoped_nodes
+except SyntaxError:
+    scoped_nodes = SyntaxError
+
 from mock import Mock
 
 from pywincffi.dev.lint import (
@@ -14,7 +19,21 @@ from pywincffi.dev.lint import (
 from pywincffi.dev.testutil import TestCase
 
 
-class TestConstants(TestCase):
+class LintBaseCase(TestCase):
+    def setUp(self):
+        super(LintBaseCase, self).setUp()
+
+        # THe astroid package does not work in Python 2.6.  While we
+        # could lock down to an older version this will just keep us
+        # from getting enhancement in the future.  Since this is a
+        # package for development and is tested in other versions of Python
+        # we just skip it here.
+        if scoped_nodes is SyntaxError:
+            self.assertEqual(sys.version_info[0:2], (2, 6))
+            self.skipTest("Lint tests are skipped in Python 2.6")
+
+
+class TestConstants(LintBaseCase):
     """
     Tests for constants of :mod:`pywincffi.dev.lint`
     """
@@ -40,7 +59,7 @@ class TestConstants(TestCase):
         self.assertTrue(REGEX_CONSTANT.match("#define FOO ..."))
 
 
-class TestTransform(TestCase):
+class TestTransform(LintBaseCase):
     """
     Tests for :func:`pywincffi.dev.lint.transform`
     """
@@ -77,7 +96,7 @@ class TestTransform(TestCase):
             self.assertEqual(locals_[value][0].name, value)
 
 
-class TestFileFunctions(TestCase):
+class TestFileFunctions(LintBaseCase):
     """
     Tests for :func:`pywincffi.dev.lint.constants_in_file` and
     :func:`pywincffi.dev.lint.functions_in_file`
