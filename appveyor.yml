@@ -45,7 +45,8 @@ install:
 
   # Install some additional Python modules which will be required by
   # the tests.  These can't be installed as part of the setup.py due
-  # to file locking issues.
+  # to file locking issues.  These are also requirements that are not
+  # required outside of development.
   - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install -r dev_requirements.txt --upgrade"
 
 test_script:
