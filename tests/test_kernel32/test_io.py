@@ -3,7 +3,7 @@ import tempfile
 from errno import EBADF
 
 from pywincffi.core import dist
-from pywincffi.core.testutil import TestCase
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError, InputError
 from pywincffi.kernel32.io import (
     CreatePipe, CloseHandle, WriteFile, ReadFile, GetStdHandle,

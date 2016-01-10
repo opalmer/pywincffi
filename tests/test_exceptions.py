@@ -1,4 +1,4 @@
-from pywincffi.core.testutil import TestCase
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import PyWinCFFIError, InputError, WindowsAPIError
 
 

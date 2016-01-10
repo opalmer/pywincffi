@@ -9,7 +9,7 @@ from pywincffi.core import dist
 from pywincffi.core.checks import (
     INPUT_CHECK_MAPPINGS, FileType, CheckMapping, Enums,
     input_check)
-from pywincffi.core.testutil import TestCase
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
 
 

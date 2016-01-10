@@ -14,7 +14,7 @@ from mock import Mock, patch
 from pywincffi.core.dist import (
     MODULE_NAME, HEADER_FILES, SOURCE_FILES, Module, _import_path, _ffi,
     _compile, _read, load)
-from pywincffi.core.testutil import TestCase
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
 
 
