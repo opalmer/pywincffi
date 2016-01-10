@@ -55,8 +55,7 @@ test_script:
   - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install ."
   - ps: cd ..
   - "%WITH_COMPILER% %PYTHON%\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
-  - codecov
-
+  - "%PYTHON%\\Scripts\\codecov.exe"
 
 artifacts:
   - path: dist\*.whl
