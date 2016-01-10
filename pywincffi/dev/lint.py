@@ -18,7 +18,7 @@ try:
 # here because the functions below are not called directory and
 # we don't want this to be an extra dependency for the whole
 # project.
-except ImportError:
+except (ImportError, SyntaxError):  # pragma: no cover
     pass
 
 HEADERS_DIR = join(
@@ -71,7 +71,7 @@ def transform(cls, constants=None, functions=None):
         cls.locals[value] = [scoped_nodes.Function(value, None)]
 
 
-def register(linter):  # pylint: disable=unused-argument
+def register(_):  # pragma: no cover
     """
     An entrypoint that pylint uses to search for and register
     plugins with the given ``linter``
