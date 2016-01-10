@@ -3,13 +3,12 @@
 from __future__ import with_statement
 
 import argparse
+import logging
 import os
 import sys
-import subprocess
 import tempfile
-import shutil
 from errno import EEXIST
-from os.path import dirname, abspath, basename, join
+from os.path import dirname, abspath
 
 try:
     WindowsError
@@ -23,6 +22,8 @@ import requests
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from pywincffi import __version__
+from pywincffi.core.logger import logger as _core_logger
+from pywincffi.dev.release import download_build_artifacts, get_appveyor_build
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
 APPVEYOR_API_PROJ = APPVEYOR_API + "/projects/opalmer/pywincffi"
@@ -32,6 +33,8 @@ session.headers.update({
     "Accept": "application/json",
     "Content-Type": "application/json"
 })
+
+_core_logger.setLevel(logging.INFO)
 
 
 def mkdir(path):
@@ -72,54 +75,6 @@ def should_continue(question, questions=True):
         sys.exit(1)
 
 
-def download_build_artifacts(output_dir, data):
-    paths = []
-
-    # Locate the build artifacts and download them
-    print("Downloading build artifacts to %s" % output_dir)
-    for job in data["build"]["jobs"]:
-        job_id = job["jobId"]
-        if job["status"] != "success":
-            print("... status of job %s != success" % job_id)
-            raise Exception("Cannot publish a failed job.")
-
-        # Iterate over and download all the artifacts
-        artifact_url = APPVEYOR_API + "/buildjobs/%s/artifacts" % job_id
-        build_artifacts = session.get(artifact_url).json()
-        if not build_artifacts:
-            raise Exception(
-                "Build %s does not contain any artifacts" % artifact_url)
-
-        for artifact in build_artifacts:
-            if artifact["type"] != "File" or not \
-                 artifact["fileName"].endswith(".whl"):
-                continue
-
-            file_url = artifact_url + "/%s" % artifact["fileName"]
-            print("... download and unpack %s" % artifact["fileName"])
-            local_path = join(output_dir, basename(artifact["fileName"]))
-            response = session.get(
-                file_url, stream=True, headers={"Content-Type": ""})
-
-            save_content(response, local_path)
-            paths.append(local_path)
-
-            # Unpack the wheel to be sure the structure is correct.  This
-            # helps to ensure that the download not incomplete or
-            # corrupt.  We don't really care about the resulting files.
-            unpack_dir = tempfile.mkdtemp()
-            try:
-                subprocess.check_call([
-                    "wheel", "unpack", local_path, "--dest", unpack_dir],
-                    stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError:
-                raise Exception("Failed to unpack %s" % local_path)
-            finally:
-                shutil.rmtree(unpack_dir, ignore_errors=True)
-
-    return paths
-
-
 def parse_arguments():
     """Constructs an argument parser and returns parsed arguments"""
     parser = argparse.ArgumentParser(description="Cuts a release of pywincffi")
@@ -152,13 +107,12 @@ def main(questions=True):
         "Create release of version %s? [y/n] " % version, questions=questions)
 
     # Find the last passing build on the master branch.
-    url = APPVEYOR_API_PROJ + "/branch/master"
-    data = session.get(url).json()
+    data = get_appveyor_build("master")
     build_message = data["build"]["message"]
 
     should_continue(
         "Create release from %r? [y/n] " % build_message, questions=questions)
-    paths = download_build_artifacts(args.artifacts, data)
+    paths = download_build_artifacts(args.artifacts, data["build"]["jobs"])
     print(paths)
 
 
