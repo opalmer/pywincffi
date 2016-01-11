@@ -1,7 +1,7 @@
 import os
 
 from pywincffi.core import dist
-from pywincffi.core.testutil import TestCase
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32.process import OpenProcess
 
