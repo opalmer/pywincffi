@@ -18,7 +18,7 @@ try:
 # here because the functions below are not called directory and
 # we don't want this to be an extra dependency for the whole
 # project.
-except ImportError:
+except (ImportError, SyntaxError):  # pragma: no cover
     pass
 
 HEADERS_DIR = join(
@@ -30,6 +30,30 @@ FUNCTIONS_HEADER = join(HEADERS_DIR, "functions.h")
 SOURCE_MAIN = join(SOURCES_DIR, "main.c")
 REGEX_FUNCTION = re.compile(r"^[A-Z]+ (.*)\(.*$")
 REGEX_CONSTANT = re.compile(r"^#define ([A-Z]*[_]*[A-Z]*[_]*[A-Z]*) ...$")
+
+
+def functions_in_file(path):
+    """Returns a set of functions defined in the given file path"""
+    functions = set()
+    with open(path, "r") as file_:
+        for line in file_:
+            match = REGEX_FUNCTION.match(line)
+            if match:
+                functions.add(match.group(1))
+    return functions
+
+
+def constants_in_file(path):
+    """Returns a set of constants in the given file path"""
+    # Load constants from header
+    constants = set()
+    with open(path, "r") as file_:
+        for line in file_:
+            match = REGEX_CONSTANT.match(line)
+            if match:
+                constants.add(match.group(1))
+
+    return constants
 
 
 def transform(cls, constants=None, functions=None):
@@ -47,36 +71,14 @@ def transform(cls, constants=None, functions=None):
         cls.locals[value] = [scoped_nodes.Function(value, None)]
 
 
-def register(linter):  # pylint: disable=unused-argument
+def register(_):  # pragma: no cover
     """
     An entrypoint that pylint uses to search for and register
     plugins with the given ``linter``
     """
-    constants = set()
-    functions = set()
-
-    # Load constants from header
-    with open(CONSTANTS_HEADER, "r") as constants_file:
-        for line in constants_file:
-            match = REGEX_CONSTANT.match(line)
-            if match:
-                constants.add(match.group(1))
-
-    # Load functions from header
-    with open(FUNCTIONS_HEADER, "r") as functions_file:
-        for line in functions_file:
-            match = REGEX_FUNCTION.match(line)
-            if match:
-                functions.add(match.group(1))
-
-    # Load functions from source
-    with open(SOURCE_MAIN, "r") as source_main_file:
-        for line in source_main_file:
-            match = REGEX_FUNCTION.match(line)
-            if match:
-                functions.add(match.group(1))
-
-    # TODO: needs to change once we FFILibrary returns the prebuilt lib
+    functions = \
+        functions_in_file(FUNCTIONS_HEADER) | functions_in_file(SOURCE_MAIN)
+    constants = constants_in_file(CONSTANTS_HEADER)
     MANAGER.register_transform(
         scoped_nodes.Class,
         partial(transform, constants=constants, functions=functions),

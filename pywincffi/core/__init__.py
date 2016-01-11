@@ -1,8 +1,7 @@
 """
-Core
-====
+Core Sub-Package
+================
 
-The core package used internally by pywincffi.  This package contains
-wrappers for :class:`cffi.api.FFI`, a logger and some basic code used
-by the unittests.
+The core package is used internally by pywincffi.  See the documentation
+for each module for more information.
 """
