@@ -9,10 +9,11 @@ produce a release.
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 from collections import namedtuple
-from errno import EEXIST
-from os.path import join, basename
+from errno import EEXIST, ENOENT
+from os.path import join, basename, dirname
 
 try:
     from http.client import responses, OK
@@ -48,19 +49,37 @@ def check_wheel(path):
         The path to run `wheel unpack` on.
     """
     unpack_dir = tempfile.mkdtemp()
-    command = ["wheel", "unpack", path, "--dest", unpack_dir]
+
+    # Try to figure out where the wheel command is.  %PATH% itself
+    # may not be setup correctly so we look in the most obvious places.
+    wheel_commands = [
+        "wheel",
+        join(dirname(sys.executable), "Scripts", "wheel.exe"),
+        join(dirname(sys.executable), "bin", "wheel"),
+        join(dirname(sys.executable), "wheel.exe"),
+        join(dirname(sys.executable), "wheel")
+
+    ]
+    for wheelcmd in wheel_commands:
+        try:
+            subprocess.check_call([wheelcmd, "version"], stdout=subprocess.PIPE)
+            break
+        except (OSError, WindowsError) as error:
+            if error.errno == ENOENT:
+                continue
+
+            logger.error("Failed to execute %s", wheelcmd)
+            raise
+    else:
+        raise OSError(
+            "Failed to locate the `wheel` command.  "
+            "Searched %s." % wheel_commands)
+
+    command = [wheelcmd, "unpack", path, "--dest", unpack_dir]
 
     try:
-        # subprocess.check_output would be nicer but that was
-        # introduced in Python 2.7
-        process = subprocess.Popen(
-            command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-
-        if process.returncode != 0:
-            raise subprocess.CalledProcessError(
-                process.returncode, command, stderr + stdout
-            )
+        subprocess.check_call(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     except subprocess.CalledProcessError:
         logger.error("Failed to unpack wheel with %r", " ".join(command))
