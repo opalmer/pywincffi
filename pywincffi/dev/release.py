@@ -17,7 +17,7 @@ from os.path import join, basename, dirname
 
 try:
     from http.client import responses, OK
-except ImportError:
+except ImportError:  # pragma: no cover
     # pylint: disable=import-error,wrong-import-order
     from httplib import responses, OK
 
@@ -28,7 +28,7 @@ from pywincffi.core.logger import get_logger
 
 try:
     WindowsError
-except NameError:
+except NameError:  # pragma: no cover
     WindowsError = OSError  # pylint: disable=redefined-builtin
 
 logger = get_logger("dev.release")

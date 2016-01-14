@@ -3,16 +3,12 @@
 from __future__ import with_statement
 
 import argparse
-import logging
-import os
 import sys
-import tempfile
-from errno import EEXIST
 from os.path import dirname, abspath
 
 try:
     WindowsError
-except NameError:
+except NameError:  # pragma: no cover
     WindowsError = OSError
 
 import requests
