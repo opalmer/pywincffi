@@ -39,5 +39,6 @@ class TestWheel(TestCase):
 
         for root, _, files in os.walk(join(root_dir, "dist")):
             for filename in files:
-                path = join(root, filename)
-                self.assertTrue(check_wheel(path), path)
+                if filename.endswith(".whl"):
+                    path = join(root, filename)
+                    self.assertTrue(check_wheel(path), path)
