@@ -37,7 +37,7 @@ class TestWheel(TestCase):
         process.communicate()
         self.assertEqual(process.returncode, 0)
 
-        for root, dirs, files in os.walk(join(root_dir, "dist")):
+        for root, _, files in os.walk(join(root_dir, "dist")):
             for filename in files:
                 path = join(root, filename)
                 self.assertTrue(check_wheel(path), path)

@@ -51,7 +51,16 @@ def check_wheel(path):
     command = ["wheel", "unpack", path, "--dest", unpack_dir]
 
     try:
-        subprocess.check_output(command, stderr=subprocess.PIPE)
+        # subprocess.check_output would be nicer but that was
+        # introduced in Python 2.7
+        process = subprocess.Popen(
+            command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(
+                process.returncode, command, stderr + stdout
+            )
 
     except subprocess.CalledProcessError:
         logger.error("Failed to unpack wheel with %r", " ".join(command))
@@ -240,7 +249,7 @@ class AppVeyor(Session):
                 # Unpack the wheel to be sure the structure is correct.  This
                 # helps to ensure that the download not incomplete or
                 # corrupt.  We don't really care about the resulting files.
-                tested = test_wheel(local_path)
+                tested = check_wheel(local_path)
 
                 yield AppVeyorArtifact(
                     path=local_path, url=file_url,
