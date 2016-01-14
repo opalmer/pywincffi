@@ -65,13 +65,13 @@ def check_wheel(path):
             subprocess.check_call(
                 [wheelcmd, "version"], stdout=subprocess.PIPE)
             break
-        except (OSError, WindowsError) as error:
+        except (OSError, WindowsError) as error:  # pragma: no cover
             if error.errno == ENOENT:
                 continue
 
             logger.error("Failed to execute %s", wheelcmd)
             raise
-    else:
+    else:  # pragma: no cover
         raise OSError(
             "Failed to locate the `wheel` command.  "
             "Searched %s." % wheel_commands)
@@ -257,7 +257,7 @@ class AppVeyor(Session):
                     "Build %s does not contain any artifacts", artifact_url)
 
             for artifact in build_artifacts:
-                if artifact["type"] != "File":
+                if artifact["type"] != "File":  # pragma: no cover
                     logger.debug("Artifact %r is not a file.", artifact)
                     continue
 
