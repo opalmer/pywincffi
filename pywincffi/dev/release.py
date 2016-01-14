@@ -33,7 +33,7 @@ except NameError:
 logger = get_logger("dev.release")
 
 
-def test_wheel(path):
+def check_wheel(path):
     """
     Runs `wheel unpack` on ``path`` and returns True on success, False
     on failure.  This is used by :meth:`artifacts` to do some validation
@@ -43,6 +43,9 @@ def test_wheel(path):
     structurally makes sense at a high level.  It's possible the file
     we downloaded could be corrupt or incomplete and we don't want to
     upload a bad file.
+
+    :param str path:
+        The path to run `wheel unpack` on.
     """
     unpack_dir = tempfile.mkdtemp()
     command = ["wheel", "unpack", path, "--dest", unpack_dir]
