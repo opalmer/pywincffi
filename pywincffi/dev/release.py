@@ -62,7 +62,8 @@ def check_wheel(path):
     ]
     for wheelcmd in wheel_commands:
         try:
-            subprocess.check_call([wheelcmd, "version"], stdout=subprocess.PIPE)
+            subprocess.check_call(
+                [wheelcmd, "version"], stdout=subprocess.PIPE)
             break
         except (OSError, WindowsError) as error:
             if error.errno == ENOENT:
@@ -75,6 +76,7 @@ def check_wheel(path):
             "Failed to locate the `wheel` command.  "
             "Searched %s." % wheel_commands)
 
+    # pylint: disable=undefined-loop-variable
     command = [wheelcmd, "unpack", path, "--dest", unpack_dir]
 
     try:
