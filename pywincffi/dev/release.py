@@ -234,7 +234,7 @@ class AppVeyor(Session):
 
         try:
             os.makedirs(directory)
-        except (OSError, IOError, WindowsError) as error:
+        except (OSError, IOError, WindowsError) as error:  # pragma: no cover
             if error.errno != EEXIST:
                 raise
 
