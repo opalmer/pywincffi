@@ -1,4 +1,3 @@
-import binascii
 import os
 import hashlib
 import tempfile
@@ -15,12 +14,11 @@ except ImportError:
     # pylint: disable=import-error,wrong-import-order
     from httplib import OK, BAD_REQUEST
 
-from git import Repo, Tag
 from mock import patch
 from requests.adapters import HTTPAdapter
 
 from pywincffi.dev.release import (
-    REPO_ROOT, Session, AppVeyor, AppVeyorArtifact, check_wheel, create_tag)
+    Session, AppVeyor, AppVeyorArtifact, check_wheel)
 from pywincffi.dev.testutil import TestCase
 
 
@@ -200,5 +198,3 @@ class TestAppVeyor(TestCase):
                 )
             ]
         )
-
-

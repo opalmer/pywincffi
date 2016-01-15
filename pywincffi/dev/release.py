@@ -205,9 +205,9 @@ class GitHubAPI(object):
         self.hub = Github(login_or_token=github_token)
         self.repo = self.hub.get_repo(self.REPO_NAME)
 
-    def release_message(self, version):
-
-        return ""
+    def release_message(self, version):  # pylint: disable=no-self-use
+        """Produces release message for :meth:`create_release` to use."""
+        return version
 
     def create_release(self, version, recreate=False, prerelease=False):
         """
@@ -331,4 +331,3 @@ class AppVeyor(Session):
                 yield AppVeyorArtifact(
                     path=local_path, url=file_url,
                     unpacked=unpacked, build_success=build_success)
-
