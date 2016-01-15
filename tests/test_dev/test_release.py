@@ -196,8 +196,7 @@ class TestAppVeyor(TestCase):
                 AppVeyorArtifact(
                     path=self.artifact_path,
                     url=self.artifact_url,
-                    success=False,
-                    build_success=True
+                    unpacked=True, build_success=True
                 )
             ]
         )

@@ -188,7 +188,7 @@ class Session(object):
 
 
 AppVeyorArtifact = namedtuple(
-    "AppVeyorArtifact", ("path", "url", "build_success")
+    "AppVeyorArtifact", ("path", "url", "unpacked", "build_success")
 )
 
 
