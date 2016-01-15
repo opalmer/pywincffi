@@ -188,7 +188,7 @@ class Session(object):
 
 
 AppVeyorArtifact = namedtuple(
-    "AppVeyorArtifact", ("path", "url", "success")
+    "AppVeyorArtifact", ("path", "url", "build_success")
 )
 
 
@@ -270,17 +270,17 @@ class AppVeyor(Session):
                 local_path = join(directory, basename(artifact["fileName"]))
                 self.download(file_url, path=local_path)
 
-                tested = True
+                unpacked = True
                 if local_path.endswith(".whl"):
                     # Unpack the wheel to be sure the structure is correct.
                     # This helps to ensure that the download not incomplete
                     # or corrupt.  We don't really care about the resulting
                     # files.
-                    tested = check_wheel(local_path)
+                    unpacked = check_wheel(local_path)
 
                 yield AppVeyorArtifact(
                     path=local_path, url=file_url,
-                    success=tested and build_success)
+                    unpacked=unpacked, build_success=build_success)
 
 
 def create_tag(name, ref="HEAD", overwrite=False, push=False):
