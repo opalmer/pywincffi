@@ -89,7 +89,10 @@ def main(ask_questions=True):
     )
 
     for artifact in appveyor.artifacts(directory=args.artifacts):
-        continue
+        extension = artifact.path.split(".")[-1]
+        if extension not in ("whl", "zip", "msi", "exe"):
+            continue
+
 
     tag = create_tag(version, overwrite=args.retag)
     print("Created tag %s@%s" % (tag.name, tag.commit.hexsha))
