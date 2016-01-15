@@ -206,6 +206,15 @@ class TestCreateTag(TestCase):
     """
     Tests for constants of :class:`pywincffi.dev.release.create_tag`
     """
+    def cleanup_tag(self, tag):
+        try:
+            subprocess.check_call(["git", "tag", "-d", tag])
+        except subprocess.CalledProcessError:
+            # We don't care if this fails on AppVeyor, travis
+            # or anywhere else that sets this var.
+            if "CI" not in os.environ:
+                raise
+
     def test_repo(self):
         # Simple test to make sure REPO_ROOT is set to
         # a valid repository.
@@ -214,9 +223,7 @@ class TestCreateTag(TestCase):
     def test_does_not_overwrite(self):
         name = binascii.hexlify(os.urandom(8)).decode()
         subprocess.check_call(["git", "tag", name])
-        self.addCleanup(
-            subprocess.check_call, ["git", "tag", "-d", name],
-            stdout=subprocess.PIPE)
+        self.addCleanup(self.cleanup_tag, name)
 
         with self.assertRaises(RuntimeError):
             create_tag(name)
@@ -224,9 +231,7 @@ class TestCreateTag(TestCase):
     def test_overwrite_tag(self):
         name = binascii.hexlify(os.urandom(8)).decode()
         create_tag(name)
-        self.addCleanup(
-            subprocess.check_call, ["git", "tag", "-d", name],
-            stdout=subprocess.PIPE)
+        self.addCleanup(self.cleanup_tag, name)
         repo = Repo(REPO_ROOT)
 
         new_ref = choice(list(repo.iter_commits()))
@@ -236,9 +241,6 @@ class TestCreateTag(TestCase):
     def test_return_value(self):
         name = binascii.hexlify(os.urandom(8)).decode()
         repo, tag = create_tag(name)
-        self.addCleanup(
-            subprocess.check_call, ["git", "tag", "-d", name],
-            stdout=subprocess.PIPE)
-
+        self.addCleanup(self.cleanup_tag, name)
         self.assertIsInstance(repo, Repo)
         self.assertIsInstance(tag, Tag)
