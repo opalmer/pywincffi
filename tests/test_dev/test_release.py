@@ -1,3 +1,4 @@
+import binascii
 import os
 import hashlib
 import tempfile
@@ -14,11 +15,12 @@ except ImportError:
     # pylint: disable=import-error,wrong-import-order
     from httplib import OK, BAD_REQUEST
 
+from git import Repo, Tag
 from mock import patch
 from requests.adapters import HTTPAdapter
 
 from pywincffi.dev.release import (
-    Session, AppVeyor, AppVeyorArtifact, check_wheel)
+    REPO_ROOT, Session, AppVeyor, AppVeyorArtifact, check_wheel, create_tag)
 from pywincffi.dev.testutil import TestCase
 
 
@@ -198,3 +200,45 @@ class TestAppVeyor(TestCase):
                 )
             ]
         )
+
+
+class TestCreateTag(TestCase):
+    """
+    Tests for constants of :class:`pywincffi.dev.release.create_tag`
+    """
+    def test_repo(self):
+        # Simple test to make sure REPO_ROOT is set to
+        # a valid repository.
+        Repo(REPO_ROOT)
+
+    def test_does_not_overwrite(self):
+        name = binascii.hexlify(os.urandom(8)).decode()
+        subprocess.check_call(["git", "tag", name])
+        self.addCleanup(
+            subprocess.check_call, ["git", "tag", "-d", name],
+            stdout=subprocess.PIPE)
+
+        with self.assertRaises(RuntimeError):
+            create_tag(name)
+
+    def test_overwrite_tag(self):
+        name = binascii.hexlify(os.urandom(8)).decode()
+        create_tag(name)
+        self.addCleanup(
+            subprocess.check_call, ["git", "tag", "-d", name],
+            stdout=subprocess.PIPE)
+        repo = Repo(REPO_ROOT)
+
+        new_ref = choice(list(repo.iter_commits()))
+        _, new_tag = create_tag(name, ref=new_ref.hexsha, overwrite=True)
+        self.assertEqual(new_tag.commit.hexsha, new_ref.hexsha)
+
+    def test_return_value(self):
+        name = binascii.hexlify(os.urandom(8)).decode()
+        repo, tag = create_tag(name)
+        self.addCleanup(
+            subprocess.check_call, ["git", "tag", "-d", name],
+            stdout=subprocess.PIPE)
+
+        self.assertIsInstance(repo, Repo)
+        self.assertIsInstance(tag, Tag)

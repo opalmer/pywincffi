@@ -13,7 +13,7 @@ import sys
 import tempfile
 from collections import namedtuple
 from errno import EEXIST, ENOENT
-from os.path import join, basename, dirname
+from os.path import join, basename, dirname, abspath
 
 try:
     from http.client import responses, OK
@@ -22,6 +22,7 @@ except ImportError:  # pragma: no cover
     from httplib import responses, OK
 
 import requests
+from git import Repo
 from requests.adapters import HTTPAdapter
 
 from pywincffi.core.logger import get_logger
@@ -30,6 +31,8 @@ try:
     WindowsError
 except NameError:  # pragma: no cover
     WindowsError = OSError  # pylint: disable=redefined-builtin
+
+REPO_ROOT = dirname(dirname(dirname(abspath(__file__))))
 
 logger = get_logger("dev.release")
 
@@ -269,11 +272,53 @@ class AppVeyor(Session):
 
                 tested = True
                 if local_path.endswith(".whl"):
-                    # Unpack the wheel to be sure the structure is correct.  This
-                    # helps to ensure that the download not incomplete or
-                    # corrupt.  We don't really care about the resulting files.
+                    # Unpack the wheel to be sure the structure is correct.
+                    # This helps to ensure that the download not incomplete
+                    # or corrupt.  We don't really care about the resulting
+                    # files.
                     tested = check_wheel(local_path)
 
                 yield AppVeyorArtifact(
                     path=local_path, url=file_url,
                     success=tested and build_success)
+
+
+def create_tag(name, ref="HEAD", overwrite=False, push=False):
+    """
+    Creates a new git tag of the repository.
+
+    :param str name:
+        The name of the tag to create, typically a version
+        number.
+
+    :keyword str ref
+        The specific reference to tag.  If not provided 'HEAD'
+        will be used.
+
+    :keyword bool overwrite:
+        If the tag already exists an exception, :class:`RuntimeError`
+        will be raised.
+
+    :keyword bool push:
+        If True, push the tag to the remote repository.
+
+    :returns:
+        Returns the tag and repository
+    """
+    repo = Repo(REPO_ROOT)
+
+    for tag in repo.tags:
+        if tag.name == name:
+            if overwrite:
+                repo.delete_tag(tag)
+                break
+
+            raise RuntimeError("Tag %r already exists" % name)
+
+    tag = repo.create_tag(name, ref=ref)
+
+    if push:  # pragma: no cover
+        remote = repo.remote("origin")
+        remote.push(tags=True)
+
+    return repo, tag
