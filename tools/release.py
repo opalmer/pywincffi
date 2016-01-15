@@ -19,7 +19,7 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from pywincffi import __version__
 from pywincffi.core.logger import get_logger
-from pywincffi.dev.release import AppVeyor, create_tag
+from pywincffi.dev.release import AppVeyor, GitHubAPI
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
 APPVEYOR_API_PROJ = APPVEYOR_API + "/projects/opalmer/pywincffi"
@@ -93,9 +93,7 @@ def main(ask_questions=True):
         if extension not in ("whl", "zip", "msi", "exe"):
             continue
 
-
-    tag = create_tag(version, overwrite=args.retag)
-    print("Created tag %s@%s" % (tag.name, tag.commit.hexsha))
+    github = GitHubAPI()
 
 if __name__ == "__main__":
     # TODO: remove `questions=False`

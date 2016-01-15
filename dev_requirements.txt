@@ -10,5 +10,4 @@ setuptools
 coverage
 requests
 codecov
-GitPython
 PyGithub

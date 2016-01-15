@@ -22,9 +22,10 @@ except ImportError:  # pragma: no cover
     from httplib import responses, OK
 
 import requests
-from git import Repo
+from github import Github
 from requests.adapters import HTTPAdapter
 
+from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 
 try:
@@ -187,6 +188,55 @@ class Session(object):
         return path
 
 
+class GitHubAPI(object):
+    """
+    A wrapper around the :class:`github.GitHub` class
+    which provides methods for constructing releases,
+    tags, etc.
+    """
+    REPO_NAME = "opalmer/pywincffi"
+
+    def __init__(self):
+        github_token = config.get("pywincffi", "github_token")
+        if not github_token:
+            raise RuntimeError(
+                "pywincffi.github_token is not set in the config")
+
+        self.hub = Github(login_or_token=github_token)
+        self.repo = self.hub.get_repo(self.REPO_NAME)
+
+    def release_message(self, version):
+
+        return ""
+
+    def create_release(self, version, recreate=False, prerelease=False):
+        """
+        Creates a release for requested version.
+
+        :raises RuntimeError:
+            Raised if a release for the given version already
+            exists and ``recreate`` is False
+        """
+        for release in self.repo.get_releases():
+            if release.tag_name == version:
+                if recreate:
+                    logger.warning(
+                        "Deleting existing release for %s", release.tag_name)
+                    release.delete_release()
+                else:
+                    raise RuntimeError(
+                        "A release for %r already exists" % version)
+
+        logger.info("Creating **draft** release %r", version)
+        return self.repo.create_git_tag_and_release(
+            tag=version,
+            tag_message="Tagged by release.py",
+            release_name=version,
+            release_message=self.release_message(version),
+            draft=True, prerelease=prerelease
+        )
+
+
 AppVeyorArtifact = namedtuple(
     "AppVeyorArtifact", ("path", "url", "unpacked", "build_success")
 )
@@ -282,43 +332,3 @@ class AppVeyor(Session):
                     path=local_path, url=file_url,
                     unpacked=unpacked, build_success=build_success)
 
-
-def create_tag(name, ref="HEAD", overwrite=False, push=False):
-    """
-    Creates a new git tag of the repository.
-
-    :param str name:
-        The name of the tag to create, typically a version
-        number.
-
-    :keyword str ref
-        The specific reference to tag.  If not provided 'HEAD'
-        will be used.
-
-    :keyword bool overwrite:
-        If the tag already exists an exception, :class:`RuntimeError`
-        will be raised.
-
-    :keyword bool push:
-        If True, push the tag to the remote repository.
-
-    :returns:
-        Returns the tag and repository
-    """
-    repo = Repo(REPO_ROOT)
-
-    for tag in repo.tags:
-        if tag.name == name:
-            if overwrite:
-                repo.delete_tag(tag)
-                break
-
-            raise RuntimeError("Tag %r already exists" % name)
-
-    tag = repo.create_tag(name, ref=ref)
-
-    if push:  # pragma: no cover
-        remote = repo.remote("origin")
-        remote.push(tags=True)
-
-    return repo, tag
