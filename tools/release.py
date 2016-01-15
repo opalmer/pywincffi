@@ -19,7 +19,7 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from pywincffi import __version__
 from pywincffi.core.logger import get_logger
-from pywincffi.dev.release import AppVeyor
+from pywincffi.dev.release import AppVeyor, create_tag
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
 APPVEYOR_API_PROJ = APPVEYOR_API + "/projects/opalmer/pywincffi"
@@ -63,6 +63,10 @@ def parse_arguments():
         "--artifact-directory", default=None, dest="artifacts",
         help="The temp. location to download build artifacts to."
     )
+    parser.add_argument(
+        "--retag", default=False, action="store_true",
+        help="If provided, overwrite the previous tag"
+    )
     return parser.parse_args()
 
 
@@ -87,6 +91,8 @@ def main(ask_questions=True):
     for artifact in appveyor.artifacts(directory=args.artifacts):
         continue
 
+    tag = create_tag(version, overwrite=args.retag)
+    print("Created tag %s@%s" % (tag.name, tag.commit.hexsha))
 
 if __name__ == "__main__":
     # TODO: remove `questions=False`
