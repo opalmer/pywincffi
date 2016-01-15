@@ -267,10 +267,12 @@ class AppVeyor(Session):
                 local_path = join(directory, basename(artifact["fileName"]))
                 self.download(file_url, path=local_path)
 
-                # Unpack the wheel to be sure the structure is correct.  This
-                # helps to ensure that the download not incomplete or
-                # corrupt.  We don't really care about the resulting files.
-                tested = check_wheel(local_path)
+                tested = True
+                if local_path.endswith(".whl"):
+                    # Unpack the wheel to be sure the structure is correct.  This
+                    # helps to ensure that the download not incomplete or
+                    # corrupt.  We don't really care about the resulting files.
+                    tested = check_wheel(local_path)
 
                 yield AppVeyorArtifact(
                     path=local_path, url=file_url,
