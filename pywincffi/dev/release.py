@@ -6,6 +6,8 @@ A module for developers which can retrieve information for or
 produce a release.
 """
 
+from __future__ import print_function
+
 import os
 import shutil
 import subprocess
@@ -20,6 +22,12 @@ try:
 except ImportError:  # pragma: no cover
     # pylint: disable=import-error,wrong-import-order
     from httplib import responses, OK
+
+try:
+    from StringIO import StringIO
+except ImportError:  # pragma: no cover
+    # pylint: disable=import-error,wrong-import-order
+    from io import StringIO
 
 import requests
 from github import Github
@@ -205,11 +213,64 @@ class GitHubAPI(object):
         self.hub = Github(login_or_token=github_token)
         self.repo = self.hub.get_repo(self.REPO_NAME)
 
-    def release_message(self, version):  # pylint: disable=no-self-use
+    def milestone(self, version):
+        """Returns the milestone for the given version"""
+        for milestone in self.repo.get_milestones():
+            if milestone.title == version:
+                return milestone
+
+        raise RuntimeError("No such milestone %r" % version)
+
+    def release_message(self, version, milestone):  # pylint: disable=no-self-use
         """Produces release message for :meth:`create_release` to use."""
+        output = StringIO()
+
+        print("Links", file=output)
+        print("=====", file=output)
+        print("", file=output)
+        print(
+            "**Documentation**: "
+            "https://pywincffi.readthedocs.org/en/%s/" % version,
+            file=output)
+        print("**PyPi Release**: "
+              "https://pypi.python.org/pypi/pywincffi/%s" % version,
+              file=output)
+
+        print("Issues", file=output)
+        print("======")
+        print("", file=output)
+        issues = {
+            "bugs": set(),
+            "enhancements": set(),
+            "unittests": set(),
+            "documentation": set(),
+            "other": set()
+        }
+        for issue in self.repo.get_issues(milestone=milestone, state="all"):
+            for label in issue.labels:
+                if label.name == "bug":
+                    issues["bugs"].add(issue)
+                    break
+                elif label.name == "enhancement":
+                    issues["enhancements"].add(issue)
+                    break
+                elif label.name == "documentation":
+                    issues["documentation"].add(issue)
+                    break
+                elif label.name == "unittest":
+                    issues["unittests"].add(issue)
+                    break
+                else:
+                    issues["other"].add(issue)
+                    break
+
+        # TODO: write each section (if there are any issues)
+        # TODO: include link to issue in number
         return version
 
-    def create_release(self, version, recreate=False, prerelease=False):
+    def create_release(
+        self, version, recreate=False, prerelease=False,
+        close_milestone=False):
         """
         Creates a release for requested version.
 
@@ -217,6 +278,12 @@ class GitHubAPI(object):
             Raised if a release for the given version already
             exists and ``recreate`` is False
         """
+        milestone = self.milestone(version)
+        if milestone.state != "closed" and not close_milestone:
+            raise RuntimeError("Milestone %r is still open" % version)
+
+        milestone.edit(version, state="closed")
+
         for release in self.repo.get_releases():
             if release.tag_name == version:
                 if recreate:
@@ -232,7 +299,7 @@ class GitHubAPI(object):
             tag=version,
             tag_message="Tagged by release.py",
             release_name=version,
-            release_message=self.release_message(version),
+            release_message=self.release_message(version, milestone),
             draft=True, prerelease=prerelease
         )
 
