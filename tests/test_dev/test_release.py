@@ -207,13 +207,8 @@ class TestCreateTag(TestCase):
     Tests for constants of :class:`pywincffi.dev.release.create_tag`
     """
     def cleanup_tag(self, tag):
-        try:
-            subprocess.check_call(["git", "tag", "-d", tag])
-        except subprocess.CalledProcessError:
-            # We don't care if this fails on AppVeyor, travis
-            # or anywhere else that sets this var.
-            if "CI" not in os.environ:
-                raise
+        repo = Repo(REPO_ROOT)
+        repo.delete_tag(tag)
 
     def test_repo(self):
         # Simple test to make sure REPO_ROOT is set to
@@ -222,7 +217,8 @@ class TestCreateTag(TestCase):
 
     def test_does_not_overwrite(self):
         name = binascii.hexlify(os.urandom(8)).decode()
-        subprocess.check_call(["git", "tag", name])
+        repo = Repo(REPO_ROOT)
+        repo.create_tag(name)
         self.addCleanup(self.cleanup_tag, name)
 
         with self.assertRaises(RuntimeError):
