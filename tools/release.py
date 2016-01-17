@@ -55,6 +55,16 @@ def parse_arguments():
     """Constructs an argument parser and returns parsed arguments"""
     parser = argparse.ArgumentParser(description="Cuts a release of pywincffi")
     parser.add_argument(
+        "--skip-download", action="store_true", default=False,
+        help="If provided, do not download any build artifacts.  This is "
+             "mainly meant for testing purposes."
+    )
+    parser.add_argument(
+        "--confirm", action="store_true", default=False,
+        help="If provided, do not ask any questions and answer 'yes' to all "
+             "queries."
+    )
+    parser.add_argument(
         "--no-publish", action="store_true", default=False,
         help="If provided, do everything publish is supposed to do...minus the "
              "publish part."
@@ -70,7 +80,7 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def main(ask_questions=True):
+def main():
     args = parse_arguments()
 
     version = ".".join(map(str, __version__))
@@ -78,23 +88,25 @@ def main(ask_questions=True):
     # Make sure we really want to create a release of this version.
     should_continue(
         "Create release of version %s? [y/n] " % version,
-        skip=not ask_questions
+        skip=args.confirm
     )
+    artifacts = []
 
-    # Find the last passing build on the master branch.
-    appveyor = AppVeyor()
-    should_continue(
-        "Create release from %r? [y/n] " % appveyor.message,
-        skip=not ask_questions
-    )
-
-    for artifact in appveyor.artifacts(directory=args.artifacts):
-        extension = artifact.path.split(".")[-1]
-        if extension not in ("whl", "zip", "msi", "exe"):
-            continue
+    if not args.skip_download:
+        # Find the last passing build on the master branch.
+        appveyor = AppVeyor()
+        should_continue(
+            "Create release from %r? [y/n] " % appveyor.message,
+            skip=args.confirm
+        )
+        
+        for artifact in appveyor.artifacts(directory=args.artifacts):
+            extension = artifact.path.split(".")[-1]
+            if extension not in ("whl", "zip", "msi", "exe"):
+                continue
+            artifacts.append(artifact)
 
     github = GitHubAPI()
 
 if __name__ == "__main__":
-    # TODO: remove `questions=False`
-    main(ask_questions=False)
+    main()
