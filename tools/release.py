@@ -22,7 +22,7 @@ sys.path.insert(0, ROOT)
 
 from pywincffi import __version__
 from pywincffi.core.logger import get_logger
-from pywincffi.dev.release import AppVeyor, GitHubAPI, docs_built
+from pywincffi.dev.release import GitHubAPI, docs_built
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
 APPVEYOR_API_PROJ = APPVEYOR_API + "/projects/opalmer/pywincffi"
@@ -58,23 +58,21 @@ def parse_arguments():
     """Constructs an argument parser and returns parsed arguments"""
     parser = argparse.ArgumentParser(description="Cuts a release of pywincffi")
     parser.add_argument(
-        "--skip-download", action="store_true", default=False,
-        help="If provided, do not download any build artifacts.  This is "
-             "mainly meant for testing purposes."
-    )
-    parser.add_argument(
         "--confirm", action="store_true", default=False,
         help="If provided, do not ask any questions and answer 'yes' to all "
              "queries."
     )
     parser.add_argument(
-        "--no-publish", action="store_true", default=False,
-        help="If provided, do everything publish is supposed to do...minus the "
-             "publish part."
+        "-n", "--dry-run", action="store_true", default=False,
+        help="If provided, don't do anything destructive."
     )
     parser.add_argument(
-        "--artifact-directory", default=None, dest="artifacts",
-        help="The temp. location to download build artifacts to."
+        "--skip-pypi", action="store_true", default=False,
+        help="If provided, do not upload the release to pypi."
+    )
+    parser.add_argument(
+        "--skip-github", action="store_true", default=False,
+        help="If provided, do not create a release on GitHub."
     )
     parser.add_argument(
         "--keep-milestone-open", action="store_true", default=False,
@@ -83,10 +81,6 @@ def parse_arguments():
     parser.add_argument(
         "--recreate", action="store_true", default=False,
         help="If provided, recreate the release"
-    )
-    parser.add_argument(
-        "-n", "--dry-run", action="store_true", default=False,
-        help="If provided, don't do anything destructive."
     )
     return parser.parse_args()
 
@@ -100,50 +94,38 @@ def main():
         "Create release of version %s? [y/n] " % version,
         skip=args.confirm
     )
-    artifacts = []
 
-    if not args.skip_download:
-        # Find the last passing build on the master branch.
-        appveyor = AppVeyor()
-        should_continue(
-            "Create release from %r? [y/n] " % appveyor.message,
-            skip=args.confirm
+    if not args.skip_github:
+        github = GitHubAPI(version)
+
+        if github.milestone.state != "closed":
+            should_continue(
+                "GitHub milestone %s is still open, continue? [y/n]" % version,
+                skip=args.confirm)
+
+        release = github.create_release(
+            recreate=args.recreate, dry_run=args.dry_run,
+            close_milestone=not args.keep_milestone_open)
+
+        # TODO: Hack around in PyGitHub's request context so we can
+        # upload release artifacts
+        logger.warning("You must manually upload release artifacts")
+
+        logger.info("Created GitHub release")
+
+    if not args.skip_pypi:
+        subprocess.check_call([
+            sys.executable, "setup.py", "register"],
+            cwd=ROOT
         )
-
-        for artifact in appveyor.artifacts(directory=args.artifacts):
-            extension = artifact.path.split(".")[-1]
-            if extension not in ("whl", "zip", "msi", "exe"):
-                continue
-            artifacts.append(artifact)
-
-    github = GitHubAPI(version)
-
-    if github.milestone.state != "closed":
-        should_continue(
-            "GitHub milestone %s is still open, continue? [y/n]" % version,
-            skip=args.confirm)
-
-    release = github.create_release(
-        recreate=args.recreate, dry_run=args.dry_run,
-        close_milestone=not args.keep_milestone_open)
-
-    # TODO: Hack around in PyGitHub's request context so we can
-    # upload release artifacts
-    logger.warning("You must manually upload release artifacts")
+        subprocess.check_call([
+            sys.executable, "setup.py", "upload_from_appveyor"],
+            cwd=ROOT
+        )
+        logger.info("Created PyPi release")
 
     if not docs_built(version):
         logger.error("Documentation not built for %s", version)
-
-    if artifacts:
-        subprocess.check_call([
-            sys.executable, "setup.py", "sdist", "upload"],
-            cwd=ROOT
-        )
-
-        # TODO: Automate this
-        logger.warning("You must manually upload files to PyPi: %s", artifacts)
-
-
 
 if __name__ == "__main__":
     main()
