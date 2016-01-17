@@ -18,6 +18,7 @@ from errno import EEXIST, ENOENT
 from os.path import join, basename, dirname, abspath
 
 try:
+    # pylint: disable=import-error,wrong-import-order
     from http.client import responses, OK
     from StringIO import StringIO
 except ImportError:  # pragma: no cover
