@@ -5,6 +5,7 @@ import shutil
 import string
 import subprocess
 import sys
+from collections import namedtuple
 from random import randint, choice
 from textwrap import dedent
 from os.path import dirname, abspath, isfile, join, isdir, basename
@@ -324,23 +325,26 @@ class TestGitHubAPIReleaseMessage(GitHubAPICase):
         mocked.assert_called_with(milestone=api.milestone, state="all")
 
     def test_message(self):
+        label = namedtuple("Label", ("name", ))
+
         issues = [
             Mock(number=1, url="/1", title="Issue 1", state="closed",
-                 labels=[Mock(name="unittest")]),
+                 labels=[label(name="unittest")]),
             Mock(number=3, url="/3", title="Issue 3", state="closed",
-                 labels=[Mock(name="enhancement")]),
+                 labels=[label(name="enhancement")]),
             Mock(number=2, url="/2", title="Issue 2", state="closed",
-                 labels=[Mock(name="enhancement")]),
+                 labels=[label(name="enhancement")]),
             Mock(number=4, url="/4", title="Issue 4", state="closed",
-                 labels=[Mock(name="bug")]),
+                 labels=[label(name="bug")]),
             Mock(number=5, url="/5", title="Issue 5", state="closed",
-                 labels=[Mock(name="enhancement"), Mock(name="bug")]),
+                 labels=[label(name="enhancement"), label(name="bug")]),
             Mock(number=6, url="/6", title="Issue 6", state="closed",
                  labels=[])
         ]
 
         api = GitHubAPI(self.version)
-        with patch.object(api.repo, "get_issues", Mock(return_value=issues)):
+
+        with patch.object(api.repo, "get_issues", return_value=issues):
             self.assertEqual(api.release_message().strip(), dedent("""
         ## External Links
         Links for documentation, release files and other useful information.
@@ -351,13 +355,16 @@ class TestGitHubAPIReleaseMessage(GitHubAPICase):
         ## Pull Requests and Issues
         Pull requests and issues associated with this release.
 
-        #### Other
-        [6](/6) - Issue 6
+        #### Enhancements
         [5](/5) - Issue 5
-        [4](/4) - Issue 4
         [2](/2) - Issue 2
         [3](/3) - Issue 3
+        #### Bugs
+        [4](/4) - Issue 4
+        #### Unittests
         [1](/1) - Issue 1
+        #### Other
+        [6](/6) - Issue 6
             """).strip() % (
                 api.read_the_docs, api.pypi_release, api.milestone_filter))
 
