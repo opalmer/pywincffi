@@ -3,6 +3,7 @@
 from __future__ import with_statement
 
 import argparse
+import subprocess
 import sys
 from os.path import dirname, abspath
 
@@ -133,8 +134,15 @@ def main():
     if not docs_built(version):
         logger.error("Documentation not built for %s", version)
 
-    # TODO: Automate this
-    logger.warning("You must manually upload files to PyPi")
+    if artifacts:
+        subprocess.check_call([
+            sys.executable, "setup.py", "sdist", "upload"],
+            cwd=ROOT
+        )
+
+        # TODO: Automate this
+        logger.warning("You must manually upload files to PyPi: %s", artifacts)
+
 
 
 if __name__ == "__main__":
