@@ -22,7 +22,7 @@ sys.path.insert(0, ROOT)
 
 from pywincffi import __version__
 from pywincffi.core.logger import get_logger
-from pywincffi.dev.release import GitHubAPI, docs_built
+from pywincffi.dev.release import GitHubAPI, AppVeyor, docs_built
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
 APPVEYOR_API_PROJ = APPVEYOR_API + "/projects/opalmer/pywincffi"
@@ -79,6 +79,11 @@ def parse_arguments():
         help="If provided, do not close the milestone"
     )
     parser.add_argument(
+        "--download-artifacts",
+        help="If provided, download artifacts to this directory.  The setup.py "
+             "will redownload the files, this is mostly for testing."
+    )
+    parser.add_argument(
         "--recreate", action="store_true", default=False,
         help="If provided, recreate the release"
     )
@@ -115,6 +120,13 @@ def main():
         logger.warning("You must manually upload release artifacts")
 
         logger.info("Created GitHub release")
+
+    if args.download_artifacts:
+        appveyor = AppVeyor()
+        for _ in appveyor.artifacts(directory=args.download_artifacts):
+            continue
+
+        logger.info("Downloaded build artifacts to %s", args.download_artifacts)
 
     if not args.skip_pypi:
         subprocess.check_call([
