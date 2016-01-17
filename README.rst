@@ -13,8 +13,8 @@ Python Windows Wrapper Using CFFI
     :target: https://codecov.io/github/opalmer/pywincffi?branch=master
     :alt: code coverage
 
-.. image:: https://readthedocs.org/projects/pywincffi/badge/?version=latest
-    :target: http://pywincffi.readthedocs.org/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pywincffi/badge/
+    :target: https://pywincffi.readthedocs.org/
     :alt: documentation badge
 
 
