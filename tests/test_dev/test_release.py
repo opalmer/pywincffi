@@ -20,6 +20,7 @@ from github import Github
 from requests.adapters import HTTPAdapter
 
 from pywincffi.core.config import config
+from pywincffi.dev import release  # used to mock top level functions
 from pywincffi.dev.release import (
     Session, AppVeyor, AppVeyorArtifact, GitHubAPI, check_wheel)
 from pywincffi.dev.testutil import TestCase
@@ -149,9 +150,6 @@ class TestAppVeyor(TestCase):
         return "".join(
             [choice(string.ascii_letters) for _ in range(randint(5, 20))])
 
-    def json(self):
-        return None
-
     def test_creates_directory(self):
         path = join(tempfile.gettempdir(), self.random_string())
 
@@ -201,6 +199,44 @@ class TestAppVeyor(TestCase):
                 )
             ]
         )
+
+    def test_ignore_coverage(self):
+        artifacts = [
+            {"type": "File", "fileName": ".coverage"}
+        ]
+
+        _download = Session.download
+        self.artifact_path = None
+        self.artifact_url = None
+
+        def download(_, url, path=None):
+            _download(TestSession.DOWNLOAD_URL, path=path)
+
+        with patch.object(Session, "json", return_value=artifacts):
+            with patch.object(Session, "download", download):
+                for _ in self.appveyor.artifacts():
+                    self.fail("There should be nothing to iterate over")
+
+    def test_checks_wheel(self):
+        artifacts = [
+            {"type": "File", "fileName": "foobar.whl"}
+        ]
+
+        _download = Session.download
+        self.artifact_path = None
+        self.artifact_url = None
+        directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory, ignore_errors=True)
+
+        def download(_, url, path=None):
+            _download(TestSession.DOWNLOAD_URL, path=path)
+
+        with patch.object(release, "check_wheel") as mocked:
+            with patch.object(Session, "json", return_value=artifacts):
+                with patch.object(Session, "download", download):
+                    list(self.appveyor.artifacts(directory=directory))
+
+        mocked.assert_called_with(join(directory, "foobar.whl"))
 
 
 class GitHubAPICase(TestCase):
@@ -366,10 +402,10 @@ class TestGitHubAPICreateRelease(GitHubAPICase):
             self.api.create_release()
 
     def test_create_tag_and_release_deletes_existing(self):
-        release = Mock(tag_name=self.version)
-        self.set_releases([release])
+        release_tag = Mock(tag_name=self.version)
+        self.set_releases([release_tag])
         self.api.create_release(recreate=True)
-        self.assertEqual(release.delete_release.call_count, 1)
+        self.assertEqual(release_tag.delete_release.call_count, 1)
 
     def test_create_tag_and_release_arguments(self):
         self.set_releases([])
