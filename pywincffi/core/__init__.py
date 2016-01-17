@@ -2,6 +2,7 @@
 Core Sub-Package
 ================
 
-The core package is used internally by pywincffi.  See the documentation
-for each module for more information.
+An internal package used by pywincffi for loading the underlying ``_pywincffi``
+module, handling configuration data, logging and other common tasks.  This
+package also contains the C source and header files.
 """
