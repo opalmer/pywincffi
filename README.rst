@@ -49,11 +49,11 @@ Development
 Python Version Support
 ----------------------
 
-This project supports Python 2.6 and up including
-Python 3.  PRs, patches, tests etc that don't include
-support for both 2.x and 3.x will not be merged.  The
-aim is also the support both major versions of Python within
-the same code base rather than rely on tools such as 2to3.
+This project supports Python 2.6 and up including Python 3.x.  PRs, patches,
+tests etc that don't include support for both 2.x and 3.x will not be
+merged.  The aim is also the support both major versions of Python within
+the same code base rather than rely on tools such as 2to3, six or other
+libraries for the most part.
 
 Documentation
 -------------
@@ -64,9 +64,13 @@ It's generated directly from this library using sphinx::
 
     virtualenv env
     env/bin/activate
-    PYWINCFFI_INSTALL_BUILD=1 pip install -e .
+    pip install -r dev_requirements.txt
+    pip install -e .
     cd docs
     make html
+
+The build process also builds the documentation to ensure there are not
+any obvious problems (including broken links).
 
 Function Documentation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -75,41 +79,82 @@ Windows API Functions are typically documented in the following format:
 
 .. code-block:: python
 
-    def DuplicateHandle(arg1):
+    def DuplicateHandle(arg1, kwarg1=None):
         """
         A brief message about this function.
-
-        :param type arg1:
-            Brief information about this argument
 
         .. seealso::
 
             <url to the MSDN API documentation for this function>
+
+        :param type arg1:
+            Brief information about this argument
+
+        :keyword type kwarg1:
+            Brief information about this keyword include it's default
+            and how it's handled within the function.
+
+        :raises SomeException:
+            Some information on when this exception will be raised
+
+        :rtype: type
+        :return:
+            Information about the data that's returned
         """
 
-It's important to note that the docs also contain a ``seealso`` link which
-points back to the original documentation provided by Microsoft.  The link will
-contain more detailed information about a function's specific behaviors and
-caveats than pywincffi's docs may provide alone.
+It's important to note that the docs contain a ``seealso`` stanza.  This is
+typically used to reference the MSDN documentation but may also be used to
+reference examples, white papers or other reference which may be useful in
+describing the function.
 
 
 Testing
 -------
 
+Nosetests
+~~~~~~~~~
 Tests are located in the ``tests/`` directory.  The tests
 themselves are run using ``nosetests`` either manually or using
 the ``setup.py`` file::
 
     virtualenv env
     env/bin/activate
+    pip install -r dev_requirements.txt
     pip install -e .
-    python setup.py test
+    nosetests tests
 
-Every commit and pull request is also executed on
-`AppVeyor <https://ci.appveyor.com/project/opalmer/pywincffi>`_.  Tests can also
-be executed manually as well::
+Continuous Integration
+~~~~~~~~~~~~~~~~~~~~~~
 
-    nosetests -v --with-coverage
+To consistently ensure the highest quality code, the following services are
+utilized to test or analyze every commit and pull request:
 
-You can also follow `the documentation <https://pywincffi.readthedocs.org/en/latest/dev/vagrant.html>`_
-and use Vagrant to test locally on non-Windows platforms.
+    * `AppVeyor <https://ci.appveyor.com/project/opalmer/pywincffi>`_ - Runs
+      the unittests, builds wheel files, MSIs and other output artifacts
+      which can be published in a release.
+    * `Travis <https://travis-ci.org/opalmer/pywincffi>`_ - Runs the ``pep8``
+      and ``pylint`` command line tools on the code base and tests.  This also
+      builds the docs so documentation problems are easily spotted.
+    * `Codecov <https://codecov.io/github/opalmer/pywincffi>`_ - Analyses and
+      displays code coverage results after tests have run on AppVeyor.  Results
+      are posted back to pull requests.
+    * `ReadTheDocs <https://readthedocs.org/projects/pywincffi/builds/>`_. -
+      The official location where documentation is built and posted.  This is
+      generally for merges into the master branch however.
+
+
+Vagrant
+~~~~~~~
+
+The continuous integration service above negate most of the need to setup
+your local workstation to handle development for pywincffi even if you're not
+running Windows.  In some cases however, such as when working on large
+changes, it can be faster to test locally.
+
+If you're not running Windows or you don't have the tools necessary to
+develop pywincffi on your machine you can use
+`Vagrant <https://www.vagrantup.com/>`_ to build a Windows machine and start
+developing.  There's a more in depth explanation of this process located
+here:
+
+    https://pywincffi.readthedocs.org/en/latest/dev/vagrant.html
