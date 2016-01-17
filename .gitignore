@@ -12,5 +12,5 @@
 /.provision
 /.ci/vagrant/sshd/files/authorized_keys
 /pywincffi.ini
-*Release*
+/Release*
 *_pywincffi.c
