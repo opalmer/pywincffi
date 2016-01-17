@@ -9,7 +9,7 @@ if [[ $PYLINT == "1" ]]; then
     # purposes.
     pylint tests \
         --disable missing-docstring,invalid-name \
-        --disable protected-access,no-self-use
+        --disable protected-access,no-self-use,unused-argument
 fi
 
 if [[ $READTHEDOCS == "1" ]]; then
