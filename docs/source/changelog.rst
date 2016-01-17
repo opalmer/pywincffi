@@ -13,8 +13,9 @@ Versions
 
 The first public release of pywincffi.  The
 `GitHub release <https://github.com/opalmer/pywincffi/releases/tag/0.1.1>`_
-contains the full list of issues, change and pull requests.  This is also
-the first release which should allow Twisted to start moving away from pywin32.
+contains the full list of issues, changes and pull requests.  The primary
+purpose of this release was to end up with the tools and code necessary to
+begin integrating pywincffi into Twisted.
 
 
 0.1.0
