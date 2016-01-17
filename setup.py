@@ -98,6 +98,8 @@ setup_keywords = dict(
     ),
     include_package_data=True,
     author="Oliver Palmer",
+    author_email="oliverpalmer@opalmer.com",
+    url="http://github.com/opalmer/pywincffi",
     description="A Python library which wraps Windows functions using CFFI",
     long_description=long_description,
     setup_requires=requirements,
