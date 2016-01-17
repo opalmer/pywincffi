@@ -202,11 +202,20 @@ class GitHubAPI(object):
     which provides methods for constructing releases,
     tags, etc.
     """
-    REPO_NAME = "opalmer/pywincffi"
+    PROJECT = "pywincffi"
+    REPO_NAME = "opalmer/%s" % PROJECT
 
     def __init__(self, version, branch="master"):
         self.version = version
         self.branch = branch
+        self.read_the_docs = \
+            "https://%s.readthedocs.org/en/%s/" % (self.PROJECT, self.version)
+        self.pypi_release = \
+            "https://pypi.python.org/pypi/%s/%s" % (self.PROJECT, self.version)
+        self.milestone_filter = \
+            "https://github.com/%s/issues?q=milestone:%s" % (
+                self.REPO_NAME, self.version
+            )
 
         github_token = config.get("pywincffi", "github_token")
         if not github_token:
@@ -233,15 +242,17 @@ class GitHubAPI(object):
         """Produces release message for :meth:`create_release` to use."""
         output = StringIO()
 
-        print(
-            "**Documentation**: "
-            "https://pywincffi.readthedocs.org/en/%s/" % self.version,
-            file=output)
-        print("**PyPi Release**: "
-              "https://pypi.python.org/pypi/pywincffi/%s" % self.version,
-              file=output)
+        print("## External Links", file=output)
+        print("Links for documentation, release files and other useful "
+              "information.", file=output)
+        print("* [Documentation](%s)" % self.read_the_docs, file=output)
+        print("* [PyPi Package](%s)" % self.pypi_release, file=output)
+        print("* [GitHub Issues](%s)" % self.milestone_filter, file=output)
+        print("", file=output)
 
-        print("## Issues", file=output)
+        print("## Pull Requests and Issues", file=output)
+        print("Pull requests and issues associated with this release.",
+              file=output)
         print("", file=output)
         issues = {
             "bugs": [],
@@ -278,7 +289,6 @@ class GitHubAPI(object):
                 for issue in issues[name.lower()]:
                     if issue.state != "closed":
                         logger.warning("Issue %s is not closed!", issue.number)
-                    # import pdb; pdb.set_trace()
                     print(
                         "[%s](%s) - %s" % (
                             issue.number, issue.url, issue.title),
