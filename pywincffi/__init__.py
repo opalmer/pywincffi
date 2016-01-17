@@ -2,9 +2,8 @@
 PyWinCFFI
 =========
 
-A core Python package that uses :mod:`cffi` to interact
-with Windows APIs.  See :ref:`modindex` for more detailed
-information.
+The root of the pywincffi package.  See the ``README`` and documentation for
+help and examples.
 """
 
 __version__ = (0, 1, 1)
