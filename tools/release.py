@@ -21,7 +21,7 @@ sys.path.insert(0, ROOT)
 
 from pywincffi import __version__
 from pywincffi.core.logger import get_logger
-from pywincffi.dev.release import AppVeyor, GitHubAPI
+from pywincffi.dev.release import AppVeyor, GitHubAPI, docs_built
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
 APPVEYOR_API_PROJ = APPVEYOR_API + "/projects/opalmer/pywincffi"
@@ -122,9 +122,19 @@ def main():
             "GitHub milestone %s is still open, continue? [y/n]" % version,
             skip=args.confirm)
 
-    github.create_release(
+    release = github.create_release(
         recreate=args.recreate, dry_run=args.dry_run,
         close_milestone=not args.keep_milestone_open)
+
+    # TODO: Hack around in PyGitHub's request context so we can
+    # upload release artifacts
+    logger.warning("You must manually upload release artifacts")
+
+    if not docs_built(version):
+        logger.error("Documentation not built for %s", version)
+
+    # TODO: Automate this
+    logger.warning("You must manually upload files to PyPi")
 
 
 if __name__ == "__main__":

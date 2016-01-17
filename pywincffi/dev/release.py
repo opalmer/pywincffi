@@ -18,10 +18,10 @@ from errno import EEXIST, ENOENT
 from os.path import join, basename, dirname, abspath
 
 try:
-    from http.client import responses, OK
+    from http.client import responses, OK, NOT_FOUND
 except ImportError:  # pragma: no cover
     # pylint: disable=import-error,wrong-import-order
-    from httplib import responses, OK
+    from httplib import responses, OK, NOT_FOUND
 
 try:
     from StringIO import StringIO
@@ -431,3 +431,10 @@ class AppVeyor(Session):
                 yield AppVeyorArtifact(
                     path=local_path, url=file_url,
                     unpacked=unpacked, build_success=build_success)
+
+
+def docs_built(version):
+    """Returns True if the docs have been built for the given version"""
+    response = Session.session.get(
+        "https://pywincffi.readthedocs.org/en/%s/" % version)
+    return response.status_code == OK
