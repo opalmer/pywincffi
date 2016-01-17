@@ -19,14 +19,10 @@ from os.path import join, basename, dirname, abspath
 
 try:
     from http.client import responses, OK
-except ImportError:  # pragma: no cover
-    # pylint: disable=import-error,wrong-import-order
-    from httplib import responses, OK
-
-try:
     from StringIO import StringIO
 except ImportError:  # pragma: no cover
     # pylint: disable=import-error,wrong-import-order
+    from httplib import responses, OK
     from io import StringIO
 
 import requests
