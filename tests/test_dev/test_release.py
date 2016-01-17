@@ -339,7 +339,9 @@ class TestGitHubAPIReleaseMessage(GitHubAPICase):
             Mock(number=5, url="/5", title="Issue 5", state="closed",
                  labels=[label(name="enhancement"), label(name="bug")]),
             Mock(number=6, url="/6", title="Issue 6", state="closed",
-                 labels=[])
+                 labels=[]),
+            Mock(number=7, url="/7", title="Issue 7", state="closed",
+                 labels=[label(name="documentation")])
         ]
 
         api = GitHubAPI(self.version)
@@ -361,6 +363,8 @@ class TestGitHubAPIReleaseMessage(GitHubAPICase):
         [3](/3) - Issue 3
         #### Bugs
         [4](/4) - Issue 4
+        #### Documentation
+        [7](/7) - Issue 7
         #### Unittests
         [1](/1) - Issue 1
         #### Other
