@@ -60,11 +60,11 @@ def error_check(api_function, code=None, expected=0):
     :param str api_function:
         The Windows API function being called.
 
-    :param int code:
+    :keyword int code:
         An explicit code to compare against.  This can be used
         instead of asking :func:`ffi.getwinerrro` to retrieve a code.
 
-    :param int expected:
+    :keyword int expected:
         The code we expect to have as a result of a successful
         call.  This can also be passed ``pywincffi.core.checks.Enums.NON_ZERO``
         if ``code`` can be anything but zero.
@@ -116,12 +116,12 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
     :param value:
         The value we're performing the type check on.
 
-    :param allowed_types:
+    :keyword allowed_types:
         The allowed type or types for ``value``.  This argument
         also supports a special value, ``pywincffi.core.checks.Enums.HANDLE``,
         which will check to ensure ``value`` is a handle object.
 
-    :param tuple allowed_values:
+    :keyword tuple allowed_values:
         A tuple of allowed values.  When provided ``value`` must
         be in this tuple otherwise :class:`InputError` will be
         raised.
