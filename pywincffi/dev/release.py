@@ -229,23 +229,19 @@ class GitHubAPI(object):
         branch = self.repo.get_branch(self.branch)
         return branch.commit.sha
 
-    def release_message(self, version, milestone):  # pylint: disable=no-self-use
+    def release_message(self):
         """Produces release message for :meth:`create_release` to use."""
         output = StringIO()
 
-        print("Links", file=output)
-        print("=====", file=output)
-        print("", file=output)
         print(
             "**Documentation**: "
-            "https://pywincffi.readthedocs.org/en/%s/" % version,
+            "https://pywincffi.readthedocs.org/en/%s/" % self.version,
             file=output)
         print("**PyPi Release**: "
-              "https://pypi.python.org/pypi/pywincffi/%s" % version,
+              "https://pypi.python.org/pypi/pywincffi/%s" % self.version,
               file=output)
 
-        print("Issues", file=output)
-        print("======", file=output)
+        print("## Issues", file=output)
         print("", file=output)
         issues = {
             "bugs": [],
@@ -254,34 +250,45 @@ class GitHubAPI(object):
             "documentation": [],
             "other": []
         }
-        for issue in self.repo.get_issues(milestone=milestone, state="all"):
+        for issue in self.repo.get_issues(
+                milestone=self.milestone, state="all"):
             for label in issue.labels:
                 if label.name == "bug":
                     issues["bugs"].append(issue)
                     break
-                elif label.name == "enhancement":
+                if label.name == "enhancement":
                     issues["enhancements"].append(issue)
                     break
-                elif label.name == "documentation":
+                if label.name == "documentation":
                     issues["documentation"].append(issue)
                     break
-                elif label.name == "unittest":
+                if label.name == "unittest":
                     issues["unittests"].append(issue)
                     break
-                else:
-                    issues["other"].append(issue)
-                    break
+            else:
+                issues["other"].append(issue)
 
-        # TODO: write each section (if there are any issues)
-        # TODO: include link to issue in number
-        return version
+        for value in issues.values():
+            value.reverse()
 
-    def milestone_open(self):
-        """Returns True if the milestone is still open"""
-        return self.milestone.state == "open"
+        for name in (
+                "enhancements", "bugs", "documentation", "unittests", "other"):
+            if issues[name]:
+                print("#### %s" % name.title(), file=output)
+                for issue in issues[name.lower()]:
+                    if issue.state != "closed":
+                        logger.warning("Issue %s is not closed!", issue.number)
+                    # import pdb; pdb.set_trace()
+                    print(
+                        "[%s](%s) - %s" % (
+                            issue.number, issue.url, issue.title),
+                        file=output)
+
+        return output.getvalue()
 
     def create_release(
-        self, recreate=False, prerelease=False, close_milestone=False):
+            self, recreate=False, prerelease=False, close_milestone=False,
+            dry_run=False):
         """
         Creates a release for requested version.
 
@@ -304,15 +311,20 @@ class GitHubAPI(object):
                         "A release for %r already exists" % self.version)
 
         logger.info("Creating **draft** release %r", self.version)
-        return self.repo.create_git_tag_and_release(
-            self.version,
-            "Tagged by release.py",
-            self.version,
-            self.release_message(self.version, self.milestone),
-            self.commit(),
-            "commit",
-            draft=True, prerelease=prerelease
-        )
+        message = self.release_message()
+        if not dry_run:
+            return self.repo.create_git_tag_and_release(
+                self.version,
+                "Tagged by release.py",
+                self.version,
+                message,
+                self.commit(),
+                "commit",
+                draft=True, prerelease=prerelease
+            )
+
+        else:
+            print(message)
 
 
 AppVeyorArtifact = namedtuple(

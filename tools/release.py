@@ -80,8 +80,12 @@ def parse_arguments():
         help="If provided, do not close the milestone"
     )
     parser.add_argument(
-        "--recreate", default=False, action="store_true",
+        "--recreate", action="store_true", default=False,
         help="If provided, recreate the release"
+    )
+    parser.add_argument(
+        "-n", "--dry-run", action="store_true", default=False,
+        help="If provided, don't do anything destructive."
     )
     return parser.parse_args()
 
@@ -119,7 +123,7 @@ def main():
             skip=args.confirm)
 
     github.create_release(
-        recreate=args.recreate,
+        recreate=args.recreate, dry_run=args.dry_run,
         close_milestone=not args.keep_milestone_open)
 
 
