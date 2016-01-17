@@ -22,7 +22,7 @@ from requests.adapters import HTTPAdapter
 from pywincffi.core.config import config
 from pywincffi.dev import release  # used to mock top level functions
 from pywincffi.dev.release import (
-    Session, AppVeyor, AppVeyorArtifact, GitHubAPI, check_wheel)
+    Session, AppVeyor, AppVeyorArtifact, GitHubAPI, check_wheel, docs_built)
 from pywincffi.dev.testutil import TestCase
 
 
@@ -423,3 +423,14 @@ class TestGitHubAPICreateRelease(GitHubAPICase):
             "commit",
             draft=True, prerelease=False
         )
+
+
+class TestDocsBuilt(TestCase):
+    """
+    Tests for :func:`pywincffi.dev.release.GitHubAPI.docs_built`
+    """
+    def test_success(self):
+        self.assertTrue(docs_built("latest"))
+
+    def test_failure(self):
+        self.assertFalse(docs_built("does_not_exist"))
