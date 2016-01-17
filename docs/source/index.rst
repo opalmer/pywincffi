@@ -29,18 +29,22 @@ The core objectives and design principles behind this project are:
 
     `PyWinCFFI's README <https://github.com/opalmer/pywincffi/blob/master/README.rst>`_
 
+
 Main Index
 ==========
+
+.. toctree:: changelog.rst
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
 
+
 Python Package
 ==============
 
 .. toctree:: modules/modules.rst
-
+    :maxdepth: 4
 
 Development
 ===========
