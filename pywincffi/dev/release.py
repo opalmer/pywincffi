@@ -18,10 +18,10 @@ from errno import EEXIST, ENOENT
 from os.path import join, basename, dirname, abspath
 
 try:
-    from http.client import responses, OK, NOT_FOUND
+    from http.client import responses, OK
 except ImportError:  # pragma: no cover
     # pylint: disable=import-error,wrong-import-order
-    from httplib import responses, OK, NOT_FOUND
+    from httplib import responses, OK
 
 try:
     from StringIO import StringIO
@@ -196,7 +196,7 @@ class Session(object):
         return path
 
 
-class GitHubAPI(object):
+class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
     """
     A wrapper around the :class:`github.GitHub` class
     which provides methods for constructing releases,
