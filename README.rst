@@ -46,6 +46,10 @@ The core objectives and design principles behind this project are:
 Development
 ===========
 
+This section gives a basic overview of the development process including
+the major goals.  This is not comprehensive but should be a good
+introduction before submitting a pull request.
+
 Python Version Support
 ----------------------
 
@@ -146,10 +150,10 @@ utilized to test or analyze every commit and pull request:
 Vagrant
 ~~~~~~~
 
-The continuous integration service above negate most of the need to setup
-your local workstation to handle development for pywincffi even if you're not
-running Windows.  In some cases however, such as when working on large
-changes, it can be faster to test locally.
+The continuous integration services above negate most of the need to setup
+your local workstation to handle development for pywincffi, even if you're not
+running Windows.  In some cases however it can be faster or easiear to work
+on your local machine.
 
 If you're not running Windows or you don't have the tools necessary to
 develop pywincffi on your machine you can use
