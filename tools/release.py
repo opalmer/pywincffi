@@ -13,9 +13,11 @@ except NameError:  # pragma: no cover
 
 import requests
 
+ROOT = dirname(dirname(abspath(__file__)))
+
 # Add the root of the repo to sys.path so
 # we can import pywcinffi directly.
-sys.path.insert(0, dirname(dirname(abspath(__file__))))
+sys.path.insert(0, ROOT)
 
 from pywincffi import __version__
 from pywincffi.core.logger import get_logger
@@ -86,7 +88,6 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
-
     version = ".".join(map(str, __version__))
 
     # Make sure we really want to create a release of this version.

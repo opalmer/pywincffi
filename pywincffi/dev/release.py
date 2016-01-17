@@ -204,8 +204,10 @@ class GitHubAPI(object):
     """
     REPO_NAME = "opalmer/pywincffi"
 
-    def __init__(self, version):
+    def __init__(self, version, branch="master"):
         self.version = version
+        self.branch = branch
+
         github_token = config.get("pywincffi", "github_token")
         if not github_token:
             raise RuntimeError(
@@ -221,6 +223,11 @@ class GitHubAPI(object):
         else:
             raise RuntimeError(
                 "Failed to locate milestone for version %s" % self.version)
+
+    def commit(self):
+        """Returns the sha1 of the latest commit for the publish branch"""
+        branch = self.repo.get_branch(self.branch)
+        return branch.commit.sha
 
     def release_message(self, version, milestone):  # pylint: disable=no-self-use
         """Produces release message for :meth:`create_release` to use."""
@@ -238,31 +245,31 @@ class GitHubAPI(object):
               file=output)
 
         print("Issues", file=output)
-        print("======")
+        print("======", file=output)
         print("", file=output)
         issues = {
-            "bugs": set(),
-            "enhancements": set(),
-            "unittests": set(),
-            "documentation": set(),
-            "other": set()
+            "bugs": [],
+            "enhancements": [],
+            "unittests": [],
+            "documentation": [],
+            "other": []
         }
         for issue in self.repo.get_issues(milestone=milestone, state="all"):
             for label in issue.labels:
                 if label.name == "bug":
-                    issues["bugs"].add(issue)
+                    issues["bugs"].append(issue)
                     break
                 elif label.name == "enhancement":
-                    issues["enhancements"].add(issue)
+                    issues["enhancements"].append(issue)
                     break
                 elif label.name == "documentation":
-                    issues["documentation"].add(issue)
+                    issues["documentation"].append(issue)
                     break
                 elif label.name == "unittest":
-                    issues["unittests"].add(issue)
+                    issues["unittests"].append(issue)
                     break
                 else:
-                    issues["other"].add(issue)
+                    issues["other"].append(issue)
                     break
 
         # TODO: write each section (if there are any issues)
@@ -291,16 +298,19 @@ class GitHubAPI(object):
                     logger.warning(
                         "Deleting existing release for %s", release.tag_name)
                     release.delete_release()
+                    # TODO: make sure we delete the tag too
                 else:
                     raise RuntimeError(
                         "A release for %r already exists" % self.version)
 
         logger.info("Creating **draft** release %r", self.version)
         return self.repo.create_git_tag_and_release(
-            tag=self.version,
-            tag_message="Tagged by release.py",
-            release_name=self.version,
-            release_message=self.release_message(self.version, self.milestone),
+            self.version,
+            "Tagged by release.py",
+            self.version,
+            self.release_message(self.version, self.milestone),
+            self.commit(),
+            "commit",
             draft=True, prerelease=prerelease
         )
 
