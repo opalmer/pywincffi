@@ -74,8 +74,12 @@ def parse_arguments():
         help="The temp. location to download build artifacts to."
     )
     parser.add_argument(
-        "--retag", default=False, action="store_true",
-        help="If provided, overwrite the previous tag"
+        "--keep-milestone-open", action="store_true", default=False,
+        help="If provided, do not close the milestone"
+    )
+    parser.add_argument(
+        "--recreate", default=False, action="store_true",
+        help="If provided, recreate the release"
     )
     return parser.parse_args()
 
@@ -99,14 +103,24 @@ def main():
             "Create release from %r? [y/n] " % appveyor.message,
             skip=args.confirm
         )
-        
+
         for artifact in appveyor.artifacts(directory=args.artifacts):
             extension = artifact.path.split(".")[-1]
             if extension not in ("whl", "zip", "msi", "exe"):
                 continue
             artifacts.append(artifact)
 
-    github = GitHubAPI()
+    github = GitHubAPI(version)
+
+    if github.milestone.state != "closed":
+        should_continue(
+            "GitHub milestone %s is still open, continue? [y/n]" % version,
+            skip=args.confirm)
+
+    github.create_release(
+        recreate=args.recreate,
+        close_milestone=not args.keep_milestone_open)
+
 
 if __name__ == "__main__":
     main()

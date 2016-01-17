@@ -204,7 +204,8 @@ class GitHubAPI(object):
     """
     REPO_NAME = "opalmer/pywincffi"
 
-    def __init__(self):
+    def __init__(self, version):
+        self.version = version
         github_token = config.get("pywincffi", "github_token")
         if not github_token:
             raise RuntimeError(
@@ -213,13 +214,13 @@ class GitHubAPI(object):
         self.hub = Github(login_or_token=github_token)
         self.repo = self.hub.get_repo(self.REPO_NAME)
 
-    def milestone(self, version):
-        """Returns the milestone for the given version"""
         for milestone in self.repo.get_milestones():
-            if milestone.title == version:
-                return milestone
-
-        raise RuntimeError("No such milestone %r" % version)
+            if milestone.title == self.version:
+                self.milestone = milestone
+                break
+        else:
+            raise RuntimeError(
+                "Failed to locate milestone for version %s" % self.version)
 
     def release_message(self, version, milestone):  # pylint: disable=no-self-use
         """Produces release message for :meth:`create_release` to use."""
@@ -268,9 +269,12 @@ class GitHubAPI(object):
         # TODO: include link to issue in number
         return version
 
+    def milestone_open(self):
+        """Returns True if the milestone is still open"""
+        return self.milestone.state == "open"
+
     def create_release(
-        self, version, recreate=False, prerelease=False,
-        close_milestone=False):
+        self, recreate=False, prerelease=False, close_milestone=False):
         """
         Creates a release for requested version.
 
@@ -278,28 +282,25 @@ class GitHubAPI(object):
             Raised if a release for the given version already
             exists and ``recreate`` is False
         """
-        milestone = self.milestone(version)
-        if milestone.state != "closed" and not close_milestone:
-            raise RuntimeError("Milestone %r is still open" % version)
-
-        milestone.edit(version, state="closed")
+        if close_milestone:
+            self.milestone.edit(self.version, state="closed")
 
         for release in self.repo.get_releases():
-            if release.tag_name == version:
+            if release.tag_name == self.version:
                 if recreate:
                     logger.warning(
                         "Deleting existing release for %s", release.tag_name)
                     release.delete_release()
                 else:
                     raise RuntimeError(
-                        "A release for %r already exists" % version)
+                        "A release for %r already exists" % self.version)
 
-        logger.info("Creating **draft** release %r", version)
+        logger.info("Creating **draft** release %r", self.version)
         return self.repo.create_git_tag_and_release(
-            tag=version,
+            tag=self.version,
             tag_message="Tagged by release.py",
-            release_name=version,
-            release_message=self.release_message(version, milestone),
+            release_name=self.version,
+            release_message=self.release_message(self.version, self.milestone),
             draft=True, prerelease=prerelease
         )
 
