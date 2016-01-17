@@ -107,6 +107,9 @@ def main():
             recreate=args.recreate, dry_run=args.dry_run,
             close_milestone=not args.keep_milestone_open)
 
+        if args.dry_run:
+            print(release)
+
         # TODO: Hack around in PyGitHub's request context so we can
         # upload release artifacts
         logger.warning("You must manually upload release artifacts")

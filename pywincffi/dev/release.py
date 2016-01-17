@@ -227,7 +227,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
                 self.milestone = milestone
                 break
         else:
-            raise RuntimeError(
+            raise ValueError(
                 "Failed to locate milestone for version %s" % self.version)
 
     def commit(self):
@@ -303,7 +303,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
             Raised if a release for the given version already
             exists and ``recreate`` is False
         """
-        if close_milestone:
+        if not dry_run and close_milestone:
             self.milestone.edit(self.version, state="closed")
 
         for release in self.repo.get_releases():
@@ -331,7 +331,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
             )
 
         else:
-            print(message)
+            return message
 
 
 AppVeyorArtifact = namedtuple(
