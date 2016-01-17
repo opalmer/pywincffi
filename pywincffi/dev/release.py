@@ -410,7 +410,10 @@ class AppVeyor(Session):
                     "Build %s does not contain any artifacts", artifact_url)
 
             for artifact in build_artifacts:
-                if artifact["type"] != "File":  # pragma: no cover
+                if artifact["fileName"] == ".coverage":
+                    continue
+
+                if artifact["type"] not in ("File", "Zip"):  # pragma: no cover
                     logger.debug("Artifact %r is not a file.", artifact)
                     continue
 
