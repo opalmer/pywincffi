@@ -223,7 +223,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
         self.hub = Github(login_or_token=github_token)
         self.repo = self.hub.get_repo(self.REPO_NAME)
 
-        for milestone in self.repo.get_milestones():
+        for milestone in self.repo.get_milestones(state="all"):
             if milestone.title == self.version:
                 self.milestone = milestone
                 break

@@ -18,6 +18,7 @@ except ImportError:
 
 from mock import Mock, patch
 from github import Github
+from github.Repository import Repository
 from requests.adapters import HTTPAdapter
 
 from pywincffi.core.config import config
@@ -297,6 +298,16 @@ class TestGitHubAPIInit(GitHubAPICase):
         self.addCleanup(mock.stop)
         with self.assertRaises(ValueError):
             GitHubAPI(self.version)
+
+    def test_looks_for_milestones_with_all_states(self):
+        self._cleanups.remove((self.mocked_get_repo.stop, (), {}))
+        self.mocked_get_repo.stop()
+
+        with patch.object(
+                Repository, "get_milestones",
+                return_value=[Mock(title=self.version)]) as mocked:
+            GitHubAPI(self.version)
+        mocked.assert_called_with(state="all")
 
 
 class TestGitHubAPICommit(GitHubAPICase):
