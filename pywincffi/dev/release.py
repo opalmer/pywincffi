@@ -289,7 +289,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
                         logger.warning("Issue %s is not closed!", issue.number)
                     print(
                         "[%s](%s) - %s" % (
-                            issue.number, issue.url, issue.title),
+                            issue.number, issue.html_url, issue.title),
                         file=output)
 
         return output.getvalue()
