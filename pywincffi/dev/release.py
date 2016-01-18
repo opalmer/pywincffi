@@ -207,7 +207,10 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
     REPO_NAME = "opalmer/%s" % PROJECT
 
     # NOTE: `repo` is for testing purposes.
-    def __init__(self, version, branch="master", repo_=None):
+    def __init__(self, version, branch=None, repo_=None):
+        if branch is None:
+            branch = "master"
+
         self.version = version
         self.branch = branch
         self.read_the_docs = \
