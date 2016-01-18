@@ -6,8 +6,7 @@ import string
 import subprocess
 import sys
 from collections import namedtuple
-from random import randint, choice
-from textwrap import dedent
+from random import randint, choice, shuffle
 from os.path import dirname, abspath, isfile, join, isdir, basename
 
 try:
@@ -17,14 +16,19 @@ except ImportError:
     from httplib import OK, BAD_REQUEST
 
 from mock import Mock, patch
-from github import Github
 from requests.adapters import HTTPAdapter
 
 from pywincffi.core.config import config
 from pywincffi.dev import release  # used to mock top level functions
 from pywincffi.dev.release import (
-    Session, AppVeyor, AppVeyorArtifact, GitHubAPI, check_wheel, docs_built)
+    Session, AppVeyor, AppVeyorArtifact, GitHubAPI, Issue,
+    check_wheel, docs_built)
 from pywincffi.dev.testutil import TestCase
+
+
+def random_string():
+    return "".join(
+        [choice(string.ascii_letters) for _ in range(randint(5, 20))])
 
 
 class TestWheel(TestCase):
@@ -129,12 +133,12 @@ class TestAppVeyor(TestCase):
     """
     def setUp(self):
         super(TestAppVeyor, self).setUp()
-        self.job_id = self.random_string()
+        self.job_id = random_string()
         self.artifact_url = None
         self.artifact_path = None
         self.branch = {
             "build": {
-                "message": self.random_string(),
+                "message": random_string(),
                 "jobs": [
                     {
                         "jobId": self.job_id,
@@ -147,12 +151,8 @@ class TestAppVeyor(TestCase):
         with patch.object(Session, "json", return_value=self.branch):
             self.appveyor = AppVeyor()
 
-    def random_string(self):
-        return "".join(
-            [choice(string.ascii_letters) for _ in range(randint(5, 20))])
-
     def test_creates_directory(self):
-        path = join(tempfile.gettempdir(), self.random_string())
+        path = join(tempfile.gettempdir(), random_string())
 
         with patch.object(Session, "json", return_value=[]):
             list(self.appveyor.artifacts(directory=path))
@@ -250,19 +250,33 @@ class GitHubAPICase(TestCase):
         super(GitHubAPICase, self).setUp()
         self.version = "0.0.0"
 
-        # The test token
+        # The test token.  This ensures that we're never going to
+        # use a valid token which could cause problems on GitHub if
+        # used.
         self.token = "fake_token"
         github_token = config.get("pywincffi", "github_token")
         config.set("pywincffi", "github_token", self.token)
         self.addCleanup(config.set, "pywincffi", "github_token", github_token)
 
-        # Mocks for the Github class so we don't make any API calls
-        self.mocked_get_repo = patch.object(
-            Github, "get_repo",
-            return_value=Mock(
-                get_milestones=lambda: [Mock(title=self.version)]))
-        self.mocked_get_repo.start()
-        self.addCleanup(self.mocked_get_repo.stop)
+    # NOTE: `branch` should match the default
+    def api(self, version=None, branch=None, repo=None, milestones=None,
+            releases=None):
+        if version is None:
+            version = self.version
+
+        if milestones is None:
+            milestones = [Mock(title=self.version)]
+
+        if releases is None:
+            releases = [Mock(tag_name=self.version)]
+
+        if repo is None:
+            repo = Mock(
+                get_milestones=Mock(return_value=milestones),
+                get_releases=Mock(return_value=releases)
+            )
+
+        return GitHubAPI(version, branch=branch, repo_=repo)
 
 
 class TestGitHubAPIInit(GitHubAPICase):
@@ -270,33 +284,31 @@ class TestGitHubAPIInit(GitHubAPICase):
     Tests for :meth:`pywincffi.dev.release.GitHubAPI.__init__`
     """
     def test_version(self):
-        api = GitHubAPI(self.version)
+        api = self.api(version=self.version)
         self.assertEqual(api.version, self.version)
 
     def test_branch_default(self):
-        api = GitHubAPI(self.version)
+        api = self.api()
         self.assertEqual(api.branch, "master")
 
     def test_branch_non_default(self):
-        api = GitHubAPI(self.version, branch="foobar")
+        api = self.api(version=self.version, branch="foobar")
         self.assertEqual(api.branch, "foobar")
 
     def test_token_not_set(self):
         config.set("pywincffi", "github_token", "")
         with self.assertRaises(RuntimeError):
-            GitHubAPI(self.version)
+            self.api()
 
     def test_milestone_not_found(self):
-        self._cleanups.remove((self.mocked_get_repo.stop, (), {}))
-        self.mocked_get_repo.stop()
-        mock = patch.object(
-            Github, "get_repo",
-            return_value=Mock(
-                get_milestones=lambda: [Mock(title="x.x.x")]))
-        mock.start()
-        self.addCleanup(mock.stop)
         with self.assertRaises(ValueError):
-            GitHubAPI(self.version)
+            self.api(version=self.version, milestones=[])
+
+    def test_looks_for_milestones_with_all_states(self):
+        api = self.api()
+
+        # pylint: disable=no-member
+        api.repo.get_milestones.assert_called_with(state="all")
 
 
 class TestGitHubAPICommit(GitHubAPICase):
@@ -304,133 +316,229 @@ class TestGitHubAPICommit(GitHubAPICase):
     Tests for :meth:`pywincffi.dev.release.GitHubAPI.commit`
     """
     def test_commit(self):
-        api = GitHubAPI(self.version)
         expected = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
-        with patch.object(
-            api.repo, "get_branch", return_value=Mock(
-                commit=Mock(sha=expected))):
-            self.assertEqual(api.commit(), expected)
+        api = self.api()
+        api.repo.get_branch.return_value = Mock(commit=Mock(sha=expected))
+        self.assertEqual(api.commit(), expected)
+
+        # pylint: disable=no-member
+        api.repo.get_branch.assert_called_with(api.branch)
+
+FakeLabel = namedtuple("FakeLabel", ("name", ))
 
 
-class TestGitHubAPIReleaseMessage(GitHubAPICase):
+class FakeIssue(object):
+    def __init__(self, type_=None, state=None, labels=None):
+        if type_ is None:
+            type_ = choice(["pull", "issue"])
+        if state is None:
+            state = choice(["closed", "open"])
+
+        self.type_ = type_
+        self.number = randint(1, 1024)
+        self.title = random_string()
+        self.labels = []
+        self.state = state
+
+        if labels is None:
+            for _ in range(randint(1, 5)):
+                self.labels.append(
+                    FakeLabel(choice(
+                        ["bug", "enhancement", "unittest", "documentation"])))
+        else:
+            for label in labels:
+                self.labels.append(FakeLabel(label))
+
+    @property
+    def html_url(self):
+        if self.type_ == "pull":
+            url = "https://github.com/opalmer/pywincffi/pull/{number}"
+        else:
+            url = "https://github.com/opalmer/pywincffi/issues/{number}"
+        return url.format(number=self.number)
+
+
+class GitHubAPICaseWithIssues(GitHubAPICase):
+    # pylint: disable=arguments-differ
+    def api(self, version=None, branch=None, repo=None, milestones=None,
+            issues=None, releases=None):
+        api = super(GitHubAPICaseWithIssues, self).api(
+            version=version, branch=branch, repo=repo, milestones=milestones,
+            releases=releases)
+        default_issues = [
+            FakeIssue(), FakeIssue(), FakeIssue(),
+            FakeIssue(), FakeIssue(), FakeIssue()
+        ]
+        if issues is not None:
+            default_issues.extend(issues)
+
+        shuffle(default_issues)
+        api.repo.get_issues = Mock(return_value=default_issues)
+        return api
+
+
+class TestGitHubAPIIssues(GitHubAPICaseWithIssues):
+    """
+    Tests for :meth:`pywincffi.dev.release.GitHubAPI.issues`
+    """
+    def test_get_issues_keywords(self):
+        api = self.api()
+        list(api.issues())
+
+        # pylint: disable=no-member
+        api.repo.get_issues.assert_called_with(
+            milestone=api.milestone, state="all")
+
+    def test_return_type(self):
+        api = self.api()
+        self.assertIsInstance(list(api.issues()), list)
+
+    def test_return_type_value(self):
+        api = self.api()
+        for issue in api.issues():
+            self.assertIsInstance(issue, Issue)
+
+    def test_issue(self):
+        api = self.api()
+
+        for issue in api.issues():
+            self.assertIsInstance(issue.issue, FakeIssue)
+
+    def test_closed(self):
+        api = self.api(issues=[FakeIssue(state="closed")])
+
+        for issue in api.issues():
+            self.assertEqual(issue.closed, issue.issue.state == "closed")
+
+    def issue_type(self):
+        api = self.api(issues=[
+            FakeIssue(labels=["enhancement"]), FakeIssue(labels=["bug"])
+        ])
+
+        for issue in api.issues():
+            if "bug" in issue.labels:
+                expected_issue_type = "bugs"
+
+            elif "enhancement" in issue.labels:
+                expected_issue_type = "enhancements"
+
+            elif "documentation" in issue.labels:
+                expected_issue_type = "documentation"
+
+            elif "unittest" in issue.labels:
+                expected_issue_type = "unittests"
+
+            else:
+                expected_issue_type = "other"
+
+            self.assertEqual(issue.type, expected_issue_type)
+
+    def test_labels(self):
+        api = self.api(issues=[FakeIssue(labels=["foo"])])
+
+        for issue in api.issues():
+            self.assertEqual(
+                issue.labels,
+                set(label.name for label in issue.issue.labels))
+
+    def test_issue_url(self):
+        api = self.api()
+
+        for issue in api.issues():
+            self.assertEqual(issue.issue.html_url, issue.url)
+
+
+class TestGitHubAPIReleaseMessage(GitHubAPICaseWithIssues):
     """
     Tests for :meth:`pywincffi.dev.release.GitHubAPI.release_message`
+
+    .. note::
+
+        This is not a full test because most of the testing is completed
+        in TestGitHubAPIIssues() above.
     """
-    def test_gets_all_issues(self):
-        api = GitHubAPI(self.version)
+    def test_return_type(self):
+        api = self.api()
+        self.assertIsInstance(api.release_message(), str)
 
-        with patch.object(api.repo, "get_issues", return_value=[]) as mocked:
-            api.release_message()
+    def test_doc_link(self):
+        api = self.api(releases=[])
+        self.assertIn(
+            "* [Documentation](%s)" % api.read_the_docs,
+            api.release_message())
 
-        mocked.assert_called_with(milestone=api.milestone, state="all")
+    def test_pypi_link(self):
+        api = self.api()
+        self.assertIn(
+            "* [PyPi Package](%s)" % api.pypi_release,
+            api.release_message())
 
-    def test_message(self):
-        label = namedtuple("Label", ("name", ))
+    def test_github_issues(self):
+        api = self.api()
+        self.assertIn(
+            "* [GitHub Issues](%s)" % api.milestone_filter,
+            api.release_message())
 
-        issues = [
-            Mock(number=1, url="/1", title="Issue 1", state="closed",
-                 labels=[label(name="unittest")]),
-            Mock(number=3, url="/3", title="Issue 3", state="closed",
-                 labels=[label(name="enhancement")]),
-            Mock(number=2, url="/2", title="Issue 2", state="closed",
-                 labels=[label(name="enhancement")]),
-            Mock(number=4, url="/4", title="Issue 4", state="closed",
-                 labels=[label(name="bug")]),
-            Mock(number=5, url="/5", title="Issue 5", state="closed",
-                 labels=[label(name="enhancement"), label(name="bug")]),
-            Mock(number=6, url="/6", title="Issue 6", state="closed",
-                 labels=[]),
-            Mock(number=7, url="/7", title="Issue 7", state="closed",
-                 labels=[label(name="documentation")])
-        ]
+    def test_fails_for_extra_types(self):
+        issue = FakeIssue()
 
-        api = GitHubAPI(self.version)
+        # pylint: disable=attribute-defined-outside-init
+        issue.type = "some_new_type"
 
-        with patch.object(api.repo, "get_issues", return_value=issues):
-            self.assertEqual(api.release_message().strip(), dedent("""
-        ## External Links
-        Links for documentation, release files and other useful information.
-        * [Documentation](%s)
-        * [PyPi Package](%s)
-        * [GitHub Issues](%s)
+        api = self.api()
+        with patch.object(api, "issues", return_value=[issue]):
+            with self.assertRaises(ValueError):
+                api.release_message()
 
-        ## Pull Requests and Issues
-        Pull requests and issues associated with this release.
-
-        #### Enhancements
-        [5](/5) - Issue 5
-        [2](/2) - Issue 2
-        [3](/3) - Issue 3
-        #### Bugs
-        [4](/4) - Issue 4
-        #### Documentation
-        [7](/7) - Issue 7
-        #### Unittests
-        [1](/1) - Issue 1
-        #### Other
-        [6](/6) - Issue 6
-            """).strip() % (
-                api.read_the_docs, api.pypi_release, api.milestone_filter))
+    def test_contains_issue_links(self):
+        api = self.api()
+        release_message = api.release_message()
+        for issue in api.issues():
+            text = "[{number}]({url}) - {title}".format(
+                number=issue.number, url=issue.url, title=issue.title
+            )
+            self.assertIn(text, release_message)
 
 
-class TestGitHubAPICreateRelease(GitHubAPICase):
+class TestGitHubAPICreateRelease(GitHubAPICaseWithIssues):
     """
     Tests for :meth:`pywincffi.dev.release.GitHubAPI.create_release`
     """
-    def setUp(self):
-        super(TestGitHubAPICreateRelease, self).setUp()
-        self.api = GitHubAPI(self.version)
-        mock = patch.object(self.api, "release_message", return_value="foobar")
-        mock.start()
-        self.addCleanup(mock.stop)
-
-    def set_releases(self, value):
-        mock = patch.object(self.api.repo, "get_releases", return_value=value)
-        mock.start()
-        self.addCleanup(mock.stop)
-        return mock
-
     def test_dry_run(self):
-        self.set_releases([])
-
-        # Exceptions will be raised if dry_run actually tries to do
-        # something
-        self.assertEqual(self.api.create_release(dry_run=True), "foobar")
+        api = self.api()
+        api.create_release(dry_run=True)
+        self.assertEqual(api.milestone.edit.call_count, 0)
 
     def test_closes_milestone(self):
-        self.set_releases([])
-
-        with patch.object(self.api.milestone, "edit") as mocked:
-            self.api.create_release(close_milestone=True)
-
-        mocked.assert_called_with(self.version, state="closed")
+        api = self.api(releases=[])
+        api.create_release(close_milestone=True)
+        api.milestone.edit.assert_called_with(api.version, state="closed")
 
     def test_create_tag_and_release_fails_without_recreate(self):
-        self.set_releases([Mock(tag_name=self.version)])
-
+        api = self.api()
         with self.assertRaisesRegex(RuntimeError,
                                     ".*%r already exists.*" % self.version):
-            self.api.create_release()
+            api.create_release()
 
     def test_create_tag_and_release_deletes_existing(self):
-        release_tag = Mock(tag_name=self.version)
-        self.set_releases([release_tag])
-        self.api.create_release(recreate=True)
-        self.assertEqual(release_tag.delete_release.call_count, 1)
+        api = self.api()
+        api.create_release(recreate=True)
+
+        # pylint: disable=no-member
+        get_releases = api.repo.get_releases.return_value[0]
+        get_releases.delete_release.assert_called_with()
 
     def test_create_tag_and_release_arguments(self):
-        self.set_releases([])
+        api = self.api()
+        api.create_release(recreate=True)
 
-        with patch.object(self.api.repo,
-                          "create_git_tag_and_release") as mocked:
-            self.api.create_release(recreate=True)
-
-        mocked.assert_called_with(
-            self.api.version,
+        # pylint: disable=no-member
+        api.repo.create_git_tag_and_release.assert_called_with(
+            api.version,
             "Tagged by release.py",
-            self.version,
-            self.api.release_message(),
-            self.api.commit(),
+            api.version,
+            api.release_message(),
+            api.commit(),
             "commit",
             draft=True, prerelease=False
         )

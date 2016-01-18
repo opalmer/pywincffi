@@ -105,7 +105,7 @@ def main():
 
         if github.milestone.state != "closed":
             should_continue(
-                "GitHub milestone %s is still open, continue? [y/n]" % version,
+                "GitHub milestone %s is still open, continue? [y/n] " % version,
                 skip=args.confirm)
 
         release = github.create_release(
