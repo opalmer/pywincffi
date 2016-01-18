@@ -206,7 +206,8 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
     PROJECT = "pywincffi"
     REPO_NAME = "opalmer/%s" % PROJECT
 
-    def __init__(self, version, branch="master"):
+    # NOTE: `repo` is for testing purposes.
+    def __init__(self, version, branch="master", repo_=None):
         self.version = version
         self.branch = branch
         self.read_the_docs = \
@@ -224,7 +225,10 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
                 "pywincffi.github_token is not set in the config")
 
         self.hub = Github(login_or_token=github_token)
-        self.repo = self.hub.get_repo(self.REPO_NAME)
+        self.repo = repo_
+
+        if repo_ is None:
+            self.repo = self.hub.get_repo(self.REPO_NAME)
 
         for milestone in self.repo.get_milestones(state="all"):
             if milestone.title == self.version:
