@@ -329,7 +329,8 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
         # The for loop above establishes the order we want to see
         # the various types of issues in.  If a new type is added,
         # we'll need to update this.
-        assert not issues, "Unhandled keys: %s" % issues.keys()
+        if issues:
+            raise ValueError("Unhandled keys: %s" % issues.keys())
 
         return output.getvalue()
 
@@ -348,14 +349,17 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
 
         for release in self.repo.get_releases():
             if release.tag_name == self.version:
-                if recreate:
+                if recreate and not dry_run:
                     logger.warning(
                         "Deleting existing release for %s", release.tag_name)
                     release.delete_release()
                     # TODO: make sure we delete the tag too
                 else:
-                    raise RuntimeError(
-                        "A release for %r already exists" % self.version)
+                    message = "A release for %r already exists" % self.version
+                    if dry_run:
+                        logger.error(message)
+                    else:
+                        raise RuntimeError(message)
 
         logger.info("Creating **draft** release %r", self.version)
         message = self.release_message()
