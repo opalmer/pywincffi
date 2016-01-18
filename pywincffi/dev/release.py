@@ -230,7 +230,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
         self.hub = Github(login_or_token=github_token)
         self.repo = repo_
 
-        if repo_ is None:
+        if repo_ is None:  # pragma: no cover
             self.repo = self.hub.get_repo(self.REPO_NAME)
 
         for milestone in self.repo.get_milestones(state="all"):
