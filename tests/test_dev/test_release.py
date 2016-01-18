@@ -306,6 +306,8 @@ class TestGitHubAPIInit(GitHubAPICase):
 
     def test_looks_for_milestones_with_all_states(self):
         api = self.api()
+
+        # pylint: disable=no-member
         api.repo.get_milestones.assert_called_with(state="all")
 
 
@@ -318,6 +320,8 @@ class TestGitHubAPICommit(GitHubAPICase):
         api = self.api()
         api.repo.get_branch.return_value = Mock(commit=Mock(sha=expected))
         self.assertEqual(api.commit(), expected)
+
+        # pylint: disable=no-member
         api.repo.get_branch.assert_called_with(api.branch)
 
 FakeLabel = namedtuple("FakeLabel", ("name", ))
@@ -355,6 +359,7 @@ class FakeIssue(object):
 
 
 class GitHubAPICaseWithIssues(GitHubAPICase):
+    # pylint: disable=arguments-differ
     def api(self, version=None, branch=None, repo=None, milestones=None,
             issues=None, releases=None):
         api = super(GitHubAPICaseWithIssues, self).api(
@@ -379,6 +384,8 @@ class TestGitHubAPIIssues(GitHubAPICaseWithIssues):
     def test_get_issues_keywords(self):
         api = self.api()
         list(api.issues())
+
+        # pylint: disable=no-member
         api.repo.get_issues.assert_called_with(
             milestone=api.milestone, state="all")
 
@@ -474,6 +481,8 @@ class TestGitHubAPIReleaseMessage(GitHubAPICaseWithIssues):
 
     def test_fails_for_extra_types(self):
         issue = FakeIssue()
+
+        # pylint: disable=attribute-defined-outside-init
         issue.type = "some_new_type"
 
         api = self.api()
@@ -514,12 +523,16 @@ class TestGitHubAPICreateRelease(GitHubAPICaseWithIssues):
     def test_create_tag_and_release_deletes_existing(self):
         api = self.api()
         api.create_release(recreate=True)
-        release = api.repo.get_releases.return_value[0]
-        release.delete_release.assert_called_with()
+
+        # pylint: disable=no-member
+        get_releases = api.repo.get_releases.return_value[0]
+        get_releases.delete_release.assert_called_with()
 
     def test_create_tag_and_release_arguments(self):
         api = self.api()
         api.create_release(recreate=True)
+
+        # pylint: disable=no-member
         api.repo.create_git_tag_and_release.assert_called_with(
             api.version,
             "Tagged by release.py",

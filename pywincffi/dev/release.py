@@ -482,4 +482,3 @@ def docs_built(version):
     response = Session.session.get(
         "https://pywincffi.readthedocs.org/en/%s/" % version)
     return response.status_code == OK
-

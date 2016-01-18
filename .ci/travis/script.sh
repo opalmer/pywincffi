@@ -8,8 +8,9 @@ if [[ $PYLINT == "1" ]]; then
     # more noisy checks that don't effect quality for testing
     # purposes.
     pylint tests \
-        --disable missing-docstring,invalid-name \
-        --disable protected-access,no-self-use,unused-argument
+        --disable missing-docstring,invalid-name,too-many-arguments \
+        --disable protected-access,no-self-use,unused-argument \
+        --disable too-few-public-methods
 fi
 
 if [[ $READTHEDOCS == "1" ]]; then
