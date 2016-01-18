@@ -193,6 +193,9 @@ class Session(object):
 
         return path
 
+Issue = namedtuple(
+    "Issue", ("issue", "closed", "labels", "type", "number", "url", "title"))
+
 
 class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
     """
@@ -236,6 +239,46 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
         branch = self.repo.get_branch(self.branch)
         return branch.commit.sha
 
+    def issues(self):
+        """
+        Generator which yields all issues associated with the milestone as well
+        as some extra information
+        """
+        issues = self.repo.get_issues(milestone=self.milestone, state="all")
+
+        for issue in issues:
+            # Determine the type of issue this is.  This is mostly used
+            # when building the release message.
+            labels = set(label.name for label in issue.labels)
+            if "in progress" in labels or "in review" in labels:
+                logger.warning(
+                    "Issue %s is still a work in progress", issue.number)
+
+            if "bug" in labels:
+                issue_type = "bugs"
+
+            elif "enhancement" in labels:
+                issue_type = "enhancements"
+
+            elif "documentation" in labels:
+                issue_type = "documentation"
+
+            elif "unittest" in labels:
+                issue_type = "unittests"
+
+            else:
+                issue_type = "other"
+
+            yield Issue(
+                issue=issue,
+                closed=issue.state == "closed",
+                labels=labels,
+                type=issue_type,
+                number=issue.number,
+                url=issue.html_url,
+                title=issue.title
+            )
+
     def release_message(self):
         """Produces release message for :meth:`create_release` to use."""
         output = StringIO()
@@ -252,45 +295,34 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
         print("Pull requests and issues associated with this release.",
               file=output)
         print("", file=output)
-        issues = {
-            "bugs": [],
-            "enhancements": [],
-            "unittests": [],
-            "documentation": [],
-            "other": []
-        }
-        for issue in self.repo.get_issues(
-                milestone=self.milestone, state="all"):
-            for label in issue.labels:
-                if label.name == "bug":
-                    issues["bugs"].append(issue)
-                    break
-                if label.name == "enhancement":
-                    issues["enhancements"].append(issue)
-                    break
-                if label.name == "documentation":
-                    issues["documentation"].append(issue)
-                    break
-                if label.name == "unittest":
-                    issues["unittests"].append(issue)
-                    break
-            else:
-                issues["other"].append(issue)
 
-        for value in issues.values():
-            value.reverse()
+        issues = {}
+        for issue in self.issues():
+            issues_by_type = issues.setdefault(issue.type, [])
+            issues_by_type.append(issue)
+
+        for issues_list in issues.values():
+            issues_list.sort(key=lambda item: item.number)
 
         for name in (
                 "enhancements", "bugs", "documentation", "unittests", "other"):
-            if issues[name]:
+            issues_for_name = issues.pop(name, [])
+
+            if issues_for_name:
+                print("", file=output)
                 print("#### %s" % name.title(), file=output)
-                for issue in issues[name.lower()]:
-                    if issue.state != "closed":
-                        logger.warning("Issue %s is not closed!", issue.number)
+                for issue in issues_for_name:
                     print(
-                        "[%s](%s) - %s" % (
-                            issue.number, issue.html_url, issue.title),
+                        "[{number}]({url}) - {title}".format(
+                            number=issue.number, url=issue.url,
+                            title=issue.title
+                        ),
                         file=output)
+
+        # The for loop above establishes the order we want to see
+        # the various types of issues in.  If a new type is added,
+        # we'll need to update this.
+        assert not issues, "Unhandled keys: %s" % issues.keys()
 
         return output.getvalue()
 
@@ -439,3 +471,4 @@ def docs_built(version):
     response = Session.session.get(
         "https://pywincffi.readthedocs.org/en/%s/" % version)
     return response.status_code == OK
+
