@@ -12,14 +12,13 @@ from six import integer_types
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
+from pywincffi.kernel32.handle import INVALID_HANDLE_VALUE
 
 PeekNamedPipeResult = namedtuple(
     "PeekNamedPipeResult",
     ("lpBuffer", "lpBytesRead", "lpTotalBytesAvail",
      "lpBytesLeftThisMessage")
 )
-
-INVALID_HANDLE_VALUE = -1
 
 
 def handle_from_file(python_file):
