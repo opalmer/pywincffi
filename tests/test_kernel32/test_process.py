@@ -8,7 +8,7 @@ from pywincffi.kernel32.process import OpenProcess, GetCurrentProcess
 
 class TestOpenProcess(TestCase):
     """
-    Tests for :func:`pywincffi.kernel32.OpenProcess`
+    Tests for :func:`pywincffi.kernel32.process.OpenProcess`
     """
     def test_returns_handle(self):
         ffi, library = dist.load()
@@ -33,7 +33,7 @@ class TestOpenProcess(TestCase):
 
 class TestGetCurrentProcess(TestCase):
     """
-    Tests for :func:`pywincffi.kernel32.GetCurrentProcess`
+    Tests for :func:`pywincffi.kernel32.process.GetCurrentProcess`
     """
     def test_returns_handle(self):
         ffi, library = dist.load()
