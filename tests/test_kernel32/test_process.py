@@ -3,7 +3,8 @@ import os
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.process import OpenProcess, GetCurrentProcess
+from pywincffi.kernel32.process import (
+    OpenProcess, GetCurrentProcess, GetProcessId)
 
 
 class TestOpenProcess(TestCase):
@@ -49,3 +50,7 @@ class TestGetCurrentProcess(TestCase):
         # should always match since it contains the address of the object
         # in memory.
         self.assertEqual(repr(GetCurrentProcess()), repr(GetCurrentProcess()))
+
+    def test_handle_is_current_process(self):
+        handle = GetCurrentProcess()
+        self.assertEqual(GetProcessId(handle), os.getpid())
