@@ -32,6 +32,18 @@ class TestOpenProcess(TestCase):
 
         self.assertEqual(error.exception.code, 5)
 
+    def test_get_process_id_current_process(self):
+        # We should be able to access the pid of the process
+        # we created a handle to.
+        ffi, library = dist.load()
+
+        handle = OpenProcess(
+            library.PROCESS_QUERY_INFORMATION,
+            False,
+            os.getpid()
+        )
+        self.assertEqual(GetProcessId(handle), os.getpid())
+
 
 class TestGetCurrentProcess(TestCase):
     """
