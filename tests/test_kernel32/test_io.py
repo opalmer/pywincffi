@@ -146,27 +146,6 @@ class TestPeekNamedPipe(PipeBaseTestCase):
             result.lpTotalBytesAvail, bytes_written - (read_bytes * 2))
 
 
-class TestGetStdHandle(TestCase):
-    def test_stdin_handle(self):
-        _, library = dist.load()
-        self.assertEqual(
-            GetStdHandle(library.STD_INPUT_HANDLE),
-            library.GetStdHandle(library.STD_INPUT_HANDLE)
-        )
-
-    def test_stdout_handle(self):
-        _, library = dist.load()
-        self.assertEqual(
-            GetStdHandle(library.STD_OUTPUT_HANDLE),
-            library.GetStdHandle(library.STD_OUTPUT_HANDLE)
-        )
-
-    def test_stderr_handle(self):
-        _, library = dist.load()
-        self.assertEqual(
-            GetStdHandle(library.STD_ERROR_HANDLE),
-            library.GetStdHandle(library.STD_ERROR_HANDLE)
-        )
 
 
 class TestGetHandleFromFile(TestCase):
