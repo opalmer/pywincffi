@@ -16,7 +16,7 @@ class TestOpenProcess(TestCase):
 
         handle = OpenProcess(
             # pylint: disable=no-member
-            library.PROCESS_QUERY_LIMITED_INFORMATION,
+            library.PROCESS_QUERY_INFORMATION,
             False,
             os.getpid()
         )
