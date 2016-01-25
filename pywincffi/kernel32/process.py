@@ -56,3 +56,23 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     error_check("OpenProcess")
 
     return ffi.new_handle(handle_id)
+
+
+def GetCurrentProcess():
+    """
+    Returns a handle to the current thread.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms683179
+
+    .. note::
+
+        Calling :func:`pywincffi.kernel32.io.CloseHandle` on the handle
+        produced by this function will produce an exception.
+
+    :returns:
+        The handle to the current process.
+    """
+    _, library = dist.load()
+    return library.GetCurrentProcess()
