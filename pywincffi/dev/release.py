@@ -263,7 +263,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
 
             if "refactor" in labels:
                 issue_type = "refactor"
-                
+
             elif "bug" in labels:
                 issue_type = "bugs"
 
