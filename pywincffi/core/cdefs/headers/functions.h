@@ -10,6 +10,7 @@ VOID SetLastError(DWORD);
 
 // Processes
 HANDLE OpenProcess(DWORD, BOOL, DWORD);
+HANDLE GetCurrentProcess();
 
 // Pipes
 BOOL CreatePipe(PHANDLE, PHANDLE, LPSECURITY_ATTRIBUTES, DWORD);
