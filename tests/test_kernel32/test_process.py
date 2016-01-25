@@ -5,7 +5,7 @@ import sys
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.io import CloseHandle
+from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.process import (
     OpenProcess, GetCurrentProcess, GetProcessId)
 
