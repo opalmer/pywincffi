@@ -24,6 +24,7 @@ class TestOpenProcess(TestCase):
         typeof = ffi.typeof(handle)
         self.assertEqual(typeof.kind, "pointer")
         self.assertEqual(typeof.cname, "void *")
+        CloseHandle(handle)
 
     def test_access_denied_for_null_desired_access(self):
         with self.assertRaises(WindowsAPIError) as error:
