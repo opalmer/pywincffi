@@ -261,7 +261,10 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
                 logger.warning(
                     "Issue %s is still a work in progress", issue.number)
 
-            if "bug" in labels:
+            if "refactor" in labels:
+                issue_type = "refactor"
+                
+            elif "bug" in labels:
                 issue_type = "bugs"
 
             elif "enhancement" in labels:
