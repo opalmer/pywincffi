@@ -2,11 +2,11 @@ import os
 import tempfile
 from errno import EBADF
 
-from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError, InputError
+from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.io import (
-    CreatePipe, CloseHandle, WriteFile, ReadFile, GetStdHandle,
+    CreatePipe, WriteFile, ReadFile,
     PeekNamedPipe, PeekNamedPipeResult, handle_from_file)
 
 # For pylint on non-windows platforms
@@ -144,8 +144,6 @@ class TestPeekNamedPipe(PipeBaseTestCase):
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(
             result.lpTotalBytesAvail, bytes_written - (read_bytes * 2))
-
-
 
 
 class TestGetHandleFromFile(TestCase):

@@ -7,7 +7,7 @@ objects.
 """
 
 from pywincffi.core import dist
-from pywincffi.core.checks import input_check
+from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
 
 
@@ -44,3 +44,21 @@ def GetStdHandle(nStdHandle):
             "not %s" % INVALID_HANDLE_VALUE)
 
     return handle
+
+
+def CloseHandle(hObject):
+    """
+    Closes an open object handle.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms724211
+
+    :param handle hObject:
+        The handle object to close.
+    """
+    input_check("hObject", hObject, Enums.HANDLE)
+    _, library = dist.load()
+
+    code = library.CloseHandle(hObject)
+    error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
