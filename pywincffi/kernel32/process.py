@@ -18,7 +18,7 @@ documentation for the constant names and their purpose:
 import six
 
 from pywincffi.core import dist
-from pywincffi.core.checks import input_check, error_check
+from pywincffi.core.checks import Enums, input_check, error_check
 
 
 def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
@@ -76,3 +76,25 @@ def GetCurrentProcess():
     """
     _, library = dist.load()
     return library.GetCurrentProcess()
+
+
+def GetProcessId(Process):
+    """
+    Returns the pid of the process handle provided in ``Process``.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms683215
+
+    :param handle Process:
+        The handle of the process to re
+
+    :return:
+        Returns an integer which represents the pid of the given
+        process handle.
+    """
+    input_check("Process", Process, Enums.HANDLE)
+    _, library = dist.load()
+    pid = library.GetProcessId(Process)
+    error_check("GetProcessId")
+    return pid
