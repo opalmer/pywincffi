@@ -15,7 +15,6 @@ class TestOpenProcess(TestCase):
         ffi, library = dist.load()
 
         handle = OpenProcess(
-            # pylint: disable=no-member
             library.PROCESS_QUERY_INFORMATION,
             False,
             os.getpid()
@@ -33,7 +32,7 @@ class TestOpenProcess(TestCase):
         self.assertEqual(error.exception.code, 5)
 
     def test_handle_is_valid(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
         handle = OpenProcess(
             library.PROCESS_QUERY_INFORMATION, False, os.getpid())
 
