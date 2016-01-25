@@ -77,7 +77,7 @@ def GetCurrentProcess():
     return library.GetCurrentProcess()
 
 
-def GetProcessId(Process):
+def GetProcessId(Process):  # pylint: disable=invalid-name
     """
     Returns the pid of the process handle provided in ``Process``.
 

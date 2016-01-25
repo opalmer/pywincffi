@@ -37,7 +37,7 @@ class TestOpenProcess(TestCase):
     def test_get_process_id_current_process(self):
         # We should be able to access the pid of the process
         # we created a handle to.
-        ffi, library = dist.load()
+        _, library = dist.load()
 
         handle = OpenProcess(
             library.PROCESS_QUERY_INFORMATION,
@@ -53,7 +53,7 @@ class TestGetCurrentProcess(TestCase):
     Tests for :func:`pywincffi.kernel32.process.GetCurrentProcess`
     """
     def test_returns_handle(self):
-        ffi, library = dist.load()
+        ffi, _ = dist.load()
         handle = GetCurrentProcess()
         typeof = ffi.typeof(handle)
         self.assertEqual(typeof.kind, "pointer")
