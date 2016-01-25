@@ -39,7 +39,7 @@ def pid_exists(pid):
     if pid in (0, 4):
         return True
 
-    ffi, library = dist.load()
+    _, library = dist.load()
 
     try:
         handle = OpenProcess(
@@ -58,14 +58,18 @@ def pid_exists(pid):
     else:
         pass
 
+    CloseHandle(handle)
 
+# TODO: add doc string
 def exit_code(pid_or_handle):
     handle = pid_or_handle
-    ffi, library = dist.load()
+    _, library = dist.load()
 
     if isinstance(pid_or_handle, six.integer_types):
         handle = OpenProcess(
             library.PROCESS_QUERY_INFORMATION, False, pid_or_handle)
+
+    CloseHandle(handle)
 
 
 def GetExitCodeProcess(hProcess):
@@ -94,7 +98,7 @@ def GetExitCodeProcess(hProcess):
 
     ffi, library = dist.load()
     lpExitCode = ffi.new("LPDWORD")
-    code = library.GetExitCodeProcess(handle, lpExitCode)
+    code = library.GetExitCodeProcess(hProcess, lpExitCode)
     error_check("GetExitCodeProcess", code=code, expected=Enums.NON_ZERO)
 
 
@@ -134,19 +138,19 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     return handle
 
 #
-if __name__ == "__main__":
-    import os
-    import subprocess
-    import sys
-
-    # process = subprocess.Popen(
-    #     [sys.executable, "-c", "import time; time.sleep(3)"])
-    # pid = process.pid
-    pid = os.getpid()
-
-    ffi, library = dist.load()
-    handle = OpenProcess(
-        library.PROCESS_QUERY_INFORMATION, True, pid)
-    print(handle)
-    # process.communicate()
-    # print(GetExitCodeProcess(handle))
+# if __name__ == "__main__":
+#     import os
+#     import subprocess
+#     import sys
+#
+#     # process = subprocess.Popen(
+#     #     [sys.executable, "-c", "import time; time.sleep(3)"])
+#     # pid = process.pid
+#     pid = os.getpid()
+#
+#     ffi, library = dist.load()
+#     handle = OpenProcess(
+#         library.PROCESS_QUERY_INFORMATION, True, pid)
+#     print(handle)
+#     # process.communicate()
+#     # print(GetExitCodeProcess(handle))
