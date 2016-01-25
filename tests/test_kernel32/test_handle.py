@@ -8,6 +8,11 @@ from pywincffi.exceptions import InputError
 from pywincffi.kernel32.handle import (
     GetStdHandle, CloseHandle, handle_from_file)
 
+try:
+    WindowsError
+except NameError:  # pragma: no cover
+    WindowsError = OSError
+
 
 class TestGetStdHandle(TestCase):
     def test_stdin_handle(self):
