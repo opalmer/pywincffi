@@ -10,6 +10,7 @@ VOID SetLastError(DWORD);
 
 // Processes
 HANDLE OpenProcess(DWORD, BOOL, DWORD);
+BOOL GetExitCodeProcess(HANDLE, LPDWORD);
 
 // Pipes
 BOOL CreatePipe(PHANDLE, PHANDLE, LPSECURITY_ATTRIBUTES, DWORD);
@@ -23,3 +24,4 @@ BOOL ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
 // Misc IO
 BOOL CloseHandle(HANDLE);
 HANDLE GetStdHandle(DWORD);
+DWORD WaitForSingleObject(HANDLE, DWORD);
