@@ -48,14 +48,13 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
     input_check("dwProcessId", dwProcessId, six.integer_types)
     ffi, library = dist.load()
 
-    handle_id = library.OpenProcess(
+    handle = library.OpenProcess(
         ffi.cast("DWORD", dwDesiredAccess),
         ffi.cast("BOOL", bInheritHandle),
         ffi.cast("DWORD", dwProcessId)
     )
     error_check("OpenProcess")
-
-    return ffi.new_handle(handle_id)
+    return handle
 
 
 def GetCurrentProcess():
