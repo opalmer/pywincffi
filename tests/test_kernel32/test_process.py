@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
@@ -43,6 +45,7 @@ class TestOpenProcess(TestCase):
             os.getpid()
         )
         self.assertEqual(GetProcessId(handle), os.getpid())
+        CloseHandle(handle)
 
 
 class TestGetCurrentProcess(TestCase):
@@ -74,4 +77,21 @@ class TestGetCurrentProcess(TestCase):
             library.PROCESS_QUERY_INFORMATION, False, os.getpid())
 
         # If the handle were invalid, this would fail.
+        CloseHandle(handle)
+
+
+class TestGetProcessId(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.process.GetProcessId`
+    """
+    def test_get_pid_of_external_process(self):
+        _, library = dist.load()
+        python = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(3)"]
+        )
+        self.addCleanup(python.terminate)
+        expected_pid = python.pid
+        handle = OpenProcess(
+            library.PROCESS_QUERY_INFORMATION, False, expected_pid)
+        self.assertEqual(GetProcessId(handle), expected_pid)
         CloseHandle(handle)
