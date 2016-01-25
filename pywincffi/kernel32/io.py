@@ -288,5 +288,3 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
     return ffi.string(lpBuffer)
-
-
