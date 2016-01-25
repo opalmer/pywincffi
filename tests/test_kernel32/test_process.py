@@ -3,6 +3,7 @@ import os
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
+from pywincffi.kernel32.io import CloseHandle
 from pywincffi.kernel32.process import OpenProcess
 
 
@@ -29,3 +30,11 @@ class TestOpenProcess(TestCase):
             OpenProcess(0, False, os.getpid())
 
         self.assertEqual(error.exception.code, 5)
+
+    def test_handle_is_valid(self):
+        ffi, library = dist.load()
+        handle = OpenProcess(
+            library.PROCESS_QUERY_INFORMATION, False, os.getpid())
+
+        # If the handle were invalid, this would fail.
+        CloseHandle(handle)
