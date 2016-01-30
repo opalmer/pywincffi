@@ -74,10 +74,19 @@ class TestCase(_TestCase):
 
         return lib.SetLastError(ffi.cast("DWORD", value))
 
+    def _terminate_process(self, process):
+        """
+        Calls terminnate() on ``process`` and ignores any errors produced.
+        """
+        try:
+            process.terminate()
+        except Exception:
+            pass
+
     def create_python_process(self, command):
         """Creates a Python process that run ``command``"""
         process = subprocess.Popen(
             [sys.executable, "-c", command],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        self.addCleanup(process.terminate)
+        self.addCleanup(self._terminate_process, process)
         return process
