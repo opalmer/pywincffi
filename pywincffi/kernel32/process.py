@@ -148,7 +148,7 @@ def GetCurrentProcess():
 
     .. note::
 
-        Calling :func:`pywincffi.kernel32.io.CloseHandle` on the handle
+        Calling :func:`pywincffi.kernel32.handle.CloseHandle` on the handle
         produced by this function will produce an exception.
 
     :returns:

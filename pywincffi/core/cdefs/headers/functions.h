@@ -5,7 +5,6 @@
 //
 
 // Custom functions
-HANDLE handle_from_fd(int);
 VOID SetLastError(DWORD);
 
 // Processes
@@ -23,7 +22,8 @@ BOOL SetNamedPipeHandleState(HANDLE, LPDWORD, LPDWORD, LPDWORD);
 BOOL WriteFile(HANDLE, LPCVOID, DWORD, LPDWORD, LPOVERLAPPED);
 BOOL ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
 
-// Misc IO
+// Handles
+HANDLE handle_from_fd(int);
 BOOL CloseHandle(HANDLE);
 HANDLE GetStdHandle(DWORD);
 DWORD WaitForSingleObject(HANDLE, DWORD);

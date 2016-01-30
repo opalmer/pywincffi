@@ -1,13 +1,8 @@
-import os
-import tempfile
-from errno import EBADF
-
-from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
-from pywincffi.exceptions import WindowsAPIError, InputError
-from pywincffi.kernel32.io import (
-    CreatePipe, CloseHandle, WriteFile, ReadFile, GetStdHandle,
-    PeekNamedPipe, PeekNamedPipeResult, handle_from_file)
+from pywincffi.exceptions import WindowsAPIError
+from pywincffi.kernel32 import (
+    CreatePipe, PeekNamedPipe, PeekNamedPipeResult, ReadFile, WriteFile,
+    CloseHandle)
 
 # For pylint on non-windows platforms
 try:
@@ -26,8 +21,8 @@ class PipeBaseTestCase(TestCase):
 
 class CreatePipeTest(TestCase):
     """
-    Basic tests for :func:`pywincffi.files.CreatePipe` and
-    :func:`pywincffi.files.CloseHandle`
+    Basic tests for :func:`pywincffi.kernel32.CreatePipe` and
+    :func:`pywincffi.kernel32.CloseHandle`
     """
     def test_create_and_close_pipes(self):
         reader, writer = CreatePipe()
@@ -46,8 +41,8 @@ class CreatePipeTest(TestCase):
 
 class AnonymousPipeReadWriteTest(PipeBaseTestCase):
     """
-    Basic tests for :func:`pywincffi.files.WritePipe` and
-    :func:`pywincffi.files.ReadPipe`
+    Basic tests for :func:`pywincffi.kernel32.WritePipe` and
+    :func:`pywincffi.kernel32.ReadPipe`
     """
     def test_bytes_written(self):
         _, writer = self.create_anonymous_pipes()
@@ -90,7 +85,7 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
 # TODO: tests for lpBuffer from the result
 class TestPeekNamedPipe(PipeBaseTestCase):
     """
-    Tests for :func:`pywincffi.kernel32.io.PeekNamedPipe`.
+    Tests for :func:`pywincffi.kernel32.PeekNamedPipe`.
     """
     def test_return_type(self):
         reader, _ = self.create_anonymous_pipes()
@@ -144,61 +139,3 @@ class TestPeekNamedPipe(PipeBaseTestCase):
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(
             result.lpTotalBytesAvail, bytes_written - (read_bytes * 2))
-
-
-class TestGetStdHandle(TestCase):
-    def test_stdin_handle(self):
-        _, library = dist.load()
-        self.assertEqual(
-            GetStdHandle(library.STD_INPUT_HANDLE),
-            library.GetStdHandle(library.STD_INPUT_HANDLE)
-        )
-
-    def test_stdout_handle(self):
-        _, library = dist.load()
-        self.assertEqual(
-            GetStdHandle(library.STD_OUTPUT_HANDLE),
-            library.GetStdHandle(library.STD_OUTPUT_HANDLE)
-        )
-
-    def test_stderr_handle(self):
-        _, library = dist.load()
-        self.assertEqual(
-            GetStdHandle(library.STD_ERROR_HANDLE),
-            library.GetStdHandle(library.STD_ERROR_HANDLE)
-        )
-
-
-class TestGetHandleFromFile(TestCase):
-    def test_fails_if_not_a_file(self):
-        with self.assertRaises(InputError):
-            handle_from_file(0)
-
-    def test_fails_if_file_is_not_open(self):
-        fd, _ = tempfile.mkstemp()
-        test_file = os.fdopen(fd, "r")
-        test_file.close()
-
-        with self.assertRaises(InputError):
-            handle_from_file(test_file)
-
-    def test_opens_correct_file_handle(self):
-        fd, path = tempfile.mkstemp()
-        os.close(fd)
-
-        test_file = open(path, "w")
-        handle = handle_from_file(test_file)
-
-        CloseHandle(handle)
-
-        # If CloseHandle() was passed the same handle
-        # that test_file is trying to write to the file
-        # and/or flushing it should fail.
-        try:
-            test_file.write("foo")
-            test_file.flush()
-        except (OSError, IOError, WindowsError) as error:
-            # EBADF == Bad file descriptor (because CloseHandle closed it)
-            self.assertEqual(error.errno, EBADF)
-        else:
-            self.fail("Expected os.close(%r) to fail" % fd)
