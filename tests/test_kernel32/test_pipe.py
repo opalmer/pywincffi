@@ -1,8 +1,9 @@
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32.handle import CloseHandle
-from pywincffi.kernel32.file import (
-    CreatePipe, WriteFile, ReadFile, PeekNamedPipe, PeekNamedPipeResult)
+from pywincffi.kernel32.file import WriteFile, ReadFile
+from pywincffi.kernel32.pipe import (
+    CreatePipe, PeekNamedPipe, PeekNamedPipeResult)
 
 # For pylint on non-windows platforms
 try:
