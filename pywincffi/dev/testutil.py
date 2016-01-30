@@ -6,6 +6,8 @@ This module is used by the unittests.
 """
 
 import os
+import subprocess
+import sys
 
 from cffi import FFI, CDefError
 
@@ -71,3 +73,11 @@ class TestCase(_TestCase):
             self.fail("Expected int for `value`")
 
         return lib.SetLastError(ffi.cast("DWORD", value))
+
+    def create_python_process(self, command):
+        """Creates a Python process that run ``command``"""
+        process = subprocess.Popen(
+            [sys.executable, "-c", command],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.addCleanup(process.terminate)
+        return process
