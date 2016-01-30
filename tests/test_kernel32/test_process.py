@@ -1,6 +1,5 @@
 import ctypes
 import os
-import subprocess
 
 from mock import patch
 
@@ -149,26 +148,16 @@ class TestPidExists(TestCase):
             self.assertTrue(pid_exists(pid))
 
     def test_returns_true_if_access_is_denied(self):
-        # It only makes sense to run this test if we're
-        # not an administrator.  Otherwise we'd have
-        # access to the process in question.
-        if IS_ADMIN:
-            self.skipTest("Non-Administrator only test")
+        # This will always test for ERROR_ACCESS_DENIED by forcing OpenProcess
+        # to not request any permissions
+        _, library = dist.load()
 
-        # Find a system process which is something
-        output = subprocess.check_output(
-            ["tasklist", "/V", "/NH", "/FI", "IMAGENAME eq lsass.exe"])
+        def open_process(_, bInheritHandle, dwProcessId):
+            return OpenProcess(0, bInheritHandle, dwProcessId)
 
-        for line in output.splitlines():
-            split = line.split()
-            if not split:
-                continue
-            pid = split[1]
-            break
-        else:
-            self.fail("Failed to locate pid for lsass.exe")
-
-        self.assertTrue(pid_exists(int(pid)))
+        process = self.create_python_process("import time; time.sleep(5)")
+        with patch.object(k32process, "OpenProcess", open_process):
+            self.assertTrue(pid_exists(process.pid))
 
     def test_process_never_existed(self):
         # OpenProcess *might* work even when the process
