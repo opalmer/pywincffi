@@ -5,8 +5,7 @@ from errno import EBADF
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
-from pywincffi.kernel32.handle import (
-    GetStdHandle, CloseHandle, handle_from_file)
+from pywincffi.kernel32 import GetStdHandle, CloseHandle, handle_from_file
 
 try:
     WindowsError
