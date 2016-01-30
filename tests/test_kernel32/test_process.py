@@ -1,3 +1,4 @@
+import ctypes
 import os
 import subprocess
 import sys
@@ -8,6 +9,11 @@ from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32.process import RESERVED_PIDS
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetProcessId, pid_exists)
+
+try:
+    IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin() != 0
+except AttributeError:  # pragma: no cover
+    IS_ADMIN = None
 
 
 class TestOpenProcess(TestCase):
@@ -86,11 +92,11 @@ class TestGetProcessId(TestCase):
     """
     def test_get_pid_of_external_process(self):
         _, library = dist.load()
-        python = subprocess.Popen(
+        process = subprocess.Popen(
             [sys.executable, "-c", "import time; time.sleep(3)"]
         )
-        self.addCleanup(python.terminate)
-        expected_pid = python.pid
+        self.addCleanup(process.terminate)
+        expected_pid = process.pid
         handle = OpenProcess(
             library.PROCESS_QUERY_INFORMATION, False, expected_pid)
         self.assertEqual(GetProcessId(handle), expected_pid)
@@ -104,4 +110,38 @@ class TestPidExists(TestCase):
     def test_reserved_pids_always_return_true(self):
         for pid in RESERVED_PIDS:
             self.assertTrue(pid_exists(pid))
+
+    def test_returns_true_if_access_is_denied(self):
+        # It only makes sense to run this test if we're
+        # not an administrator.  Otherwise we'd have
+        # access to the process in question.
+        if IS_ADMIN:
+            self.skipTest("Non-Administrator only test")
+
+        # Find a system process which is something
+        output = subprocess.check_output(
+            ["tasklist", "/V", "/NH", "/FI", "IMAGENAME eq lsass.exe"])
+
+        for line in output.splitlines():
+            split = line.split()
+            if not split:
+                continue
+            pid = split[1]
+            break
+        else:
+            self.fail("Failed to locate pid for lsass.exe")
+
+        self.assertTrue(pid_exists(int(pid)))
+
+    def test_process_never_existed(self):
+        # OpenProcess *might* work even when the process
+        # is no longer alive which is why pid_exists() checks
+        # for an exit code.  For cases where the process
+        # never should have existed however we should
+        # expect to get False from pid_exists().  Here
+        # we're attempting to do this with something
+        # that should probably never exist.
+        self.assertFalse(pid_exists(0xFFFFFFFC))
+
+
 
