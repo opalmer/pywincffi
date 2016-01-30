@@ -1,12 +1,13 @@
 import ctypes
 import os
 import subprocess
-import sys
+
+from mock import patch
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
-from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.process import RESERVED_PIDS
+from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
+from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
     GetProcessId, pid_exists)
@@ -144,7 +145,7 @@ class TestPidExists(TestCase):
     Tests for :func:`pywincffi.kernel32.pid_exists`
     """
     def test_reserved_pids_always_return_true(self):
-        for pid in RESERVED_PIDS:
+        for pid in k32process.RESERVED_PIDS:
             self.assertTrue(pid_exists(pid))
 
     def test_returns_true_if_access_is_denied(self):
@@ -179,12 +180,58 @@ class TestPidExists(TestCase):
         # that should probably never exist.
         self.assertFalse(pid_exists(0xFFFFFFFC))
 
-    # def test_returns_true_for_running_process(self):
-    #     process = subprocess.Popen(
-    #         [sys.executable, "-c", "import time; time.sleep(5)"]
-    #     )
-    #     self.addCleanup(process.terminate)
-    #     pid = process.pid
-    #     self.assertTrue(pid_exists(pid))
+    def test_running_process(self):
+        process = self.create_python_process("import time; time.sleep(5)")
+        self.assertTrue(
+            pid_exists(process.pid))
 
+    def test_process_dies_while_waiting(self):
+        # This condition should be very rare because of what the default
+        # wait is set to but we check it anyway just in case.
+        process = self.create_python_process("import time; time.sleep(1)")
+        self.assertFalse(pid_exists(process.pid, wait=3000))
+
+    def test_raises_unhandled_windows_api_error(self):
+        def new_open_process(*args, **kwargs):
+            raise WindowsAPIError("", "", 42, 0)
+
+        with patch.object(k32process, "OpenProcess", new_open_process):
+            process = \
+                self.create_python_process("import time; time.sleep(5)")
+
+            with self.assertRaises(WindowsAPIError):
+                self.assertTrue(pid_exists(process.pid))
+
+    def test_raises_not_implemented_for_wait_abandoned(self):
+        _, library = dist.load()
+
+        with patch.object(
+                k32process, "WaitForSingleObject",
+                return_value=library.WAIT_ABANDONED):
+            process = \
+                self.create_python_process("import time; time.sleep(5)")
+
+            with self.assertRaises(PyWinCFFINotImplementedError):
+                self.assertTrue(pid_exists(process.pid))
+
+    def test_raises_not_implemented_for_other_wait_result(self):
+        _, library = dist.load()
+
+        with patch.object(
+                k32process, "WaitForSingleObject",
+                return_value=42):
+            process = \
+                self.create_python_process("import time; time.sleep(5)")
+
+            with self.assertRaises(PyWinCFFINotImplementedError):
+                self.assertTrue(pid_exists(process.pid))
+
+    def test_calls_closehandle(self):
+        with patch.object(k32process, "CloseHandle") as mocked:
+            process = \
+                self.create_python_process("import time; time.sleep(5)")
+
+            self.assertTrue(pid_exists(process.pid))
+
+        self.assertEqual(mocked.call_count, 1)
 
