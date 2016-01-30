@@ -150,8 +150,6 @@ class TestPidExists(TestCase):
     def test_returns_true_if_access_is_denied(self):
         # This will always test for ERROR_ACCESS_DENIED by forcing OpenProcess
         # to not request any permissions
-        _, library = dist.load()
-
         def open_process(_, bInheritHandle, dwProcessId):
             return OpenProcess(0, bInheritHandle, dwProcessId)
 
