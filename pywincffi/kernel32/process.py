@@ -50,18 +50,27 @@ def pid_exists(pid):
 
     except WindowsAPIError as error:
         # If we can't access the process then it must exist
-        # otherwise there would be nothing to access.
+        # otherwise there would be nothing to access.  We
+        # reach this bit of code if the pid in question
+        # is owned by another user or the system and
+        # the process running this code does not have the
+        # rights to query the other process's information.
         if error.code == library.ERROR_ACCESS_DENIED:
             return True
 
+        # Sometimes the PID we're asking about no longer exists
+        # in the stack anywhere so we'll get ERROR_INVALID_PARAMETER
+        # so there's not any reason to continue further.
         if error.code == library.ERROR_INVALID_PARAMETER:
             return False
 
         raise
-    else:
+
+    try:
         pass
 
-    CloseHandle(handle)
+    finally:
+        CloseHandle(handle)
 
 
 # TODO: add doc string
