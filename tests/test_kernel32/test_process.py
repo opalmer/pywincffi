@@ -181,6 +181,13 @@ class TestPidExists(TestCase):
         process = self.create_python_process("import time; time.sleep(1)")
         self.assertFalse(pid_exists(process.pid, wait=library.INFINITE))
 
+    def test_returns_false_for_process_with_exit_code_259(self):
+        _, library = dist.load()
+        process = self.create_python_process(
+            "import sys; time.exit(%d)" % library.STILL_ACTIVE)
+        process.communicate()
+        self.assertFalse(pid_exists(process.pid))
+
     def test_raises_unhandled_windows_api_error(self):
         def new_open_process(*args, **kwargs):
             raise WindowsAPIError("", "", 42, 0)
