@@ -45,7 +45,7 @@ def pid_exists(pid):
     _, library = dist.load()
 
     try:
-        handle = OpenProcess(
+        hProcess = OpenProcess(
             library.PROCESS_QUERY_INFORMATION, False, pid)
 
     except WindowsAPIError as error:
@@ -67,10 +67,10 @@ def pid_exists(pid):
         raise
 
     try:
-        pass
+        exit_code = GetExitCodeProcess(hProcess)
 
     finally:
-        CloseHandle(handle)
+        CloseHandle(hProcess)
 
 
 # TODO: add doc string
@@ -113,6 +113,7 @@ def GetExitCodeProcess(hProcess):
     lpExitCode = ffi.new("LPDWORD")
     code = library.GetExitCodeProcess(hProcess, lpExitCode)
     error_check("GetExitCodeProcess", code=code, expected=Enums.NON_ZERO)
+    return lpExitCode[0]
 
 
 def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
@@ -191,22 +192,3 @@ def GetProcessId(Process):  # pylint: disable=invalid-name
     pid = library.GetProcessId(Process)
     error_check("GetProcessId")
     return pid
-
-
-#
-# if __name__ == "__main__":
-#     import os
-#     import subprocess
-#     import sys
-#
-#     # process = subprocess.Popen(
-#     #     [sys.executable, "-c", "import time; time.sleep(3)"])
-#     # pid = process.pid
-#     pid = os.getpid()
-#
-#     ffi, library = dist.load()
-#     handle = OpenProcess(
-#         library.PROCESS_QUERY_INFORMATION, True, pid)
-#     print(handle)
-#     # process.communicate()
-#     # print(GetExitCodeProcess(handle))
