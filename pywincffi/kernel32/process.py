@@ -20,7 +20,9 @@ import six
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.io import CloseHandle
+from pywincffi.kernel32 import CloseHandle
+
+RESERVED_PIDS = set([0, 4])
 
 
 def pid_exists(pid):
@@ -35,8 +37,9 @@ def pid_exists(pid):
     """
     input_check("pid", pid, six.integer_types)
 
-    # PIDs 0 and 4 always exist, no reason to continue further.
-    if pid in (0, 4):
+    # Process IDs which always exist shouldn't need to continue
+    # further.
+    if pid in RESERVED_PIDS:
         return True
 
     _, library = dist.load()
@@ -59,6 +62,7 @@ def pid_exists(pid):
         pass
 
     CloseHandle(handle)
+
 
 # TODO: add doc string
 def exit_code(pid_or_handle):

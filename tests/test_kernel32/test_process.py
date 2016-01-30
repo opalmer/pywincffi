@@ -5,8 +5,9 @@ import sys
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
+from pywincffi.kernel32.process import RESERVED_PIDS
 from pywincffi.kernel32 import (
-    CloseHandle, OpenProcess, GetCurrentProcess, GetProcessId)
+    CloseHandle, OpenProcess, GetCurrentProcess, GetProcessId, pid_exists)
 
 
 class TestOpenProcess(TestCase):
@@ -94,3 +95,13 @@ class TestGetProcessId(TestCase):
             library.PROCESS_QUERY_INFORMATION, False, expected_pid)
         self.assertEqual(GetProcessId(handle), expected_pid)
         CloseHandle(handle)
+
+
+class TestPidExists(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.pid_exists`
+    """
+    def test_reserved_pids_always_return_true(self):
+        for pid in RESERVED_PIDS:
+            self.assertTrue(pid_exists(pid))
+
