@@ -6,6 +6,8 @@ A module containing general functions for working with handle
 objects.
 """
 
+from six import integer_types
+
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
@@ -85,3 +87,36 @@ def CloseHandle(hObject):
 
     code = library.CloseHandle(hObject)
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
+
+
+def WaitForSingleObject(hHandle, dwMilliseconds):
+    """
+    Waits for the specified object to be in a signaled state
+    or for ``dwMiliseconds`` to elapse.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms687032
+
+    :param handle hHandle:
+        The handle to wait on.
+
+    :param int dwMilliseconds:
+        The time-out interval.
+    """
+    input_check("hHandle", hHandle, Enums.HANDLE)
+    input_check("dwMilliseconds", dwMilliseconds, integer_types)
+
+    ffi, library = dist.load()
+    result = library.WaitForSingleObject(
+        hHandle, ffi.cast("DWORD", dwMilliseconds)
+    )
+
+    if result == library.WAIT_FAILED:
+        raise WindowsAPIError(
+            "WaitForSingleObject", ffi.getwinerror()[-1], result,
+            "not %s" % result)
+
+    error_check("WaitForSingleObject")
+
+    return result
