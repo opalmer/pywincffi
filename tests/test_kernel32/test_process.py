@@ -182,7 +182,7 @@ class TestPidExists(TestCase):
     def test_returns_false_for_process_with_exit_code_259(self):
         _, library = dist.load()
         process = self.create_python_process(
-            "import sys; time.exit(%d)" % library.STILL_ACTIVE)
+            "import sys; sys.exit(%d)" % library.STILL_ACTIVE)
         process.communicate()
         self.assertFalse(pid_exists(process.pid))
 
