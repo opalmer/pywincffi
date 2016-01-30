@@ -5,16 +5,18 @@ from errno import EBADF
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
-from pywincffi.kernel32.handle import (
-    GetStdHandle, CloseHandle, handle_from_file)
+from pywincffi.kernel32 import GetStdHandle, CloseHandle, handle_from_file
 
 try:
     WindowsError
 except NameError:  # pragma: no cover
-    WindowsError = OSError
+    WindowsError = OSError  # pylint: disable=redefined-builtin
 
 
 class TestGetStdHandle(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.GetStdHandle`
+    """
     def test_stdin_handle(self):
         _, library = dist.load()
         self.assertEqual(
@@ -38,6 +40,9 @@ class TestGetStdHandle(TestCase):
 
 
 class TestGetHandleFromFile(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.handle_from_file`
+    """
     def test_fails_if_not_a_file(self):
         with self.assertRaises(InputError):
             handle_from_file(0)

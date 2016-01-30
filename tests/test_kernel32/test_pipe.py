@@ -1,8 +1,8 @@
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.handle import CloseHandle
-from pywincffi.kernel32.io import (
-    CreatePipe, WriteFile, ReadFile, PeekNamedPipe, PeekNamedPipeResult)
+from pywincffi.kernel32 import (
+    CreatePipe, PeekNamedPipe, PeekNamedPipeResult, ReadFile, WriteFile,
+    CloseHandle)
 
 # For pylint on non-windows platforms
 try:
@@ -21,8 +21,8 @@ class PipeBaseTestCase(TestCase):
 
 class CreatePipeTest(TestCase):
     """
-    Basic tests for :func:`pywincffi.files.CreatePipe` and
-    :func:`pywincffi.files.CloseHandle`
+    Basic tests for :func:`pywincffi.kernel32.CreatePipe` and
+    :func:`pywincffi.kernel32.CloseHandle`
     """
     def test_create_and_close_pipes(self):
         reader, writer = CreatePipe()
@@ -41,8 +41,8 @@ class CreatePipeTest(TestCase):
 
 class AnonymousPipeReadWriteTest(PipeBaseTestCase):
     """
-    Basic tests for :func:`pywincffi.files.WritePipe` and
-    :func:`pywincffi.files.ReadPipe`
+    Basic tests for :func:`pywincffi.kernel32.WritePipe` and
+    :func:`pywincffi.kernel32.ReadPipe`
     """
     def test_bytes_written(self):
         _, writer = self.create_anonymous_pipes()
@@ -85,7 +85,7 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
 # TODO: tests for lpBuffer from the result
 class TestPeekNamedPipe(PipeBaseTestCase):
     """
-    Tests for :func:`pywincffi.kernel32.io.PeekNamedPipe`.
+    Tests for :func:`pywincffi.kernel32.PeekNamedPipe`.
     """
     def test_return_type(self):
         reader, _ = self.create_anonymous_pipes()

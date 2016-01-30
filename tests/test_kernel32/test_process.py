@@ -5,14 +5,13 @@ import sys
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32.handle import CloseHandle
-from pywincffi.kernel32.process import (
-    OpenProcess, GetCurrentProcess, GetProcessId)
+from pywincffi.kernel32 import (
+    CloseHandle, OpenProcess, GetCurrentProcess, GetProcessId)
 
 
 class TestOpenProcess(TestCase):
     """
-    Tests for :func:`pywincffi.kernel32.process.OpenProcess`
+    Tests for :func:`pywincffi.kernel32.OpenProcess`
     """
     def test_returns_handle(self):
         ffi, library = dist.load()
@@ -50,7 +49,7 @@ class TestOpenProcess(TestCase):
 
 class TestGetCurrentProcess(TestCase):
     """
-    Tests for :func:`pywincffi.kernel32.process.GetCurrentProcess`
+    Tests for :func:`pywincffi.kernel32.GetCurrentProcess`
     """
     def test_returns_handle(self):
         ffi, _ = dist.load()
@@ -82,7 +81,7 @@ class TestGetCurrentProcess(TestCase):
 
 class TestGetProcessId(TestCase):
     """
-    Tests for :func:`pywincffi.kernel32.process.GetProcessId`
+    Tests for :func:`pywincffi.kernel32.GetProcessId`
     """
     def test_get_pid_of_external_process(self):
         _, library = dist.load()
