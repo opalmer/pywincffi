@@ -16,4 +16,4 @@ from pywincffi.kernel32.pipe import (
     CreatePipe, PeekNamedPipe, PeekNamedPipeResult, SetNamedPipeHandleState)
 from pywincffi.kernel32.process import (
     GetProcessId, GetCurrentProcess, OpenProcess, GetExitCodeProcess,
-    pid_exists, exit_code)
+    pid_exists)

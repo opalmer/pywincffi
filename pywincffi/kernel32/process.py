@@ -105,18 +105,6 @@ def pid_exists(pid, wait=0):
         CloseHandle(hProcess)
 
 
-# TODO: add doc string
-def exit_code(pid_or_handle):
-    handle = pid_or_handle
-    _, library = dist.load()
-
-    if isinstance(pid_or_handle, six.integer_types):
-        handle = OpenProcess(
-            library.PROCESS_QUERY_INFORMATION, False, pid_or_handle)
-
-    CloseHandle(handle)
-
-
 def GetExitCodeProcess(hProcess):
     """
     Retrieves the exit code of the given process handle.  To retrieve
