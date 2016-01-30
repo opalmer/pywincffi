@@ -8,7 +8,8 @@ from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32.process import RESERVED_PIDS
 from pywincffi.kernel32 import (
-    CloseHandle, OpenProcess, GetCurrentProcess, GetProcessId, pid_exists)
+    CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
+    GetProcessId, pid_exists)
 
 try:
     IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -91,16 +92,51 @@ class TestGetProcessId(TestCase):
     Tests for :func:`pywincffi.kernel32.GetProcessId`
     """
     def test_get_pid_of_external_process(self):
-        _, library = dist.load()
-        process = subprocess.Popen(
-            [sys.executable, "-c", "import time; time.sleep(3)"]
-        )
-        self.addCleanup(process.terminate)
+        process = self.create_python_process("import time; time.sleep(3)")
         expected_pid = process.pid
+
+        _, library = dist.load()
         handle = OpenProcess(
             library.PROCESS_QUERY_INFORMATION, False, expected_pid)
         self.assertEqual(GetProcessId(handle), expected_pid)
         CloseHandle(handle)
+
+
+class TestGetExitCodeProcess(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.GetExitCodeProcess`
+    """
+    def test_get_exit_code_zero(self):
+        process = self.create_python_process("import sys; sys.exit(0)")
+        pid = process.pid
+        process.communicate()
+
+        _, library = dist.load()
+        hProcess = OpenProcess(
+            library.PROCESS_QUERY_INFORMATION, False, pid)
+        self.addCleanup(CloseHandle, hProcess)
+        self.assertEqual(GetExitCodeProcess(hProcess), 0)
+
+    def test_get_exit_code_non_zero(self):
+        process = self.create_python_process("import sys; sys.exit(1)")
+        pid = process.pid
+        process.communicate()
+
+        _, library = dist.load()
+        hProcess = OpenProcess(
+            library.PROCESS_QUERY_INFORMATION, False, pid)
+        self.addCleanup(CloseHandle, hProcess)
+        self.assertEqual(GetExitCodeProcess(hProcess), 1)
+
+    def test_process_still_active(self):
+        process = self.create_python_process("import time; time.sleep(5)")
+        pid = process.pid
+
+        _, library = dist.load()
+        hProcess = OpenProcess(
+            library.PROCESS_QUERY_INFORMATION, False, pid)
+        self.addCleanup(CloseHandle, hProcess)
+        self.assertEqual(GetExitCodeProcess(hProcess), library.STILL_ACTIVE)
 
 
 class TestPidExists(TestCase):
@@ -143,5 +179,12 @@ class TestPidExists(TestCase):
         # that should probably never exist.
         self.assertFalse(pid_exists(0xFFFFFFFC))
 
+    # def test_returns_true_for_running_process(self):
+    #     process = subprocess.Popen(
+    #         [sys.executable, "-c", "import time; time.sleep(5)"]
+    #     )
+    #     self.addCleanup(process.terminate)
+    #     pid = process.pid
+    #     self.assertTrue(pid_exists(pid))
 
 
