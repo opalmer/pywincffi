@@ -188,8 +188,9 @@ class TestPidExists(TestCase):
     def test_process_dies_while_waiting(self):
         # This condition should be very rare because of what the default
         # wait is set to but we check it anyway just in case.
+        _, library = dist.load()
         process = self.create_python_process("import time; time.sleep(1)")
-        self.assertFalse(pid_exists(process.pid, wait=3000))
+        self.assertFalse(pid_exists(process.pid, wait=library.INFINITE))
 
     def test_raises_unhandled_windows_api_error(self):
         def new_open_process(*args, **kwargs):
