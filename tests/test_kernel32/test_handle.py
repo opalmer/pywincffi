@@ -10,7 +10,7 @@ from pywincffi.kernel32 import GetStdHandle, CloseHandle, handle_from_file
 try:
     WindowsError
 except NameError:  # pragma: no cover
-    WindowsError = OSError
+    WindowsError = OSError  # pylint: disable=redefined-builtin
 
 
 class TestGetStdHandle(TestCase):
