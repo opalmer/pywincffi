@@ -206,8 +206,9 @@ class TestPidExists(TestCase):
         _, library = dist.load()
 
         with patch.object(
-                k32process, "WaitForSingleObject",
-                return_value=library.WAIT_ABANDONED):
+            k32process, "WaitForSingleObject",
+            return_value=library.WAIT_ABANDONED
+        ):
             process = \
                 self.create_python_process("import time; time.sleep(5)")
 
@@ -215,11 +216,7 @@ class TestPidExists(TestCase):
                 self.assertTrue(pid_exists(process.pid))
 
     def test_raises_not_implemented_for_other_wait_result(self):
-        _, library = dist.load()
-
-        with patch.object(
-                k32process, "WaitForSingleObject",
-                return_value=42):
+        with patch.object(k32process, "WaitForSingleObject", return_value=42):
             process = \
                 self.create_python_process("import time; time.sleep(5)")
 
@@ -234,4 +231,3 @@ class TestPidExists(TestCase):
             self.assertTrue(pid_exists(process.pid))
 
         self.assertEqual(mocked.call_count, 1)
-

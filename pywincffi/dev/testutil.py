@@ -74,13 +74,13 @@ class TestCase(_TestCase):
 
         return lib.SetLastError(ffi.cast("DWORD", value))
 
-    def _terminate_process(self, process):
+    def _terminate_process(self, process):  # pylint: disable=no-self-use
         """
         Calls terminnate() on ``process`` and ignores any errors produced.
         """
         try:
             process.terminate()
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             pass
 
     def create_python_process(self, command):
