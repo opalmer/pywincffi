@@ -14,6 +14,9 @@ except NameError:  # pragma: no cover
 
 
 class TestGetStdHandle(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.GetStdHandle`
+    """
     def test_stdin_handle(self):
         _, library = dist.load()
         self.assertEqual(
@@ -37,6 +40,9 @@ class TestGetStdHandle(TestCase):
 
 
 class TestGetHandleFromFile(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.handle_from_file`
+    """
     def test_fails_if_not_a_file(self):
         with self.assertRaises(InputError):
             handle_from_file(0)

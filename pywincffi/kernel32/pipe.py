@@ -29,6 +29,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         https://msdn.microsoft.com/en-us/library/aa379560
 
     >>> from pywincffi.core import dist
+    >>> from pywincffi.kernel32 import CreatePipe
     >>> ffi, library = dist.load()
     >>> lpPipeAttributes = ffi.new(
     ...     "SECURITY_ATTRIBUTES[1]", [{

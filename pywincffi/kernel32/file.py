@@ -34,6 +34,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         struct.
 
         >>> from pywincffi.core import dist
+        >>> from pywincffi.kernel32 import WriteFile
         >>> ffi, library = dist.load()
         >>> hFile = None # normally, this would be a handle
         >>> lpOverlapped = ffi.new(
