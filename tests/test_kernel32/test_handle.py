@@ -75,3 +75,11 @@ class TestGetHandleFromFile(TestCase):
             self.assertEqual(error.errno, EBADF)
         else:
             self.fail("Expected os.close(%r) to fail" % fd)
+
+
+class TestWaitForSingleObject(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.WaitForSingleObject`
+    """
+    # TODO: test for WAIT_FAILED
+    # TODO: pass in a process handle without SYNCHRONIZE
