@@ -90,3 +90,11 @@ class TestCase(_TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.addCleanup(self._terminate_process, process)
         return process
+
+    def clear_list(self, list_):
+        """
+        Clear a Python list of entries in place.  This function exists
+        for compatibility across Python versions.
+        """
+        assert isinstance(list_, list)
+        del list_[:]
