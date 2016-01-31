@@ -14,7 +14,7 @@ from os.path import join, expanduser
 
 try:
     from configparser import RawConfigParser
-except ImportError:
+except ImportError:  # pragma: no cover
     # pylint: disable=wrong-import-order,import-error
     from ConfigParser import RawConfigParser
 
