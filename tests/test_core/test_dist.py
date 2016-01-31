@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import binascii
 import os
 import shutil
 import sys
@@ -35,19 +34,8 @@ class TestModule(TestCase):
     """
     Tests for :class:`pywincffi.core.dist.Module`
     """
-    def setUp(self):
-        super(TestModule, self).setUp()
-        Module.cache = None
-
-    def tearDown(self):
-        super(TestModule, self).tearDown()
-        Module.cache = None
-        sys.modules.pop("_pywincffi", None)
-
-    def test_cache_default(self):
-        self.assertIsNone(Module.cache)
-
     def test_double_cache_produces_warning(self):
+        self.addCleanup(setattr, Module, "cache", None)
         Module.cache = ""
 
         with warnings.catch_warnings(record=True) as caught:
@@ -76,8 +64,7 @@ class TestImportPath(TestCase):
     """Tests for :func:`pywincffi.core.dist._import_path`"""
     def setUp(self):
         super(TestImportPath, self).setUp()
-        self.module_name = \
-            "m" + binascii.b2a_hex(os.urandom(6)).decode("utf-8")
+        self.module_name = self.random_string(16)
         self.header = "int add(int, int);"
         self.source = "int add(int a, int b) {return a + b;}"
 
@@ -126,90 +113,103 @@ class TestRead(TestCase):
 
 class TestFFI(TestCase):
     """Tests for :func:`pywincffi.core.dist._ffi`"""
-    def test_sets_unicode(self):
-        with patch.object(FFI, "set_unicode") as mocked_set_unicode:
-            _ffi()
+    def setUp(self):
+        self.module_name = self.random_string(16)
+        self.addCleanup(sys.modules.pop, self.module_name, None)
 
-        mocked_set_unicode.assert_called_once_with(True)
+    def test_calls_set_unicode(self):
+        # Certain types require set_unicode to be called so
+        # this test will fail if ffi.set_unicode(True) is never
+        # called in our core library.
+        fd, header_path = tempfile.mkstemp(suffix=".h")
+        with os.fdopen(fd, "w") as file_:
+            file_.write("BOOL Foobar(LPTSTR);")
 
-    def test_set_source(self):
+        _ffi(module_name=self.module_name, sources=[], headers=[header_path])
+
+    def test_default_source_files(self):
         with patch.object(FFI, "set_source") as mocked_set_source:
-            _ffi()
+            _ffi(module_name=self.module_name)
 
         mocked_set_source.assert_called_once_with(
-            MODULE_NAME, _read(*SOURCE_FILES))
+            self.module_name, _read(*SOURCE_FILES))
 
-    def test_cdef(self):
+    def test_default_cdefs(self):
         with patch.object(FFI, "cdef") as mocked_cdef:
-            _ffi()
+            _ffi(module_name=self.module_name)
 
         mocked_cdef.assert_called_with(_read(*HEADER_FILES))
+
+    def test_alternate_source_files(self):
+        _, path = tempfile.mkstemp(suffix=".h")
+
+        with patch.object(FFI, "set_source") as mocked_set_source:
+            _ffi(module_name=self.module_name, sources=[path])
+
+        mocked_set_source.assert_called_once_with(
+            self.module_name, _read(*[path]))
 
 
 class TestCompile(TestCase):
     """Tests for :func:`pywincffi.core.dist._compile`"""
     def setUp(self):
         super(TestCompile, self).setUp()
-        self.header_files = HEADER_FILES[:]
-        self.source_files = SOURCE_FILES[:]
-
-    def tearDown(self):
-        super(TestCompile, self).tearDown()
-        HEADER_FILES[:] = self.header_files
-        SOURCE_FILES[:] = self.source_files
-        Module.cache = None
-        sys.modules.pop("_pywincffi", None)
+        self.module_name = self.random_string(16)
+        self.addCleanup(sys.modules.pop, self.module_name, None)
+        self.addCleanup(setattr, Module, "cache", None)
 
     def test_compile(self):
         # Create fake header
-        fd, path = tempfile.mkstemp()
-        self.addCleanup(os.remove, path)
-        HEADER_FILES[:] = [path]
-
-        with os.fdopen(fd, "w") as header:
-            header.write("int add(int, int);")
+        fd, header = tempfile.mkstemp(suffix=".h")
+        self.addCleanup(os.remove, header)
+        with os.fdopen(fd, "w") as file_:
+            file_.write("int add(int, int);")
 
         # Create fake source
-        fd, path = tempfile.mkstemp()
-        self.addCleanup(os.remove, path)
-        SOURCE_FILES[:] = [path]
-        with os.fdopen(fd, "w") as source:
-            source.write("int add(int a, int b) {return a + b;}")
+        fd, source = tempfile.mkstemp(suffix=".c")
+        self.addCleanup(os.remove, source)
+        with os.fdopen(fd, "w") as file_:
+            file_.write(
+                "int add(int a, int b) {return a + b;}")
 
-        ffi = _ffi()
-        module = _compile(ffi)
+        ffi = _ffi(
+            module_name=self.module_name, sources=[source], headers=[header])
+        module = _compile(ffi, module_name=self.module_name)
         self.assertEqual(module.lib.add(1, 2), 3)
 
     def test_compile_uses_provided_tempdir(self):
         # Create fake header
-        fd, path = tempfile.mkstemp()
-        self.addCleanup(os.remove, path)
-        HEADER_FILES[:] = [path]
-
-        with os.fdopen(fd, "w") as header:
-            header.write("int add(int, int);")
+        fd, header = tempfile.mkstemp(suffix=".h")
+        self.addCleanup(os.remove, header)
+        with os.fdopen(fd, "w") as file_:
+            file_.write("int add(int, int);")
 
         # Create fake source
-        fd, path = tempfile.mkstemp()
-        self.addCleanup(os.remove, path)
-        SOURCE_FILES[:] = [path]
-        with os.fdopen(fd, "w") as source:
-            source.write("int add(int a, int b) {return a + b;}")
+        fd, source = tempfile.mkstemp(suffix=".c")
+        self.addCleanup(os.remove, source)
+        with os.fdopen(fd, "w") as file_:
+            file_.write("int add(int a, int b) {return a + b;}")
 
         tmpdir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, tmpdir, ignore_errors=True)
 
-        ffi = _ffi()
-        module = _compile(ffi, tmpdir=tmpdir)
+        ffi = _ffi(
+            module_name=self.module_name, sources=[source], headers=[header])
+        module = _compile(ffi, tmpdir=tmpdir, module_name=self.module_name)
         self.assertEqual(dirname(module.__file__), tmpdir)
 
 
 class TestLoad(TestCase):
     """Tests for :func:`pywincffi.core.dist.load`"""
-    def tearDown(self):
-        super(TestLoad, self).tearDown()
+    def setUp(self):
+        super(TestLoad, self).setUp()
+        self.addCleanup(setattr, Module, "cache", None)
         Module.cache = None
-        sys.modules.pop("_pywincffi", None)
+
+        if MODULE_NAME in sys.modules:
+            self.addCleanup(
+                sys.modules.__setitem__, MODULE_NAME, sys.modules[MODULE_NAME])
+            sys.modules.pop(MODULE_NAME)
 
     def test_cache(self):
         cached = object()
@@ -218,7 +218,7 @@ class TestLoad(TestCase):
 
     def test_prebuilt(self):
         fake_module = Mock(ffi=1, lib=2)
-        sys.modules["_pywincffi"] = fake_module
+        sys.modules[MODULE_NAME] = fake_module
         loaded = load()
         self.assertEqual(loaded.mode, "prebuilt")
 
@@ -226,6 +226,6 @@ class TestLoad(TestCase):
         # Setting _pywincffi to None in sys.modules will force
         # 'import _pywincffi' to fail forcing load() to
         # compile the module.
-        sys.modules["_pywincffi"] = None
+        sys.modules[MODULE_NAME] = None
         loaded = load()
         self.assertEqual(loaded.mode, "compiled")

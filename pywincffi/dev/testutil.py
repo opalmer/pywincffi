@@ -8,6 +8,8 @@ This module is used by the unittests.
 import os
 import subprocess
 import sys
+from random import choice
+from string import ascii_lowercase, ascii_uppercase
 
 from cffi import FFI, CDefError
 
@@ -90,3 +92,23 @@ class TestCase(_TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.addCleanup(self._terminate_process, process)
         return process
+
+    def random_string(self, length):
+        """
+        Returns a random string as long as ``length``.  The first character
+        will always be a letter.  All other characters will be A-F,
+        A-F or 0-9.
+        """
+        if length < 1:  # pragma: no cover
+            self.fail("Length must be at least 1.")
+
+        # First character should always be a letter so the string
+        # can be used in object names.
+        output = choice(ascii_lowercase)
+        length -= 1
+
+        while length:
+            length -= 1
+            output += choice(ascii_lowercase + ascii_uppercase + "0123456789")
+
+        return output

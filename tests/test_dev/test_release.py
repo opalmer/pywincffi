@@ -412,11 +412,15 @@ class TestGitHubAPIIssues(GitHubAPICaseWithIssues):
 
     def issue_type(self):
         api = self.api(issues=[
-            FakeIssue(labels=["enhancement"]), FakeIssue(labels=["bug"])
+            FakeIssue(labels=["enhancement"]), FakeIssue(labels=["bug"]),
+            FakeIssue(labels=["refactor"])
         ])
 
         for issue in api.issues():
-            if "bug" in issue.labels:
+            if "refactor" in issue.labels:
+                expected_issue_type = "refactor"
+
+            elif "bug" in issue.labels:
                 expected_issue_type = "bugs"
 
             elif "enhancement" in issue.labels:
