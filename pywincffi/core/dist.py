@@ -47,16 +47,16 @@ __all__ = ("load", )
 logger = get_logger("core.dist")
 
 MODULE_NAME = "_pywincffi"
-HEADER_FILES = [
+HEADER_FILES = (
     resource_filename(
         "pywincffi", join("core", "cdefs", "headers", "constants.h")),
     resource_filename(
         "pywincffi", join("core", "cdefs", "headers", "structs.h")),
     resource_filename(
-        "pywincffi", join("core", "cdefs", "headers", "functions.h"))]
-SOURCE_FILES = [
+        "pywincffi", join("core", "cdefs", "headers", "functions.h")))
+SOURCE_FILES = (
     resource_filename(
-        "pywincffi", join("core", "cdefs", "sources", "main.c"))]
+        "pywincffi", join("core", "cdefs", "sources", "main.c")), )
 
 
 class Module(object):  # pylint: disable=too-few-public-methods
@@ -88,7 +88,7 @@ class Module(object):  # pylint: disable=too-few-public-methods
         yield self.lib
 
 
-def _import_path(path, module_name=None):
+def _import_path(path, module_name=MODULE_NAME):
     """
     Function which imports ``path`` and returns it as a module.  This is
     meant to import pyd files produced by :meth:`Distribution._build` in
@@ -99,14 +99,11 @@ def _import_path(path, module_name=None):
 
     :keyword str module_name:
         Optional name of the module being imported.  By default
-        this will use ``Module.name`` if no value is provided.
+        this will use ``_pywincffi`` if no value is provided.
 
     :raises ResourceNotFoundError:
         Raised if ``path`` does not exist.
     """
-    if module_name is None:  # pragma: no cover
-        module_name = MODULE_NAME
-
     logger.debug("_import_path(%r, module_name=%r)", path, module_name)
 
     if not isfile(path):
@@ -147,25 +144,37 @@ def _read(*paths):
     return output
 
 
-def _ffi():
+def _ffi(module_name=MODULE_NAME, headers=HEADER_FILES, sources=SOURCE_FILES):
     """
     Returns an instance of :class:`FFI` without compiling
     the module.  This function is used internally but also
     as an entrypoint in the setup.py for `cffi_modules`.
+
+    :keyword str module_name:
+        Optional module name to use when setting the source.
+
+    :keyword tuple headers:
+        Optional path(s) to the header files.
+
+    :keyword tuple sources:
+        Optional path(s) to the source files.
     """
-    logger.debug("_ffi()")
-    header = _read(*HEADER_FILES)
-    source = _read(*SOURCE_FILES)
+    logger.debug(
+        "_ffi(module_name=%r, headers=%r, sources=%r)",
+        module_name, headers, sources)
+
+    header = _read(*headers)
+    source = _read(*sources)
 
     ffi = FFI()
     ffi.set_unicode(True)
-    ffi.set_source(MODULE_NAME, source)
+    ffi.set_source(module_name, source)
     ffi.cdef(header)
 
     return ffi
 
 
-def _compile(ffi, tmpdir=None):
+def _compile(ffi, tmpdir=None, module_name=MODULE_NAME):
     """
     Performs the compile step, loads the resulting module and then
     return it.
@@ -178,15 +187,19 @@ def _compile(ffi, tmpdir=None):
         The path to compile the module to.  By default this will be
         constructed using ``tempfile.mkdtemp(prefix="pywincffi-")``.
 
+    :keyword str module_name:
+        Optional name of the module to be imported.
+
     :returns:
         Returns the module built by compiling the ``ffi`` object.
     """
     if tmpdir is None:
         tmpdir = tempfile.mkdtemp(prefix="pywincffi-")
 
-    logger.debug("_compile(%r, tmpdir=%r)", ffi, tmpdir)
+    logger.debug(
+        "_compile(%r, tmpdir=%r, module_name=%r)", ffi, tmpdir, module_name)
     pyd_path = ffi.compile(tmpdir=tmpdir)
-    module = _import_path(pyd_path)
+    module = _import_path(pyd_path, module_name=module_name)
 
     # Try to cleanup the temp directory that was created
     # for compiling the module.  In most cases this will
