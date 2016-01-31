@@ -1,5 +1,6 @@
 from pywincffi.dev.testutil import TestCase
-from pywincffi.exceptions import PyWinCFFIError, InputError, WindowsAPIError
+from pywincffi.exceptions import (
+    PyWinCFFIError, InputError, WindowsAPIError, PyWinCFFINotImplementedError)
 
 
 class TestBaseClasses(TestCase):
@@ -14,6 +15,10 @@ class TestBaseClasses(TestCase):
 
     def test_windowsapierror(self):
         self.assertTrue(issubclass(WindowsAPIError, PyWinCFFIError))
+
+    def test_notimplementederror(self):
+        self.assertTrue(
+            issubclass(PyWinCFFINotImplementedError, PyWinCFFIError))
 
 
 class TestInputError(TestCase):

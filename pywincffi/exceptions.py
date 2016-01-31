@@ -14,6 +14,14 @@ class PyWinCFFIError(Exception):
     """
 
 
+class PyWinCFFINotImplementedError(PyWinCFFIError):
+    """
+    Raised if we encounter a situation where we can't figure out what
+    to do.  The message for this error should contain all the information
+    necessary to implement a future work around.
+    """
+
+
 class InputError(PyWinCFFIError):
     """
     A subclass of :class:`PyWinCFFIError` that's raised when invalid input

@@ -9,6 +9,7 @@ VOID SetLastError(DWORD);
 
 // Processes
 HANDLE OpenProcess(DWORD, BOOL, DWORD);
+BOOL GetExitCodeProcess(HANDLE, LPDWORD);
 HANDLE GetCurrentProcess();
 DWORD GetProcessId(HANDLE);
 
@@ -25,3 +26,4 @@ BOOL ReadFile(HANDLE, LPVOID, DWORD, LPDWORD, LPOVERLAPPED);
 HANDLE handle_from_fd(int);
 BOOL CloseHandle(HANDLE);
 HANDLE GetStdHandle(DWORD);
+DWORD WaitForSingleObject(HANDLE, DWORD);
