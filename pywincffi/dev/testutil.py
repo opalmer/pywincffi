@@ -8,6 +8,8 @@ This module is used by the unittests.
 import os
 import subprocess
 import sys
+from random import choice
+from string import ascii_lowercase, ascii_uppercase
 
 from cffi import FFI, CDefError
 
@@ -91,10 +93,35 @@ class TestCase(_TestCase):
         self.addCleanup(self._terminate_process, process)
         return process
 
-    def clear_list(self, list_):
+    def clear_object(self, thing):
         """
-        Clear a Python list of entries in place.  This function exists
-        for compatibility across Python versions.
+        Attempts to clear all data out of ``thing``.  This will fail the test
+        if we can't handle the type of object provided.
         """
-        assert isinstance(list_, list)
-        del list_[:]
+        try:
+            thing.clear()
+        except AttributeError:
+            if isinstance(thing, list):  # Older version of Python.
+                del thing[:]
+            else:
+                self.fail("Don't know how to clear %s" % type(thing))
+
+    def random_string(self, length):
+        """
+        Returns a random string as long as ``length``.  The first character
+        will always be a letter.  All other characters will be A-F,
+        A-F or 0-9.
+        """
+        if length < 1:
+            self.fail("Length must be at least 1.")
+
+        # First character should always be a letter so the string
+        # can be used in object names.
+        output = choice(ascii_lowercase)
+        length -= 1
+
+        while length:
+            length -= 1
+            output += choice(ascii_lowercase + ascii_uppercase + "0123456789")
+
+        return output
