@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import binascii
 import os
 import shutil
 import sys
@@ -35,19 +34,8 @@ class TestModule(TestCase):
     """
     Tests for :class:`pywincffi.core.dist.Module`
     """
-    def setUp(self):
-        super(TestModule, self).setUp()
-        Module.cache = None
-
-    def tearDown(self):
-        super(TestModule, self).tearDown()
-        Module.cache = None
-        sys.modules.pop("_pywincffi", None)
-
-    def test_cache_default(self):
-        self.assertIsNone(Module.cache)
-
     def test_double_cache_produces_warning(self):
+        self.addCleanup(setattr, Module, "cache", None)
         Module.cache = ""
 
         with warnings.catch_warnings(record=True) as caught:
@@ -76,8 +64,7 @@ class TestImportPath(TestCase):
     """Tests for :func:`pywincffi.core.dist._import_path`"""
     def setUp(self):
         super(TestImportPath, self).setUp()
-        self.module_name = \
-            "m" + binascii.b2a_hex(os.urandom(6)).decode("utf-8")
+        self.module_name = self.random_string(16)
         self.header = "int add(int, int);"
         self.source = "int add(int a, int b) {return a + b;}"
 
@@ -216,9 +203,8 @@ class TestLoad(TestCase):
     """Tests for :func:`pywincffi.core.dist.load`"""
     def setUp(self):
         super(TestLoad, self).setUp()
-        if Module.cache is not None:
-            self.addCleanup(setattr, Module, "cache", Module.cache)
-            Module.cache = None
+        self.addCleanup(setattr, Module, "cache", None)
+        Module.cache = None
 
         if MODULE_NAME in sys.modules:
             self.addCleanup(
