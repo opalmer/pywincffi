@@ -99,7 +99,7 @@ class TestCase(_TestCase):
         will always be a letter.  All other characters will be A-F,
         A-F or 0-9.
         """
-        if length < 1:
+        if length < 1:  # pragma: no cover
             self.fail("Length must be at least 1.")
 
         # First character should always be a letter so the string
