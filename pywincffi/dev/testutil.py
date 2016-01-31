@@ -93,19 +93,6 @@ class TestCase(_TestCase):
         self.addCleanup(self._terminate_process, process)
         return process
 
-    def clear_object(self, thing):
-        """
-        Attempts to clear all data out of ``thing``.  This will fail the test
-        if we can't handle the type of object provided.
-        """
-        try:
-            thing.clear()
-        except AttributeError:
-            if isinstance(thing, list):  # Older version of Python.
-                del thing[:]
-            else:
-                self.fail("Don't know how to clear %s" % type(thing))
-
     def random_string(self, length):
         """
         Returns a random string as long as ``length``.  The first character
