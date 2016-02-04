@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import integer_types
+from six import integer_types, string_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
@@ -119,3 +119,43 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
     return ffi.string(lpBuffer)
+
+
+def MoveFileEx(lpExistingFileName, dwFlags, lpNewFileName=None):
+    """
+    Moves an existing file or directory, including its children,
+    see the MSDN documentation for full options.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365240
+
+    :param str lpExistingFileName:
+        Name of the file or directory to perform the operation on.
+
+    :param int dwFlags:
+        Parameters which control the operation of :func:`MoveFileEx`.  See
+        the MSDN documentation for full details.
+
+    :keyword str lpNewFileName:
+        Optional new name of the path or directory
+    """
+    input_check("lpExistingFileName", lpExistingFileName, string_types)
+    input_check("dwFlags", dwFlags, integer_types)
+
+    ffi, library = dist.load()
+
+    if lpNewFileName is not None:
+        input_check("lpNewFileName", lpNewFileName, string_types)
+        lpNewFileName = ffi.cast(
+            "LPCTSTR", ffi.new("wchar_t[]", lpNewFileName)
+        )
+    else:
+        lpNewFileName = ffi.NULL
+
+    code = library.MoveFileEx(
+        ffi.cast("LPCTSTR", ffi.new("wchar_t[]", lpExistingFileName)),
+        lpNewFileName,
+        ffi.cast("DWORD", dwFlags)
+    )
+    error_check("MoveFileEx", code=code, expected=Enums.NON_ZERO)
