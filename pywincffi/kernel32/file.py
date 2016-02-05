@@ -121,7 +121,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     return ffi.string(lpBuffer)
 
 
-def MoveFileEx(lpExistingFileName, dwFlags, lpNewFileName=None):
+def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
     """
     Moves an existing file or directory, including its children,
     see the MSDN documentation for full options.
@@ -133,25 +133,29 @@ def MoveFileEx(lpExistingFileName, dwFlags, lpNewFileName=None):
     :param str lpExistingFileName:
         Name of the file or directory to perform the operation on.
 
-    :param int dwFlags:
-        Parameters which control the operation of :func:`MoveFileEx`.  See
-        the MSDN documentation for full details.
+    :param str lpNewFileName:
+        Optional new name of the path or directory.  This value may be
+        ``None``.
 
-    :keyword str lpNewFileName:
-        Optional new name of the path or directory
+    :keyword int dwFlags:
+        Parameters which control the operation of :func:`MoveFileEx`.  See
+        the MSDN documentation for full details.  By default
+        ``MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH`` is used.
     """
+    ffi, library = dist.load()
+
+    if dwFlags is None:
+        dwFlags = \
+            library.MOVEFILE_REPLACE_EXISTING | library.MOVEFILE_WRITE_THROUGH
+
     input_check("lpExistingFileName", lpExistingFileName, string_types)
     input_check("dwFlags", dwFlags, integer_types)
 
-    ffi, library = dist.load()
-
-    if lpNewFileName is not None:
-        input_check("lpNewFileName", lpNewFileName, string_types)
-        lpNewFileName = ffi.cast(
-            "LPCTSTR", ffi.new("wchar_t[]", lpNewFileName)
-        )
-    else:
+    if lpNewFileName is None:
         lpNewFileName = ffi.NULL
+    else:
+        input_check("lpNewFileName", lpNewFileName, string_types)
+        lpNewFileName = ffi.cast("LPCTSTR", ffi.new("wchar_t[]", lpNewFileName))
 
     code = library.MoveFileEx(
         ffi.cast("LPCTSTR", ffi.new("wchar_t[]", lpExistingFileName)),
