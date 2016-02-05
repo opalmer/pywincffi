@@ -49,3 +49,13 @@ class TestMoveFileEx(TestCase):
 
     # TODO: tests for directory moves
     # TODO: tests where lpNewFileName is None (NULL)
+
+    # TODO: figure out why this does not work when running in PyCharm (but does
+    # with nosetests and in an interpreter)
+    def test_foo(self):
+        fd1, path1 = tempfile.mkstemp()
+        os.close(fd1)
+
+        fd2, path2 = tempfile.mkstemp()
+        os.close(fd2)
+        MoveFileEx(path1, path2)
