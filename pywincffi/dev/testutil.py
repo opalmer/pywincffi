@@ -12,14 +12,15 @@ from random import choice
 from string import ascii_lowercase, ascii_uppercase
 
 from cffi import FFI, CDefError
+from six import PY2, PY3
 
 try:
     # The setup.py file installs unittest2 for Python 2
     # which backports newer test framework features.
-    from unittest2 import TestCase as _TestCase
+    from unittest2 import TestCase as _TestCase, skipUnless
 except ImportError:  # pragma: no cover
     # pylint: disable=wrong-import-order
-    from unittest import TestCase as _TestCase
+    from unittest import TestCase as _TestCase, skipUnless
 
 from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
@@ -36,6 +37,10 @@ except NameError:  # pragma: no cover
 # so we don't have to rely on pywincffi.core
 libtest = None  # pylint: disable=invalid-name
 ffi = FFI()
+
+# pylint: disable=invalid-name
+skip_unless_python2 = skipUnless(PY2, "Not Python 2")
+skip_unless_python3 = skipUnless(PY3, "Not Python 3")
 
 try:
     ffi.cdef("void SetLastError(DWORD);")
