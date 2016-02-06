@@ -1,6 +1,6 @@
 import os
 import tempfile
-from os.path import join
+from os.path import isfile
 
 from pywincffi.dev.testutil import TestCase
 from pywincffi.kernel32 import MoveFileEx
@@ -10,52 +10,37 @@ class TestMoveFileEx(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.MoveFileEx`
     """
-    def test_renames_file(self):
-        tempdir = tempfile.gettempdir()
-        source_filename = self.random_string(7)
-        dest_filename = self.random_string(7)
-        data = self.random_string(7)
-        self.addCleanup(os.remove, dest_filename)
-
-        source = join(tempdir, source_filename)
-
-        with open(source, "w") as file_:
-            file_.write(data)
-
-        MoveFileEx(source, dest_filename)
-
-        with open(dest_filename) as file_:
-            self.assertEqual(file_.read(), data)
-
     def test_replaces_file(self):
-        tempdir = tempfile.gettempdir()
-        source_filename = self.random_string(7)
-        dest_filename = self.random_string(7)
-        data = self.random_string(7)
-        self.addCleanup(os.remove, dest_filename)
+        # Destination file exists, this should replace it.
+        file_contents = self.random_string(12)
+        fd, path1 = tempfile.mkstemp()
 
-        source = join(tempdir, source_filename)
+        with os.fdopen(fd, "w") as file_:
+            file_.write(file_contents)
 
-        with open(source, "w") as file_:
-            file_.write(data)
+        fd, path2 = tempfile.mkstemp()
+        self.addCleanup(os.remove, path2)
+        os.close(fd)
 
-        with open(dest_filename, "w") as dest_:
-            dest_.write("foobar")
-
-        MoveFileEx(source, dest_filename)
-
-        with open(dest_filename) as file_:
-            self.assertEqual(file_.read(), data)
-
-    # TODO: tests for directory moves
-    # TODO: tests where lpNewFileName is None (NULL)
-
-    # TODO: figure out why this does not work when running in PyCharm (but does
-    # with nosetests and in an interpreter)
-    def test_foo(self):
-        fd1, path1 = tempfile.mkstemp()
-        os.close(fd1)
-
-        fd2, path2 = tempfile.mkstemp()
-        os.close(fd2)
         MoveFileEx(path1, path2)
+
+        with open(path2, "r") as file_:
+            self.assertEqual(file_.read(), file_contents)
+
+        self.assertFalse(isfile(path1))
+
+    def test_renames_file(self):
+        # Destination file does not exist, this should create it.
+        file_contents = self.random_string(12)
+        fd, path1 = tempfile.mkstemp()
+        path2 = path1 + ".new"
+
+        with os.fdopen(fd, "w") as file_:
+            file_.write(file_contents)
+
+        MoveFileEx(path1, path2)
+
+        with open(path2, "r") as file_:
+            self.assertEqual(file_.read(), file_contents)
+
+        self.assertFalse(isfile(path1))

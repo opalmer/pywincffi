@@ -9,6 +9,7 @@ from six import integer_types, string_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.util import string_to_cdata
 
 
 def WriteFile(hFile, lpBuffer, lpOverlapped=None):
@@ -151,14 +152,14 @@ def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
     input_check("lpExistingFileName", lpExistingFileName, string_types)
     input_check("dwFlags", dwFlags, integer_types)
 
-    if lpNewFileName is None:
-        lpNewFileName = ffi.NULL
-    else:
+    if lpNewFileName is not None:
         input_check("lpNewFileName", lpNewFileName, string_types)
-        lpNewFileName = ffi.cast("LPCTSTR", ffi.new("wchar_t[]", lpNewFileName))
+        lpNewFileName = string_to_cdata(lpNewFileName)
+    else:
+        lpNewFileName = ffi.NULL
 
     code = library.MoveFileEx(
-        ffi.cast("LPCTSTR", ffi.new("wchar_t[]", lpExistingFileName)),
+        string_to_cdata(lpExistingFileName),
         lpNewFileName,
         ffi.cast("DWORD", dwFlags)
     )
