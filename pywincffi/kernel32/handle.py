@@ -66,7 +66,7 @@ def GetStdHandle(nStdHandle):
     if handle == INVALID_HANDLE_VALUE:  # pragma: no cover
         raise WindowsAPIError(
             "GetStdHandle", "Invalid Handle", INVALID_HANDLE_VALUE,
-            "not %s" % INVALID_HANDLE_VALUE)
+            expected_return_code="not %r" % INVALID_HANDLE_VALUE)
 
     return handle
 
@@ -114,8 +114,8 @@ def WaitForSingleObject(hHandle, dwMilliseconds):
 
     if result == library.WAIT_FAILED:
         raise WindowsAPIError(
-            "WaitForSingleObject", ffi.getwinerror()[-1], result,
-            "not %s" % result)
+            "WaitForSingleObject", "Wait Failed", ffi.getwinerror()[-1],
+            return_code=result, expected_return_code="not %s" % result)
 
     error_check("WaitForSingleObject")
 
