@@ -5,6 +5,8 @@ Exceptions
 Custom exceptions that ``pywincffi`` can throw.
 """
 
+import warnings
+
 from cffi.api import CDefError
 
 
@@ -69,31 +71,65 @@ class WindowsAPIError(PyWinCFFIError):
     """
     A subclass of :class:`PyWinCFFIError` that's raised when there was a
     problem calling a Windows API function.
-    """
-    def __init__(self, api_function, api_error_message, code, expected_code):
-        self.api_function = api_function
-        self.api_error_message = api_error_message
-        self.code = code
-        self.expected_code = expected_code
 
-        # We can't import the ffi module here because it would result
-        # in a circular import so we exclude the two other cases such as
-        # int and None.
-        if not isinstance(expected_code, int) and expected_code is not None:
+    :param str function:
+        The Windows API function being called when the error was raised.
+
+    :param str error:
+        A string representation of the error message.
+
+    :param int errno:
+        An integer representing the error.  This usually represents
+        a constant which Windows has produced in response to a problem.
+
+    :keyword int return_code:
+        If the return value of a function has been checked the resulting
+        code will be set as this value.
+
+    :keyword int expected_return_code:
+        The value we expected to receive for ``code``.
+    """
+    def __init__(self, function, error, errno,
+                 return_code=None, expected_return_code=None):
+        self.function = function
+        self.error = error
+        self.errno = errno
+        self.return_code = return_code
+        self.expected_return_code = expected_return_code
+
+        if return_code is None and expected_return_code is None:
             self.message = \
-                "Error when calling %s, error was %r.  Received " \
-                "return value %s when we expected non-zero" % (
-                    self.api_function, self.api_error_message, self.code
+                "Error when calling %s. Message from Windows API was " \
+                "%r (errno: %s)." % (self.function, self.error, errno)
+
+        elif return_code is not None and expected_return_code is not None:
+            self.message = (
+                "Error when calling %s.  Expected to receive %r from %s "
+                "but got %r instead." % (
+                    self.function, self.return_code, self.function,
+                    self.expected_return_code
                 )
-        else:
-            self.message = \
-                "Expected a non-zero result from %r but got zero instead.  " \
-                "Message from windows API was %r" % (
-                    self.api_function, self.api_error_message
+            )
+
+        # Generic implementation which we should probably handle
+        # better so throw a warning.
+        else:  # pragma: no cover
+            warnings.warn(Warning(), "Pre-formatting not available")
+            self.message = (
+                "Error when calling %s. (error: %s, errno: %s, "
+                "return_code: %r, expected_return_code: %r)" % (
+                    self.function, self.error, self.errno, self.return_code,
+                    self.expected_return_code
                 )
+            )
 
         super(WindowsAPIError, self).__init__(self.message)
 
+    def __repr__(self):
+        return "%s(%r, %r, %r, return_code=%r, expected_return_code=%r)" % (
+            self.__class__.__name__, self.function, self.error, self.errno,
+            self.return_code, self.expected_return_code
+        )
 
 class ResourceNotFoundError(PyWinCFFIError):
     """Raised when we fail to locate a specific resource"""
