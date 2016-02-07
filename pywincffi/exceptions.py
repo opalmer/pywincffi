@@ -131,6 +131,7 @@ class WindowsAPIError(PyWinCFFIError):
             self.return_code, self.expected_return_code
         )
 
+
 class ResourceNotFoundError(PyWinCFFIError):
     """Raised when we fail to locate a specific resource"""
 
