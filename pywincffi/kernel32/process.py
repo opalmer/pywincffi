@@ -60,13 +60,13 @@ def pid_exists(pid, wait=0):
         # is owned by another user or the system and
         # the process running this code does not have the
         # rights to query the other process's information.
-        if error.code == library.ERROR_ACCESS_DENIED:
+        if error.errno == library.ERROR_ACCESS_DENIED:
             return True
 
         # Sometimes the PID we're asking about no longer exists
         # in the stack anywhere so we'll get ERROR_INVALID_PARAMETER
         # so there's not any reason to continue further.
-        if error.code == library.ERROR_INVALID_PARAMETER:
+        if error.errno == library.ERROR_INVALID_PARAMETER:
             return False
 
         raise

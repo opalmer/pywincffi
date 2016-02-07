@@ -51,18 +51,17 @@ INPUT_CHECK_MAPPINGS = {
 }
 
 
-def error_check(api_function, code=None, expected=0):
+def error_check(function, code=None, expected=None):
     """
     Checks the results of a return code against an expected result.  If
     a code is not provided we'll use :func:`ffi.getwinerror` to retrieve
     the code.
 
-    :param str api_function:
+    :param str function:
         The Windows API function being called.
 
     :keyword int code:
-        An explicit code to compare against.  This can be used
-        instead of asking :func:`ffi.getwinerrro` to retrieve a code.
+        An explicit code to compare against.
 
     :keyword int expected:
         The code we expect to have as a result of a successful
@@ -73,31 +72,22 @@ def error_check(api_function, code=None, expected=0):
         Raised if we receive an unexpected result from a Windows API call
     """
     ffi, _ = dist.load()
-
-    if code is None:
-        result, api_error_message = ffi.getwinerror()
-    else:
-        # If the is zero and we expected non-zero then
-        # the real error message can be found with ffi.getwinerror.
-        if code == 0 and expected is Enums.NON_ZERO:
-            result = code
-            _, api_error_message = ffi.getwinerror()
-        else:
-            result, api_error_message = ffi.getwinerror(code)
+    errno, error_message = ffi.getwinerror()
 
     logger.debug(
-        "error_check(%r, code=%r, result=%r, expected=%r)",
-        api_function, code, result, expected
-    )
+        "error_check(%r, code=%r, expected=%r)", function, code, expected)
 
-    if (expected is Enums.NON_ZERO and (
-            result != 0 or code is not None and code != 0)):
+    if code is not None:
+        if expected == Enums.NON_ZERO and code == 0:
+            raise WindowsAPIError(
+                function, error_message, errno,
+                return_code=code, expected_return_code=expected)
         return
 
-    if expected != result:
+    if errno != 0:
         raise WindowsAPIError(
-            api_function, api_error_message, result, expected
-        )
+            function, error_message, errno, return_code=code,
+            expected_return_code=expected)
 
 
 def input_check(name, value, allowed_types=None, allowed_values=None):
