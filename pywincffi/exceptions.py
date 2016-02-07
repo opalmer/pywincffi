@@ -89,6 +89,7 @@ class WindowsAPIError(PyWinCFFIError):
     :keyword int expected_return_code:
         The value we expected to receive for ``code``.
     """
+    # pylint: disable=too-many-arguments
     def __init__(self, function, error, errno,
                  return_code=None, expected_return_code=None):
         self.function = function
