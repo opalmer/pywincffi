@@ -1,8 +1,11 @@
 import os
+import ctypes
 import tempfile
 from os.path import isfile
 
+from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
+from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import MoveFileEx
 
 
@@ -44,3 +47,22 @@ class TestMoveFileEx(TestCase):
             self.assertEqual(file_.read(), file_contents)
 
         self.assertFalse(isfile(path1))
+
+    def test_run_delete_after_reboot(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+
+        _, library = dist.load()
+        try:
+            MoveFileEx(path, None, dwFlags=library.MOVEFILE_DELAY_UNTIL_REBOOT)
+        except WindowsAPIError as error:
+            # If we're not an administrator then we don't
+            # have the permissions to perform this kind of
+            # action.
+            if error.errno == library.ERROR_ACCESS_DENIED:
+                self.assertFalse(ctypes.windll.shell32.IsUserAnAdmin())
+                return
+
+            raise
+        else:
+            self.assertTrue(isfile(path))
