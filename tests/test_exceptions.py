@@ -47,21 +47,37 @@ class TestWindowsAPIError(TestCase):
     Test case for :class:`pywincffi.exceptions.WindowsAPIError`
     """
     def test_ivar_api_function(self):
-        error = WindowsAPIError("function", "there was a problem", 1, 0)
-        self.assertEqual(error.api_function, "function")
+        error = WindowsAPIError(
+            "function", "there was a problem", 1, return_code=0)
+        self.assertEqual(error.function, "function")
 
     def test_ivar_api_error_message(self):
-        error = WindowsAPIError("function", "there was a problem", 1, 0)
-        self.assertEqual(error.api_error_message, "there was a problem")
+        error = WindowsAPIError(
+            "function", "there was a problem", 1, return_code=0)
+        self.assertEqual(error.error, "there was a problem")
 
     def test_ivar_code(self):
-        error = WindowsAPIError("function", "there was a problem", 1, 0)
-        self.assertEqual(error.code, 1)
+        error = WindowsAPIError(
+            "function", "there was a problem", 1, return_code=0)
+        self.assertEqual(error.errno, 1)
 
     def test_ivar_expected_code(self):
-        error = WindowsAPIError("function", "there was a problem", 1, 0)
-        self.assertEqual(error.expected_code, 0)
+        error = WindowsAPIError(
+            "function", "there was a problem", 1, return_code=0)
+        self.assertEqual(error.return_code, 0)
 
-    def test_str(self):
-        error = WindowsAPIError("function", "there was a problem", 1, 0)
-        self.assertEqual(str(error), error.message)
+    def test_repr(self):
+        error = WindowsAPIError(
+            "function", "there was a problem", 1, return_code=0,
+            expected_return_code=1)
+        self.assertEqual(
+            repr(error),
+            "WindowsAPIError('function', 'there was a problem', 1, "
+            "return_code=0, expected_return_code=1)"
+        )
+
+    def test_warning(self):
+
+        with self.assertWarns(Warning):
+            WindowsAPIError(
+                "function", "there was a problem", 1, return_code="foo")
