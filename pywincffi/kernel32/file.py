@@ -5,10 +5,11 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import integer_types
+from six import integer_types, string_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.util import string_to_cdata
 
 
 def WriteFile(hFile, lpBuffer, lpOverlapped=None):
@@ -119,3 +120,47 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
     return ffi.string(lpBuffer)
+
+
+def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
+    """
+    Moves an existing file or directory, including its children,
+    see the MSDN documentation for full options.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365240
+
+    :param str lpExistingFileName:
+        Name of the file or directory to perform the operation on.
+
+    :param str lpNewFileName:
+        Optional new name of the path or directory.  This value may be
+        ``None``.
+
+    :keyword int dwFlags:
+        Parameters which control the operation of :func:`MoveFileEx`.  See
+        the MSDN documentation for full details.  By default
+        ``MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH`` is used.
+    """
+    ffi, library = dist.load()
+
+    if dwFlags is None:
+        dwFlags = \
+            library.MOVEFILE_REPLACE_EXISTING | library.MOVEFILE_WRITE_THROUGH
+
+    input_check("lpExistingFileName", lpExistingFileName, string_types)
+    input_check("dwFlags", dwFlags, integer_types)
+
+    if lpNewFileName is not None:
+        input_check("lpNewFileName", lpNewFileName, string_types)
+        lpNewFileName = string_to_cdata(lpNewFileName)
+    else:
+        lpNewFileName = ffi.NULL
+
+    code = library.MoveFileEx(
+        string_to_cdata(lpExistingFileName),
+        lpNewFileName,
+        ffi.cast("DWORD", dwFlags)
+    )
+    error_check("MoveFileEx", code=code, expected=Enums.NON_ZERO)
