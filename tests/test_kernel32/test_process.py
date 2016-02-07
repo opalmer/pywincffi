@@ -39,7 +39,7 @@ class TestOpenProcess(TestCase):
         with self.assertRaises(WindowsAPIError) as error:
             OpenProcess(0, False, os.getpid())
 
-        self.assertEqual(error.exception.code, 5)
+        self.assertEqual(error.exception.errno, 5)
 
     def test_get_process_id_current_process(self):
         # We should be able to access the pid of the process
