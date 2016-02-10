@@ -27,6 +27,7 @@ HANDLE
 UTF8
 OVERLAPPED
 PYFILE
+LP_SECURITY_ATTRIBUTES
 """.strip())
 
 if PY3:
@@ -46,6 +47,11 @@ INPUT_CHECK_MAPPINGS = {
     Enums.OVERLAPPED: CheckMapping(
         kind="array",
         cname=re.compile(r"^(?:struct _|)OVERLAPPED\[1\]$"),
+        nullable=True
+    ),
+    Enums.LP_SECURITY_ATTRIBUTES: CheckMapping(
+        kind="array",
+        cname=re.compile(r"^(?:struct _|)LP_SECURITY_ATTRIBUTES\[1\]$"),
         nullable=True
     )
 }

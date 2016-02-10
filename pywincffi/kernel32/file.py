@@ -167,7 +167,7 @@ def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
     error_check("MoveFileEx", code=code, expected=Enums.NON_ZERO)
 
 
-def CreateFile(
+def CreateFile(  # pylint: disable=too-many-arguments
         lpFileName, dwDesiredAccess, dwShareMode=None,
         lpSecurityAttributes=None, dwCreationDisposition=None,
         dwFlagsAndAttributes=None, hTemplateFile=None):
