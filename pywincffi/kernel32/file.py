@@ -9,6 +9,7 @@ from six import integer_types, string_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.exceptions import WindowsAPIError
 from pywincffi.util import string_to_cdata
 
 
@@ -164,3 +165,108 @@ def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
         ffi.cast("DWORD", dwFlags)
     )
     error_check("MoveFileEx", code=code, expected=Enums.NON_ZERO)
+
+
+def CreateFile(
+        lpFileName, dwDesiredAccess, dwShareMode=None,
+        lpSecurityAttributes=None, dwCreationDisposition=None,
+        dwFlagsAndAttributes=None, hTemplateFile=None):
+    """
+    Creates or opens a file or other I/O device.  Default values are
+    provided for some of the default arguments for CreateFile() so
+    its behavior is close to Pythons :func:`open` function.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa363858
+        https://msdn.microsoft.com/en-us/library/gg258116
+
+    :param str lpFileName:
+        The path to the file or device being created or opened.
+
+    :param int dwDesiredAccess:
+        The requested access to the file or device.  Microsoft's documentation
+        has extensive notes on this parameter in the seealso links above.
+
+    :keyword int dwShareMode:
+        Access and sharing rights to the handle being created.  If not provided
+        with an explicit value, ``FILE_SHARE_READ`` will be used which will
+        other open operations or process to continue to read from the file.
+
+    :keyword struct lpSecurityAttributes:
+        A pointer to a ``SECURITY_ATTRIBUTES`` structure, see Microsoft's
+        documentation for more detailed information.  If not provided with
+        an explicit value, NULL will be used instead which will mean the
+        handle can't be inherited by any child process.
+
+    :keyword int dwCreationDisposition:
+        Action to take when the file or device does not exist.  If not
+        provided with an explicit value, ``CREATE_ALWAYS`` will be used
+        which means existing files will be overwritten.
+
+    :keyword int dwFlagsAndAttributes:
+        The file or device attributes and flags.  If not provided an explict
+        value, ``FILE_ATTRIBUTE_NORMAL`` will be used giving the handle
+        essentially no special attributes.
+
+    :keyword handle hTemplateFile:
+        A value handle to a template file with the ``GENERIC_READ`` access
+        right.  See Microsoft's documentation for more information.  If not
+        provided an explicit value, ``NULL`` will be used instead.
+
+    :return:
+        Returns the file handle created by ``CreateFile``.
+    """
+    ffi, library = dist.load()
+
+    if dwShareMode is None:
+        dwShareMode = library.FILE_SHARE_READ
+
+    if lpSecurityAttributes is None:
+        lpSecurityAttributes = ffi.NULL
+
+    if dwCreationDisposition is None:
+        dwCreationDisposition = library.CREATE_ALWAYS
+
+    if dwFlagsAndAttributes is None:
+        dwFlagsAndAttributes = library.FILE_ATTRIBUTE_NORMAL
+
+    if hTemplateFile is None:
+        hTemplateFile = ffi.NULL
+
+    input_check("lpFileName", lpFileName, string_types)
+    input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
+    input_check("dwShareMode", dwShareMode, integer_types)
+    input_check(
+        "lpSecurityAttributes", lpSecurityAttributes,
+        Enums.LP_SECURITY_ATTRIBUTES
+    )
+    input_check(
+        "dwCreationDisposition", dwCreationDisposition,
+        allowed_values=(
+            library.CREATE_ALWAYS,
+            library.CREATE_NEW,
+            library.OPEN_ALWAYS,
+            library.OPEN_EXISTING,
+            library.TRUNCATE_EXISTING
+        )
+    )
+    input_check("dwFlagsAndAttributes", dwFlagsAndAttributes, integer_types)
+    input_check("hTemplateFile", hTemplateFile, Enums.HANDLE)
+
+    handle = library.CreateFile(
+        string_to_cdata(lpFileName), dwDesiredAccess, dwShareMode,
+        lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes,
+        hTemplateFile
+    )
+
+    try:
+        error_check("CreateFile")
+    except WindowsAPIError as error:
+        # ERROR_ALREADY_EXISTS may be a normal condition depending
+        # on the creation disposition.
+        if (dwCreationDisposition != library.CREATE_ALWAYS or
+                error.errno == library.ERROR_ALREADY_EXISTS):
+            raise
+
+    return handle
