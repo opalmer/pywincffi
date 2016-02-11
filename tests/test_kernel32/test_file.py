@@ -6,7 +6,7 @@ from os.path import isfile
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32 import MoveFileEx
+from pywincffi.kernel32 import CloseHandle, MoveFileEx, CreateFile
 
 
 class TestMoveFileEx(TestCase):
@@ -66,3 +66,34 @@ class TestMoveFileEx(TestCase):
             raise
         else:
             self.assertTrue(isfile(path))
+
+
+class TestCreateFile(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.CreateFile`
+    """
+    def test_creates_file(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+        os.remove(path)
+
+        _, library = dist.load()
+        handle = CreateFile(path, 0)
+        self.addCleanup(CloseHandle, handle)
+        self.assertTrue(isfile(path))
+
+    def test_default_create_disposition(self):
+        # The default creation disposition should
+        # overwrite an existing file.
+        fd, path = tempfile.mkstemp()
+        with os.fdopen(fd, "w") as file_:
+            file_.write("Hello, world.")
+            file_.flush()
+            os.fsync(file_.fileno())
+
+        _, library = dist.load()
+        handle = CreateFile(path, 0)
+        self.addCleanup(CloseHandle, handle)
+
+        with open(path, "r") as file_:
+            self.assertEqual(file_.read(), "")
