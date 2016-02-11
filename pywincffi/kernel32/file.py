@@ -265,8 +265,9 @@ def CreateFile(  # pylint: disable=too-many-arguments
     except WindowsAPIError as error:
         # ERROR_ALREADY_EXISTS may be a normal condition depending
         # on the creation disposition.
-        if (dwCreationDisposition != library.CREATE_ALWAYS or
+        if (dwCreationDisposition == library.CREATE_ALWAYS and
                 error.errno == library.ERROR_ALREADY_EXISTS):
-            raise
+            return handle
+        raise
 
     return handle
