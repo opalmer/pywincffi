@@ -77,7 +77,6 @@ class TestCreateFile(TestCase):
         os.close(fd)
         os.remove(path)
 
-        _, library = dist.load()
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
         self.assertTrue(isfile(path))
@@ -91,7 +90,6 @@ class TestCreateFile(TestCase):
             file_.flush()
             os.fsync(file_.fileno())
 
-        _, library = dist.load()
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
 
