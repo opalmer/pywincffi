@@ -56,6 +56,10 @@ class TestEnumMapping(TestCase):
         ffi, _ = dist.load()
         input_check("", ffi.new("OVERLAPPED[1]"), Enums.OVERLAPPED)
 
+    def test_overlapped_nullable(self):
+        ffi, _ = dist.load()
+        input_check("", ffi.NULL, Enums.OVERLAPPED)
+
 
 class TestEnumUTF8(TestCase):
     def test_attribute_error(self):
