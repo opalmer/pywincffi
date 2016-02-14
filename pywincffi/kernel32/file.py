@@ -239,7 +239,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
     input_check("dwShareMode", dwShareMode, integer_types)
     input_check(
         "lpSecurityAttributes", lpSecurityAttributes,
-        Enums.LPSECURITY_ATTRIBUTES
+        Enums.SECURITY_ATTRIBUTES
     )
     input_check(
         "dwCreationDisposition", dwCreationDisposition,
