@@ -60,6 +60,15 @@ class TestEnumMapping(TestCase):
         ffi, _ = dist.load()
         input_check("", ffi.NULL, Enums.OVERLAPPED)
 
+    # def test_lp_security_attributes(self):
+    #     ffi, _ = dist.load()
+    #     input_check(
+    #         "", ffi.new("LPSECURITY_ATTRIBUTES[1]"), Enums.SECURITY_ATTRIBUTES)
+
+    def test_lp_security_attributes_nullable(self):
+        ffi, _ = dist.load()
+        input_check("", ffi.NULL, Enums.SECURITY_ATTRIBUTES)
+
 
 class TestEnumUTF8(TestCase):
     def test_attribute_error(self):
