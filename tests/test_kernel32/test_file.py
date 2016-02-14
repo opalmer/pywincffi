@@ -3,10 +3,13 @@ import ctypes
 import tempfile
 from os.path import isfile
 
+from mock import patch
+
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import CloseHandle, MoveFileEx, CreateFile
+from pywincffi.kernel32 import file  # used for mocks
 
 
 class TestMoveFileEx(TestCase):
@@ -95,3 +98,29 @@ class TestCreateFile(TestCase):
 
         with open(path, "r") as file_:
             self.assertEqual(file_.read(), "")
+
+    def test_ignores_error_already_existed(self):
+        _, library = dist.load()
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+        os.remove(path)
+
+        def raise_(*_):
+            raise WindowsAPIError("", "", library.ERROR_ALREADY_EXISTS)
+
+        with patch.object(file, "error_check", side_effect=raise_):
+            handle = CreateFile(
+                path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
+            self.addCleanup(CloseHandle, handle)
+
+        # If we've made it this far, the exception was ignored by CreateFile
+
+    def test_raises_other_errors_for_create_always(self):
+        _, library = dist.load()
+
+        with self.assertRaises(WindowsAPIError) as error:
+            handle = CreateFile(
+                "", 0, dwCreationDisposition=library.CREATE_ALWAYS)
+            self.addCleanup(CloseHandle, handle)
+
+        self.assertEqual(error.exception.errno, library.ERROR_PATH_NOT_FOUND)
