@@ -9,7 +9,7 @@ from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import CloseHandle, MoveFileEx, CreateFile
-from pywincffi.kernel32 import file  # used for mocks
+from pywincffi.kernel32 import file as _file  # used for mocks
 
 
 class TestMoveFileEx(TestCase):
@@ -108,7 +108,7 @@ class TestCreateFile(TestCase):
         def raise_(*_):
             raise WindowsAPIError("", "", library.ERROR_ALREADY_EXISTS)
 
-        with patch.object(file, "error_check", side_effect=raise_):
+        with patch.object(_file, "error_check", side_effect=raise_):
             handle = CreateFile(
                 path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
