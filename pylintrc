@@ -273,7 +273,7 @@ ignored-classes=SQLObject
 # system, and so shouldn't trigger E0201 when accessed. Python regular
 # expressions are accepted.
 generated-members=REQUEST,acl_users,aq_parent,HANDLE,OVERLAPPED,NON_ZERO,UTF8,
-                  PYFILE,LP_SECURITY_ATTRIBUTES
+                  PYFILE,SECURITY_ATTRIBUTES
 
 
 [VARIABLES]
