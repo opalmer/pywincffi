@@ -271,3 +271,56 @@ def CreateFile(  # pylint: disable=too-many-arguments
         raise
 
     return handle
+
+
+def LockFileEx(
+        hFile, dwFlags, nNumberOfBytesToLockLow, nNumberOfBytesToLockHigh,
+        lpOverLapped):
+    """
+    Locks ``hFile`` for exclusive access by the calling process.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365203
+
+    :param handle hFile:
+        The handle to the file to lock.  This handle must have been
+        created with either the ``GENERIC_READ`` or ``GENERIC_WRITE``
+        right.
+
+    :param int dwFlags:
+        One or more of the following flags:
+
+            * ``LOCKFILE_EXCLUSIVE_LOCK`` - Request an exclusive lock.
+            * ``LOCKFILE_FAIL_IMMEDIATELY`` - Return immediately if the lock
+              could not be acquired.  Otherwise :func:`LockFileEx` will wait.
+
+    :param int nNumberOfBytesToLockLow:
+        The start of the byte range to lock.
+
+    :param int nNumberOfBytesToLockHigh:
+        The end of the byte range to lock.
+
+    :param LPOVERLAPPED lpOverLapped:
+        A pointer to an ``OVERLAPPED`` structure
+
+    :return:
+    """
+    input_check("hFile", hFile, Enums.HANDLE)
+    input_check("dwFlags", dwFlags, integer_types)
+    input_check(
+        "nNumberOfBytesToLockLow", nNumberOfBytesToLockLow, integer_types)
+    input_check(
+        "nNumberOfBytesToLockHigh", nNumberOfBytesToLockHigh, integer_types)
+    input_check("lpOverLapped", lpOverLapped, Enums.OVERLAPPED)
+
+    ffi, library = dist.load()
+
+    code = library.LockFileEx(
+        hFile,
+        ffi.cast("DWORD", dwFlags),
+        ffi.cast("DWORD", nNumberOfBytesToLockLow),
+        ffi.cast("DWORD", nNumberOfBytesToLockHigh),
+        lpOverLapped
+    )
+    error_check("LockFileEx", code=code, expected=Enums.NON_ZERO)
