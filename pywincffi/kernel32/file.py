@@ -12,7 +12,7 @@ from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.util import string_to_cdata
 
 
-def WriteFile(hFile, lpBuffer, lpOverlapped=None):
+def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
     """
     Writes data to ``hFile`` which may be an I/O device for file.
 
@@ -27,6 +27,10 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     :param lpBuffer:
         The data to be written to the file or device. We should be able
         to convert this value to unicode.
+
+    :keyword int nNumberOfBytesToWrite:
+        The number of bytes to be written.  By default this will
+        be determinted based on the size of ``lpBuffer``
 
     :type lpOverlapped: None or OVERLAPPED
     :keyword lpOverlapped:
@@ -58,13 +62,18 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     input_check("lpBuffer", lpBuffer, Enums.UTF8)
     input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
 
+    if nNumberOfBytesToWrite is None:
+        nNumberOfBytesToWrite = ffi.sizeof(lpBuffer)
+
+    input_check("nNumberOfBytesToWrite", nNumberOfBytesToWrite, integer_types)
+
     # Prepare string and outputs
     nNumberOfBytesToWrite = len(lpBuffer)
     lpBuffer = string_to_cdata(lpBuffer)
     bytes_written = ffi.new("LPDWORD")
 
     code = library.WriteFile(
-        hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_written, lpOverlapped)
+        hFile, lpBuffer, nNumberOfBytesToWrite, bytes_written, lpOverlapped)
     error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
 
     return bytes_written[0]
