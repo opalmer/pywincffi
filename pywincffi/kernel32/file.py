@@ -29,7 +29,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         to convert this value to unicode.
 
     :type lpOverlapped: None or OVERLAPPED
-    :param lpOverlapped:
+    :keyword lpOverlapped:
         None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
         documentation for intended usage and below for an example of this
         struct.
@@ -85,7 +85,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         The number of bytes to read from ``hFile``
 
     :type lpOverlapped: None or OVERLAPPED
-    :param lpOverlapped:
+    :keyword lpOverlapped:
         None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
         documentation for intended usage and below for an example of this
         struct.
