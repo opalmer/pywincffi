@@ -60,7 +60,7 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
 
     # Prepare string and outputs
     nNumberOfBytesToWrite = len(lpBuffer)
-    lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToWrite, lpBuffer)
+    lpBuffer = string_to_cdata(lpBuffer)
     bytes_written = ffi.new("LPDWORD")
 
     code = library.WriteFile(
