@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import integer_types, string_types
+from six import PY3, PY2, integer_types, string_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
@@ -59,19 +59,38 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
         lpOverlapped = ffi.NULL
 
     input_check("hFile", hFile, Enums.HANDLE)
-    input_check("lpBuffer", lpBuffer, Enums.UTF8)
+    input_check("lpBuffer", lpBuffer, string_types)
     input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
+
+    if PY3 and isinstance(lpBuffer, str):
+        lpBuffer = ffi.new("char[]", lpBuffer.encode("utf-8"))
+
+    elif PY3 and isinstance(lpBuffer, bytes):
+        lpBuffer = ffi.new("char[]", lpBuffer)
+
+    elif PY2 and isinstance(lpBuffer, str):
+        lpBuffer = ffi.new("char[]", lpBuffer)
+
+    elif PY2 and isinstance(lpBuffer, unicode):
+        # Try converting to string first.  If the result
+        # is really a string then we'll need to use a
+        # different type.
+        try:
+            lpBuffer = str(lpBuffer)
+        except ValueError:
+            pass
+
+        if isinstance(lpBuffer, unicode):
+            lpBuffer = ffi.new("wchar_t[]", lpBuffer)
+        else:
+            lpBuffer = ffi.new("char[]", lpBuffer)
 
     if nNumberOfBytesToWrite is None:
         nNumberOfBytesToWrite = ffi.sizeof(lpBuffer)
 
     input_check("nNumberOfBytesToWrite", nNumberOfBytesToWrite, integer_types)
 
-    # Prepare string and outputs
-    nNumberOfBytesToWrite = len(lpBuffer)
-    lpBuffer = string_to_cdata(lpBuffer)
     bytes_written = ffi.new("LPDWORD")
-
     code = library.WriteFile(
         hFile, lpBuffer, nNumberOfBytesToWrite, bytes_written, lpOverlapped)
     error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
