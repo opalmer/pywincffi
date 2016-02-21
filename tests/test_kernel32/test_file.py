@@ -4,9 +4,56 @@ import tempfile
 from os.path import isfile
 
 from pywincffi.core import dist
-from pywincffi.dev.testutil import TestCase
+from pywincffi.dev.testutil import (
+    TestCase, skip_unless_python2, skip_unless_python3)
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32 import MoveFileEx
+from pywincffi.kernel32 import (
+    MoveFileEx, WriteFile, ReadFile, CloseHandle, handle_from_file)
+
+
+class TestWriteFile(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.WriteFile`
+    """
+    def create_handle(self):
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        file_ = os.fdopen(fd, "w")
+        self.addCleanup(file_.close)
+        handle = handle_from_file(file_)
+        return handle, path
+
+    @skip_unless_python2
+    def test_python2_write_string(self):
+        handle, path = self.create_handle()
+        bytes_written = WriteFile(handle, "hello world")
+        self.assertEqual(bytes_written, 12)
+        with open(path, "r") as file_:
+            self.assertEqual(file_.read(), "hello world\x00")
+
+    @skip_unless_python2
+    def test_python2_write_unicode(self):
+        handle, path = self.create_handle()
+        bytes_written = WriteFile(handle, u"hello world")
+        self.assertEqual(bytes_written, 12)
+        with open(path, "r") as file_:
+            self.assertEqual(file_.read(), "hello world\x00")
+
+    @skip_unless_python3
+    def test_python3_write_string(self):
+        handle, path = self.create_handle()
+        bytes_written = WriteFile(handle, "hello world")
+        self.assertEqual(bytes_written, 12)
+        with open(path, "rb") as file_:
+            self.assertEqual(file_.read(), b"hello world\x00")
+
+    @skip_unless_python3
+    def test_python3_write_bytes(self):
+        handle, path = self.create_handle()
+        bytes_written = WriteFile(handle, b"hello world")
+        self.assertEqual(bytes_written, 12)
+        with open(path, "rb") as file_:
+            self.assertEqual(file_.read(), b"hello world\x00")
 
 
 class TestMoveFileEx(TestCase):
