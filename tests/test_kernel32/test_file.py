@@ -8,7 +8,8 @@ from mock import patch
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32 import CloseHandle, MoveFileEx, CreateFile
+from pywincffi.kernel32 import (
+    CloseHandle, MoveFileEx, CreateFile, WriteFile, LockFileEx)
 from pywincffi.kernel32 import file as _file  # used for mocks
 
 
@@ -124,3 +125,23 @@ class TestCreateFile(TestCase):
             self.addCleanup(CloseHandle, handle)
 
         self.assertEqual(error.exception.errno, library.ERROR_PATH_NOT_FOUND)
+
+
+class TestLockFileEx(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.LockFileEx`
+    """
+    def test_locks_file(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+        # self.addCleanup(os.remove, path)
+        ffi, library = dist.load()
+
+        handle = CreateFile(path, library.GENERIC_WRITE)
+        self.addCleanup(CloseHandle, handle)
+        WriteFile(handle, "hello")
+        print("=====", path)
+        LockFileEx(
+            handle,
+            library.LOCKFILE_EXCLUSIVE_LOCK | library.LOCKFILE_FAIL_IMMEDIATELY,
+            0, 1024, ffi.NULL)
