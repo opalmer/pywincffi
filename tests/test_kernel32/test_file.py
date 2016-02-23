@@ -7,8 +7,7 @@ from pywincffi.core import dist
 from pywincffi.dev.testutil import (
     TestCase, skip_unless_python2, skip_unless_python3)
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32 import (
-    MoveFileEx, WriteFile, ReadFile, CloseHandle, handle_from_file)
+from pywincffi.kernel32 import MoveFileEx, WriteFile, handle_from_file
 
 
 class TestWriteFile(TestCase):
