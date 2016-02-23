@@ -76,20 +76,26 @@ class TestCase(_TestCase):
 
         config.load()
 
-    def internet_connected(self):
+    @classmethod
+    def internet_connected(cls):
+        """
+        Returns ``True`` if there appears to be internet access by attempting
+        to connect to a few different domains.  The first answer will be
+        cached.
+        """
         if TestCase._HAS_INTERNET is not None:
             return TestCase._HAS_INTERNET
 
         original_timeout = socket.getdefaulttimeout()
         socket.setdefaulttimeout(1)
 
-        for hostname in ("example.com", "github.com", "readthedocs.org"):
+        for hostname in ("github.com", "readthedocs.org", "example.com"):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 sock.connect((hostname, 80))
                 TestCase._HAS_INTERNET = True
                 break
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 pass
             finally:
                 sock.close()
