@@ -59,7 +59,7 @@ class TestCase(_TestCase):
     REQUIRES_INTERNET = False
     _HAS_INTERNET = None
 
-    def setUp(self):
+    def setUp(self):  # pragma: no cover
         if self.REQUIRES_INTERNET and not self.internet_connected():
             if os.environ.get("CI"):
                 self.fail(
@@ -95,11 +95,15 @@ class TestCase(_TestCase):
                 sock.connect((hostname, 80))
                 TestCase._HAS_INTERNET = True
                 break
+
+            # pragma: no cover
             except Exception:  # pylint: disable=broad-except
                 pass
+
             finally:
                 sock.close()
-        else:
+
+        else:  # pragma: no cover
             TestCase._HAS_INTERNET = False
 
         socket.setdefaulttimeout(original_timeout)
