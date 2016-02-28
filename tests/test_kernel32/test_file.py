@@ -25,7 +25,8 @@ class TestWriteFile(TestCase):
     @skip_unless_python2
     def test_python2_write_string(self):
         handle, path = self.create_handle()
-        bytes_written = WriteFile(handle, "hello world")
+        bytes_written = WriteFile(
+            handle, "hello world", lpBufferType="char[]")
         self.assertEqual(bytes_written, 12)
         with open(path, "r") as file_:
             self.assertEqual(file_.read(), "hello world\x00")
@@ -34,17 +35,22 @@ class TestWriteFile(TestCase):
     def test_python2_write_unicode(self):
         handle, path = self.create_handle()
         bytes_written = WriteFile(handle, u"hello world")
-        self.assertEqual(bytes_written, 12)
+        self.assertEqual(bytes_written, 24)
         with open(path, "r") as file_:
-            self.assertEqual(file_.read(), "hello world\x00")
+            self.assertEqual(
+                file_.read(),
+                "h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l"
+                "\x00d\x00\x00\x00")
 
     @skip_unless_python3
     def test_python3_write_string(self):
         handle, path = self.create_handle()
         bytes_written = WriteFile(handle, "hello world")
-        self.assertEqual(bytes_written, 12)
+        self.assertEqual(bytes_written, 24)
         with open(path, "rb") as file_:
-            self.assertEqual(file_.read(), b"hello world\x00")
+            self.assertEqual(
+                file_.read(),
+                b"h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l\x00d\x00\x00\x00")
 
     @skip_unless_python3
     def test_python3_write_bytes(self):
