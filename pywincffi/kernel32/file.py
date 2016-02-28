@@ -12,7 +12,8 @@ from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.util import string_to_cdata
 
 
-def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
+def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
+              lpBufferType="wchar_t[]"):
     """
     Writes data to ``hFile`` which may be an I/O device for file.
 
@@ -50,6 +51,11 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
         >>> bytes_written = WriteFile(
         ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
+    :keyword str lpBufferType:
+        The type which should be passed to :meth:`ffi.new`.  If the data
+        you're passing into this function is a string and you're using Python
+        2 for example you might use ``char[]`` here instead.
+
     :returns:
         Returns the number of bytes written
     """
@@ -61,29 +67,10 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
     input_check("hFile", hFile, Enums.HANDLE)
     input_check("lpBuffer", lpBuffer, string_types)
     input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
+    input_check(
+        "lpBufferType", lpBufferType, allowed_values=("char[]", "wchar_t[]"))
 
-    if PY3 and isinstance(lpBuffer, str):
-        lpBuffer = ffi.new("char[]", lpBuffer.encode("utf-8"))
-
-    elif PY3 and isinstance(lpBuffer, bytes):
-        lpBuffer = ffi.new("char[]", lpBuffer)
-
-    elif PY2 and isinstance(lpBuffer, str):
-        lpBuffer = ffi.new("char[]", lpBuffer)
-
-    elif PY2 and isinstance(lpBuffer, unicode):
-        # Try converting to string first.  If the result
-        # is really a string then we'll need to use a
-        # different type.
-        try:
-            lpBuffer = str(lpBuffer)
-        except ValueError:
-            pass
-
-        if isinstance(lpBuffer, unicode):
-            lpBuffer = ffi.new("wchar_t[]", lpBuffer)
-        else:
-            lpBuffer = ffi.new("char[]", lpBuffer)
+    lpBuffer = ffi.new(lpBufferType, lpBuffer)
 
     if nNumberOfBytesToWrite is None:
         nNumberOfBytesToWrite = ffi.sizeof(lpBuffer)
