@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import PY3, PY2, integer_types, string_types
+from six import PY3, integer_types, string_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
@@ -64,8 +64,12 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
 
+    lpBufferTypes = string_types
+    if PY3:
+        lpBufferTypes = tuple(list(string_types) + [bytes])
+
     input_check("hFile", hFile, Enums.HANDLE)
-    input_check("lpBuffer", lpBuffer, string_types)
+    input_check("lpBuffer", lpBuffer, lpBufferTypes)
     input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
     input_check(
         "lpBufferType", lpBufferType, allowed_values=("char[]", "wchar_t[]"))
