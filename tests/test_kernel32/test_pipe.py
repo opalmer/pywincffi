@@ -1,4 +1,5 @@
-from pywincffi.dev.testutil import TestCase
+from pywincffi.dev.testutil import (
+    TestCase, skip_unless_python3, skip_unless_python2)
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import (
     CreatePipe, PeekNamedPipe, PeekNamedPipeResult, ReadFile, WriteFile,
@@ -44,42 +45,43 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
     Basic tests for :func:`pywincffi.kernel32.WritePipe` and
     :func:`pywincffi.kernel32.ReadPipe`
     """
-    def test_bytes_written(self):
-        _, writer = self.create_anonymous_pipes()
+    @skip_unless_python3
+    def test_python_3_bytes(self):
+        reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
+        data = b"hello world"
+        bytes_written = WriteFile(writer, data, lpBufferType="char[]")
+        self.assertEqual(
+            ReadFile(reader, bytes_written).encode("utf-8"),
+            b"\xe6\x95\xa8\xe6\xb1\xac\xe2\x81\xaf\xe6\xbd\xb7\xe6\xb1\xb2d")
+
+    @skip_unless_python3
+    def test_python3_string(self):
+        reader, writer = self.create_anonymous_pipes()
+
+        data = "hello world"
         bytes_written = WriteFile(writer, data)
-        self.assertEqual(bytes_written, len(data) * 2)
+        self.assertEqual(
+            ReadFile(reader, bytes_written).encode("utf-8"),
+            b"hello world")
 
-    def test_bytes_read(self):
+    @skip_unless_python2
+    def test_python2_unicode(self):
         reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
-        data_written = WriteFile(writer, data)
+        data = u"hello world"
+        bytes_written = WriteFile(writer, data, lpBufferType="wchar_t[]")
+        self.assertEqual(
+            ReadFile(reader, bytes_written).encode("utf-8"), data)
 
-        read_data = ReadFile(reader, data_written)
-        self.assertEqual(data, read_data)
-
-    def test_partial_bytes_read(self):
+    @skip_unless_python2
+    def test_python2_string(self):
         reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
-        WriteFile(writer, data)
-
-        read_data = ReadFile(reader, 5)
-        self.assertEqual(read_data, "hello")
-
-        read_data = ReadFile(reader, 6)
-        self.assertEqual(read_data, " world")
-
-    def test_read_more_bytes_than_written(self):
-        reader, writer = self.create_anonymous_pipes()
-
-        data = b"hello world".decode("utf-8")
-        data_written = WriteFile(writer, data)
-
-        read_data = ReadFile(reader, data_written * 2)
-        self.assertEqual(data, read_data)
+        data = "hello world".encode("utf-8")
+        bytes_written = WriteFile(writer, data, lpBufferType="char[]")
+        value = u"\u6568\u6c6c\u206f\u6f77\u6c72d"
+        self.assertEqual(ReadFile(reader, bytes_written), value)
 
 
 # TODO: tests for lpBuffer from the result
