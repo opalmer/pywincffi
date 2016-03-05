@@ -294,7 +294,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
 
 def LockFileEx(
         hFile, dwFlags, nNumberOfBytesToLockLow, nNumberOfBytesToLockHigh,
-        lpOverLapped):
+        lpOverlapped=None):
     """
     Locks ``hFile`` for exclusive access by the calling process.
 
@@ -320,8 +320,9 @@ def LockFileEx(
     :param int nNumberOfBytesToLockHigh:
         The end of the byte range to lock.
 
-    :param LPOVERLAPPED lpOverLapped:
-        A pointer to an ``OVERLAPPED`` structure
+    :keyword LPOVERLAPPED lpOverlapped:
+        A pointer to an ``OVERLAPPED`` structure.  If not provided
+        one will be constructed for you.
 
     :return:
     """
@@ -331,15 +332,20 @@ def LockFileEx(
         "nNumberOfBytesToLockLow", nNumberOfBytesToLockLow, integer_types)
     input_check(
         "nNumberOfBytesToLockHigh", nNumberOfBytesToLockHigh, integer_types)
-    input_check("lpOverLapped", lpOverLapped, Enums.OVERLAPPED)
 
     ffi, library = dist.load()
+
+    if lpOverlapped is None:
+        lpOverlapped = ffi.new("OVERLAPPED[]", [{"hEvent": hFile}])
+
+    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
 
     code = library.LockFileEx(
         hFile,
         ffi.cast("DWORD", dwFlags),
+        ffi.cast("DWORD", 0),  # "_Reserveved_"
         ffi.cast("DWORD", nNumberOfBytesToLockLow),
         ffi.cast("DWORD", nNumberOfBytesToLockHigh),
-        lpOverLapped
+        lpOverlapped
     )
     error_check("LockFileEx", code=code, expected=Enums.NON_ZERO)
