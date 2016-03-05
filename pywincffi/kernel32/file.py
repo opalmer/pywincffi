@@ -323,8 +323,6 @@ def LockFileEx(
     :keyword LPOVERLAPPED lpOverlapped:
         A pointer to an ``OVERLAPPED`` structure.  If not provided
         one will be constructed for you.
-
-    :return:
     """
     input_check("hFile", hFile, Enums.HANDLE)
     input_check("dwFlags", dwFlags, integer_types)
@@ -349,3 +347,53 @@ def LockFileEx(
         lpOverlapped
     )
     error_check("LockFileEx", code=code, expected=Enums.NON_ZERO)
+
+
+def UnlockFileEx(
+        hFile, nNumberOfBytesToUnlockLow, nNumberOfBytesToUnlockHigh,
+        lpOverlapped=None):
+    """
+    Unlocks a region in the specified file.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/aa365716
+
+    :param handle hFile:
+        The handle to the file to unlock.  This handle must have been
+        created with either the ``GENERIC_READ`` or ``GENERIC_WRITE``
+        right.
+
+    :param int nNumberOfBytesToUnlockLow:
+        The start of the byte range to unlock.
+
+    :param int nNumberOfBytesToUnlockHigh:
+        The end of the byte range to unlock.
+
+    :keyword LPOVERLAPPED lpOverlapped:
+        A pointer to an ``OVERLAPPED`` structure.  If not provided
+        one will be constructed for you.
+    """
+    input_check("hFile", hFile, Enums.HANDLE)
+    input_check(
+        "nNumberOfBytesToUnlockLow",
+        nNumberOfBytesToUnlockLow, integer_types)
+    input_check(
+        "nNumberOfBytesToUnlockHigh",
+        nNumberOfBytesToUnlockHigh, integer_types)
+
+    ffi, library = dist.load()
+
+    if lpOverlapped is None:
+        lpOverlapped = ffi.new("OVERLAPPED[]", [{"hEvent": hFile}])
+
+    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
+
+    code = library.UnlockFileEx(
+        hFile,
+        ffi.cast("DWORD", 0),  # "_Reserveved_"
+        ffi.cast("DWORD", nNumberOfBytesToUnlockLow),
+        ffi.cast("DWORD", nNumberOfBytesToUnlockHigh),
+        lpOverlapped
+    )
+    error_check("UnlockFileEx", code=code, expected=Enums.NON_ZERO)
