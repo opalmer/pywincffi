@@ -182,7 +182,8 @@ class TestLockFileEx(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.LockFileEx`
     """
-    def test_lock_causes_subprocess_read_failure(self):
+    @skip_unless_python2
+    def test_lock_causes_subprocess_read_failure_python2(self):
         fd, path = tempfile.mkstemp()
         os.close(fd)
         self.addCleanup(os.remove, path)
@@ -201,7 +202,8 @@ class TestLockFileEx(TestCase):
             subprocess.check_call([
                 sys.executable, "-c", "open(%r, 'r').read()" % path])
 
-    def test_no_lock_allows_subprocess_read(self):
+    @skip_unless_python2
+    def test_no_lock_allows_subprocess_read_python2(self):
         fd, path = tempfile.mkstemp()
         os.close(fd)
         self.addCleanup(os.remove, path)
@@ -210,6 +212,40 @@ class TestLockFileEx(TestCase):
         handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, handle)
         WriteFile(handle, "hello", lpBufferType="char[]")
+
+        subprocess.check_call([
+            sys.executable, "-c", "open(%r, 'r').read()" % path])
+
+    @skip_unless_python3
+    def test_lock_causes_subprocess_read_failure_python3(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+        self.addCleanup(os.remove, path)
+        _, library = dist.load()
+
+        handle = CreateFile(path, library.GENERIC_WRITE)
+        self.addCleanup(CloseHandle, handle)
+        WriteFile(handle, "hello")
+        LockFileEx(
+            handle,
+            library.LOCKFILE_EXCLUSIVE_LOCK |
+            library.LOCKFILE_FAIL_IMMEDIATELY,
+            0, 1024)
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            subprocess.check_call([
+                sys.executable, "-c", "open(%r, 'r').read()" % path])
+
+    @skip_unless_python3
+    def test_no_lock_allows_subprocess_read_python3(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+        self.addCleanup(os.remove, path)
+        _, library = dist.load()
+
+        handle = CreateFile(path, library.GENERIC_WRITE)
+        self.addCleanup(CloseHandle, handle)
+        WriteFile(handle, "hello")
 
         subprocess.check_call([
             sys.executable, "-c", "open(%r, 'r').read()" % path])
