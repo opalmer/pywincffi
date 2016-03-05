@@ -6,11 +6,60 @@ from os.path import isfile
 from mock import patch
 
 from pywincffi.core import dist
-from pywincffi.dev.testutil import TestCase
+from pywincffi.dev.testutil import (
+    TestCase, skip_unless_python2, skip_unless_python3)
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.kernel32 import (
-    CloseHandle, MoveFileEx, CreateFile, WriteFile, LockFileEx)
+
 from pywincffi.kernel32 import file as _file  # used for mocks
+from pywincffi.kernel32 import (
+    CreateFile, CloseHandle, MoveFileEx, WriteFile, LockFileEx,
+    handle_from_file)
+
+
+class TestWriteFile(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.WriteFile`
+    """
+    def create_handle(self):
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        file_ = os.fdopen(fd, "w")
+        self.addCleanup(file_.close)
+        handle = handle_from_file(file_)
+        return handle, path
+
+    @skip_unless_python2
+    def test_python2_write_string(self):
+        handle, path = self.create_handle()
+        WriteFile(
+            handle, "hello world", lpBufferType="char[]")
+        with open(path, "r") as file_:
+            self.assertEqual(file_.read(), "hello world\x00")
+
+    @skip_unless_python2
+    def test_python2_write_unicode(self):
+        handle, path = self.create_handle()
+        WriteFile(handle, u"hello world")
+        with open(path, "r") as file_:
+            self.assertEqual(
+                file_.read(),
+                "h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l"
+                "\x00d\x00\x00\x00")
+
+    @skip_unless_python3
+    def test_python3_write_string(self):
+        handle, path = self.create_handle()
+        WriteFile(handle, "hello world")
+        v = b"h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l\x00d\x00\x00\x00"
+        with open(path, "rb") as file_:
+            self.assertEqual(file_.read(), v)
+
+    @skip_unless_python3
+    def test_python3_write_bytes(self):
+        handle, path = self.create_handle()
+        WriteFile(handle, b"hello world", lpBufferType="char[]")
+        with open(path, "rb") as file_:
+            self.assertEqual(file_.read(), b"hello world\x00")
 
 
 class TestMoveFileEx(TestCase):

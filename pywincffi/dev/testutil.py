@@ -6,6 +6,7 @@ This module is used by the unittests.
 """
 
 import os
+import socket
 import subprocess
 import sys
 from random import choice
@@ -55,7 +56,18 @@ class TestCase(_TestCase):
     A base class for all test cases.  By default the
     core test case just provides some extra functionality.
     """
-    def setUp(self):
+    REQUIRES_INTERNET = False
+    _HAS_INTERNET = None
+
+    def setUp(self):  # pragma: no cover
+        if self.REQUIRES_INTERNET and not self.internet_connected():
+            if os.environ.get("CI"):
+                self.fail(
+                    "Test requires internet but we do not seem to be "
+                    "connected.")
+
+            self.skipTest("Internet unavailable")
+
         if os.name == "nt":  # pragma: no cover
             # Always reset the last error to 0 between tests.  This
             # ensures that any error we intentionally throw in one
@@ -63,6 +75,39 @@ class TestCase(_TestCase):
             self.SetLastError(0)
 
         config.load()
+
+    @classmethod
+    def internet_connected(cls):
+        """
+        Returns ``True`` if there appears to be internet access by attempting
+        to connect to a few different domains.  The first answer will be
+        cached.
+        """
+        if TestCase._HAS_INTERNET is not None:
+            return TestCase._HAS_INTERNET
+
+        original_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(1)
+
+        for hostname in ("github.com", "readthedocs.org", "example.com"):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                sock.connect((hostname, 80))
+                TestCase._HAS_INTERNET = True
+                break
+
+            # pragma: no cover
+            except Exception:  # pylint: disable=broad-except
+                pass
+
+            finally:
+                sock.close()
+
+        else:  # pragma: no cover
+            TestCase._HAS_INTERNET = False
+
+        socket.setdefaulttimeout(original_timeout)
+        return TestCase._HAS_INTERNET
 
     # pylint: disable=invalid-name
     def SetLastError(self, value=0, lib=None):  # pragma: no cover

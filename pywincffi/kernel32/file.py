@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import integer_types, string_types
+from six import PY3, integer_types, string_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
@@ -13,7 +13,8 @@ from pywincffi.exceptions import WindowsAPIError
 from pywincffi.util import string_to_cdata
 
 
-def WriteFile(hFile, lpBuffer, lpOverlapped=None):
+def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
+              lpBufferType="wchar_t[]"):
     """
     Writes data to ``hFile`` which may be an I/O device for file.
 
@@ -29,8 +30,12 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         The data to be written to the file or device. We should be able
         to convert this value to unicode.
 
+    :keyword int nNumberOfBytesToWrite:
+        The number of bytes to be written.  By default this will
+        be determinted based on the size of ``lpBuffer``
+
     :type lpOverlapped: None or OVERLAPPED
-    :param lpOverlapped:
+    :keyword lpOverlapped:
         None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
         documentation for intended usage and below for an example of this
         struct.
@@ -47,6 +52,11 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
         >>> bytes_written = WriteFile(
         ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
+    :keyword str lpBufferType:
+        The type which should be passed to :meth:`ffi.new`.  If the data
+        you're passing into this function is a string and you're using Python
+        2 for example you might use ``char[]`` here instead.
+
     :returns:
         Returns the number of bytes written
     """
@@ -55,17 +65,26 @@ def WriteFile(hFile, lpBuffer, lpOverlapped=None):
     if lpOverlapped is None:
         lpOverlapped = ffi.NULL
 
+    lpBufferTypes = string_types
+    if PY3:
+        lpBufferTypes = tuple(list(string_types) + [bytes])
+
     input_check("hFile", hFile, Enums.HANDLE)
-    input_check("lpBuffer", lpBuffer, Enums.UTF8)
+    input_check("lpBuffer", lpBuffer, lpBufferTypes)
     input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
+    input_check(
+        "lpBufferType", lpBufferType, allowed_values=("char[]", "wchar_t[]"))
 
-    # Prepare string and outputs
-    nNumberOfBytesToWrite = len(lpBuffer)
-    lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToWrite, lpBuffer)
+    lpBuffer = ffi.new(lpBufferType, lpBuffer)
+
+    if nNumberOfBytesToWrite is None:
+        nNumberOfBytesToWrite = ffi.sizeof(lpBuffer)
+
+    input_check("nNumberOfBytesToWrite", nNumberOfBytesToWrite, integer_types)
+
     bytes_written = ffi.new("LPDWORD")
-
     code = library.WriteFile(
-        hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_written, lpOverlapped)
+        hFile, lpBuffer, nNumberOfBytesToWrite, bytes_written, lpOverlapped)
     error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
 
     return bytes_written[0]
@@ -86,7 +105,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         The number of bytes to read from ``hFile``
 
     :type lpOverlapped: None or OVERLAPPED
-    :param lpOverlapped:
+    :keyword lpOverlapped:
         None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
         documentation for intended usage and below for an example of this
         struct.

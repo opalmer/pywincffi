@@ -79,6 +79,7 @@ class TestSession(TestCase):
     """
     Tests for constants of :class:`pywincffi.dev.release.Session`
     """
+    REQUIRES_INTERNET = True
     DOWNLOAD_SHA1 = "89ff14348b410051fff2eb206183993f659d85e0"
     DOWNLOAD_URL = \
         "https://raw.githubusercontent.com/opalmer/pywincffi/" \
@@ -131,6 +132,8 @@ class TestAppVeyor(TestCase):
     """
     Tests for constants of :class:`pywincffi.dev.release.AppVeyor`
     """
+    REQUIRES_INTERNET = True
+
     def setUp(self):
         super(TestAppVeyor, self).setUp()
         self.job_id = random_string()
@@ -552,6 +555,8 @@ class TestDocsBuilt(TestCase):
     """
     Tests for :func:`pywincffi.dev.release.GitHubAPI.docs_built`
     """
+    REQUIRES_INTERNET = True
+
     def test_success(self):
         self.assertTrue(docs_built("latest"))
 
