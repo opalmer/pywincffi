@@ -190,7 +190,7 @@ class TestLockFileEx(TestCase):
 
         handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, handle)
-        WriteFile(handle, "hello")
+        WriteFile(handle, "hello", lpBufferType="char[]")
         LockFileEx(
             handle,
             library.LOCKFILE_EXCLUSIVE_LOCK |
@@ -209,7 +209,7 @@ class TestLockFileEx(TestCase):
 
         handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, handle)
-        WriteFile(handle, "hello")
+        WriteFile(handle, "hello", lpBufferType="char[]")
 
         subprocess.check_call([
             sys.executable, "-c", "open(%r, 'r').read()" % path])
