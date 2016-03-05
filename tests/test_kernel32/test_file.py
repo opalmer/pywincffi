@@ -186,7 +186,7 @@ class TestLockFileEx(TestCase):
         fd, path = tempfile.mkstemp()
         os.close(fd)
         self.addCleanup(os.remove, path)
-        ffi, library = dist.load()
+        _, library = dist.load()
 
         handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, handle)
@@ -205,7 +205,7 @@ class TestLockFileEx(TestCase):
         fd, path = tempfile.mkstemp()
         os.close(fd)
         self.addCleanup(os.remove, path)
-        ffi, library = dist.load()
+        _, library = dist.load()
 
         handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, handle)
