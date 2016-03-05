@@ -193,7 +193,8 @@ class TestLockFileEx(TestCase):
         WriteFile(handle, "hello")
         LockFileEx(
             handle,
-            library.LOCKFILE_EXCLUSIVE_LOCK | library.LOCKFILE_FAIL_IMMEDIATELY,
+            library.LOCKFILE_EXCLUSIVE_LOCK |
+            library.LOCKFILE_FAIL_IMMEDIATELY,
             0, 1024)
 
         with self.assertRaises(subprocess.CalledProcessError):
