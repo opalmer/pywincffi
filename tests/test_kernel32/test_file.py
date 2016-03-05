@@ -1,6 +1,8 @@
 import os
 import ctypes
 import tempfile
+import subprocess
+import sys
 from os.path import isfile
 
 from mock import patch
@@ -180,17 +182,33 @@ class TestLockFileEx(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.LockFileEx`
     """
-    def test_locks_file(self):
+    def test_lock_causes_subprocess_read_failure(self):
         fd, path = tempfile.mkstemp()
         os.close(fd)
-        # self.addCleanup(os.remove, path)
+        self.addCleanup(os.remove, path)
         ffi, library = dist.load()
 
         handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, handle)
         WriteFile(handle, "hello")
-        print("=====", path)
         LockFileEx(
             handle,
             library.LOCKFILE_EXCLUSIVE_LOCK | library.LOCKFILE_FAIL_IMMEDIATELY,
-            0, 1024, ffi.NULL)
+            0, 1024)
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            subprocess.check_call([
+                sys.executable, "-c", "open(%r, 'r').read()" % path])
+
+    def test_no_lock_allows_subprocess_read(self):
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
+        self.addCleanup(os.remove, path)
+        ffi, library = dist.load()
+
+        handle = CreateFile(path, library.GENERIC_WRITE)
+        self.addCleanup(CloseHandle, handle)
+        WriteFile(handle, "hello")
+
+        subprocess.check_call([
+            sys.executable, "-c", "open(%r, 'r').read()" % path])
