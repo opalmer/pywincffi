@@ -27,6 +27,7 @@ HANDLE
 UTF8
 OVERLAPPED
 PYFILE
+SECURITY_ATTRIBUTES
 """.strip())
 
 if PY3:
@@ -36,6 +37,8 @@ else:
 
 # A mapping of value we can expect to get from `ffi.typeof` against
 # some known input enums.
+# NOTE: These are rough checks intended to limit typos.  Functionally speaking
+# the real test will be when a structure is passed to a Windows API.
 CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
 INPUT_CHECK_MAPPINGS = {
     Enums.HANDLE: CheckMapping(
@@ -45,7 +48,12 @@ INPUT_CHECK_MAPPINGS = {
     ),
     Enums.OVERLAPPED: CheckMapping(
         kind="array",
-        cname=re.compile(r"^(?:struct _|)OVERLAPPED\[1\]$"),
+        cname=re.compile(r"^(?:struct _|).*OVERLAPPED\[.*\]$"),
+        nullable=True
+    ),
+    Enums.SECURITY_ATTRIBUTES: CheckMapping(
+        kind="array",
+        cname=re.compile(r"^(?:struct _|).*SECURITY_ATTRIBUTES\[.*\]$"),
         nullable=True
     )
 }
