@@ -10,7 +10,8 @@ Provides functions, constants and utilities that wrap functions provided by
 # we're wrapping are imported here so it's easier to access and because
 # it's close to the way Windows would present them (as a single module)
 from pywincffi.kernel32.file import (
-    ReadFile, WriteFile, MoveFileEx, CreateFile, LockFileEx, UnlockFileEx)
+    ReadFile, WriteFile, FlushFileBuffers, MoveFileEx, CreateFile, LockFileEx,
+    UnlockFileEx)
 from pywincffi.kernel32.handle import (
     CloseHandle, GetStdHandle, WaitForSingleObject, handle_from_file)
 from pywincffi.kernel32.pipe import (
