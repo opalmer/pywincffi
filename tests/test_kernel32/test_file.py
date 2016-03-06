@@ -15,7 +15,7 @@ from pywincffi.exceptions import WindowsAPIError
 
 from pywincffi.kernel32 import file as _file  # used for mocks
 from pywincffi.kernel32 import (
-    CreateFile, CloseHandle, MoveFileEx, WriteFile, LockFileEx,
+    CreateFile, CloseHandle, MoveFileEx, WriteFile, LockFileEx, UnlockFileEx,
     handle_from_file)
 
 
@@ -179,12 +179,9 @@ class TestCreateFile(TestCase):
         self.assertEqual(error.exception.errno, library.ERROR_PATH_NOT_FOUND)
 
 
-class TestLockFileEx(TestCase):
-    """
-    Tests for :func:`pywincffi.kernel32.LockFileEx`
-    """
+class LockFileCase(TestCase):
     def setUp(self):
-        super(TestLockFileEx, self).setUp()
+        super(LockFileCase, self).setUp()
         fd, path = tempfile.mkstemp()
         self.path = path
         os.close(fd)
@@ -200,6 +197,11 @@ class TestLockFileEx(TestCase):
 
         WriteFile(self.handle, "hello", lpBufferType=lpBufferType)
 
+
+class TestLockFileEx(LockFileCase):
+    """
+    Tests for :func:`pywincffi.kernel32.LockFileEx`
+    """
     def test_lock_causes_subprocess_read_failure(self):
         _, library = dist.load()
         LockFileEx(
@@ -217,5 +219,27 @@ class TestLockFileEx(TestCase):
         # between Python versions we catch it.  Without this there's not a way
         # to ensure that test_lock_causes_subprocess_read_failure() is really
         # testing the behavior of LockFileEx()
+        subprocess.check_call([
+            sys.executable, "-c", "open(%r, 'r').read()" % self.path])
+
+
+class TestUnlockFileEx(LockFileCase):
+    """
+    Tests for :func:`pywincffi.kernel32.UnlockFileEx`
+    """
+    def test_unlock_file(self):
+        _, library = dist.load()
+        LockFileEx(
+            self.handle,
+            library.LOCKFILE_EXCLUSIVE_LOCK |
+            library.LOCKFILE_FAIL_IMMEDIATELY,
+            0, 1024)
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            subprocess.check_call([
+                sys.executable, "-c", "open(%r, 'r').read()" % self.path])
+
+        UnlockFileEx(self.handle, 0, 1024)
+
         subprocess.check_call([
             sys.executable, "-c", "open(%r, 'r').read()" % self.path])
