@@ -15,8 +15,8 @@ from pywincffi.exceptions import WindowsAPIError
 
 from pywincffi.kernel32 import file as _file  # used for mocks
 from pywincffi.kernel32 import (
-    CreateFile, CloseHandle, MoveFileEx, WriteFile, LockFileEx, UnlockFileEx,
-    handle_from_file)
+    CreateFile, CloseHandle, MoveFileEx, WriteFile, FlushFileBuffers,
+    LockFileEx, UnlockFileEx, handle_from_file)
 
 
 class TestWriteFile(TestCase):
@@ -36,6 +36,7 @@ class TestWriteFile(TestCase):
         handle, path = self.create_handle()
         WriteFile(
             handle, "hello world", lpBufferType="char[]")
+        FlushFileBuffers(handle)
         with open(path, "r") as file_:
             self.assertEqual(file_.read(), "hello world\x00")
 
@@ -43,6 +44,7 @@ class TestWriteFile(TestCase):
     def test_python2_write_unicode(self):
         handle, path = self.create_handle()
         WriteFile(handle, u"hello world")
+        FlushFileBuffers(handle)
         with open(path, "r") as file_:
             self.assertEqual(
                 file_.read(),
@@ -53,6 +55,7 @@ class TestWriteFile(TestCase):
     def test_python3_write_string(self):
         handle, path = self.create_handle()
         WriteFile(handle, "hello world")
+        FlushFileBuffers(handle)
         v = b"h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l\x00d\x00\x00\x00"
         with open(path, "rb") as file_:
             self.assertEqual(file_.read(), v)
@@ -61,6 +64,7 @@ class TestWriteFile(TestCase):
     def test_python3_write_bytes(self):
         handle, path = self.create_handle()
         WriteFile(handle, b"hello world", lpBufferType="char[]")
+        FlushFileBuffers(handle)
         with open(path, "rb") as file_:
             self.assertEqual(file_.read(), b"hello world\x00")
 
