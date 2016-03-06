@@ -6,6 +6,7 @@ import sys
 from os.path import isfile
 
 from mock import patch
+from six import PY3
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import (
@@ -182,70 +183,39 @@ class TestLockFileEx(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.LockFileEx`
     """
-    @skip_unless_python2
-    def test_lock_causes_subprocess_read_failure_python2(self):
+    def setUp(self):
+        super(TestLockFileEx, self).setUp()
         fd, path = tempfile.mkstemp()
+        self.path = path
         os.close(fd)
         self.addCleanup(os.remove, path)
         _, library = dist.load()
+        self.handle = CreateFile(path, library.GENERIC_WRITE)
+        self.addCleanup(CloseHandle, self.handle)
 
-        handle = CreateFile(path, library.GENERIC_WRITE)
-        self.addCleanup(CloseHandle, handle)
-        WriteFile(handle, "hello", lpBufferType="char[]")
+        if PY3:
+            lpBufferType = "wchar_t[]"
+        else:
+            lpBufferType = "char[]"
+
+        WriteFile(self.handle, "hello", lpBufferType=lpBufferType)
+
+    def test_lock_causes_subprocess_read_failure(self):
+        _, library = dist.load()
         LockFileEx(
-            handle,
+            self.handle,
             library.LOCKFILE_EXCLUSIVE_LOCK |
             library.LOCKFILE_FAIL_IMMEDIATELY,
             0, 1024)
 
         with self.assertRaises(subprocess.CalledProcessError):
             subprocess.check_call([
-                sys.executable, "-c", "open(%r, 'r').read()" % path])
+                sys.executable, "-c", "open(%r, 'r').read()" % self.path])
 
-    @skip_unless_python2
-    def test_no_lock_allows_subprocess_read_python2(self):
-        fd, path = tempfile.mkstemp()
-        os.close(fd)
-        self.addCleanup(os.remove, path)
-        _, library = dist.load()
-
-        handle = CreateFile(path, library.GENERIC_WRITE)
-        self.addCleanup(CloseHandle, handle)
-        WriteFile(handle, "hello", lpBufferType="char[]")
-
-        subprocess.check_call([
-            sys.executable, "-c", "open(%r, 'r').read()" % path])
-
-    @skip_unless_python3
-    def test_lock_causes_subprocess_read_failure_python3(self):
-        fd, path = tempfile.mkstemp()
-        os.close(fd)
-        self.addCleanup(os.remove, path)
-        _, library = dist.load()
-
-        handle = CreateFile(path, library.GENERIC_WRITE)
-        self.addCleanup(CloseHandle, handle)
-        WriteFile(handle, "hello")
-        LockFileEx(
-            handle,
-            library.LOCKFILE_EXCLUSIVE_LOCK |
-            library.LOCKFILE_FAIL_IMMEDIATELY,
-            0, 1024)
-
-        with self.assertRaises(subprocess.CalledProcessError):
-            subprocess.check_call([
-                sys.executable, "-c", "open(%r, 'r').read()" % path])
-
-    @skip_unless_python3
     def test_no_lock_allows_subprocess_read_python3(self):
-        fd, path = tempfile.mkstemp()
-        os.close(fd)
-        self.addCleanup(os.remove, path)
-        _, library = dist.load()
-
-        handle = CreateFile(path, library.GENERIC_WRITE)
-        self.addCleanup(CloseHandle, handle)
-        WriteFile(handle, "hello")
-
+        # This makes sure that if the default behavior changes or varies
+        # between Python versions we catch it.  Without this there's not a way
+        # to ensure that test_lock_causes_subprocess_read_failure() is really
+        # testing the behavior of LockFileEx()
         subprocess.check_call([
-            sys.executable, "-c", "open(%r, 'r').read()" % path])
+            sys.executable, "-c", "open(%r, 'r').read()" % self.path])
