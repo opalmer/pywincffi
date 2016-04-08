@@ -9,7 +9,7 @@ from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError, WindowsAPIError
 from pywincffi.kernel32 import (
     GetStdHandle, CloseHandle, OpenProcess, WaitForSingleObject,
-    handle_from_file, GetHandleInformation)
+    handle_from_file, GetHandleInformation, SetHandleInformation)
 
 try:
     WindowsError
@@ -157,7 +157,6 @@ class TestGetHandleInformation(TestCase):
         os.unlink(filename)
         os.rmdir(dirname)
 
-
     def test_get_handle_info_socket(self):
         ffi, _ = dist.load()
         s = socket.socket()
@@ -166,5 +165,52 @@ class TestGetHandleInformation(TestCase):
         inherit = GetHandleInformation(socket_handle) & 1
         expected = self._expected_inheritance()
         self.assertEqual(inherit, expected)
+        s.close()
+
+
+class TestSetHandleInformation(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.GetHandleInformation`
+    """
+    def test_set_handle_info_file_inherit(self):
+        dirname = tempfile.mkdtemp()
+        filename = os.path.join(dirname, "test_file")
+        test_file = open(filename, "w")
+        test_file.write("data")
+        file_handle = handle_from_file(test_file)
+
+        SetHandleInformation(file_handle, 1, 1)
+
+        test_file.close()
+        os.unlink(filename)
+        os.rmdir(dirname)
+
+    def test_set_handle_info_file_noinherit(self):
+        dirname = tempfile.mkdtemp()
+        filename = os.path.join(dirname, "test_file")
+        test_file = open(filename, "w")
+        test_file.write("data")
+        file_handle = handle_from_file(test_file)
+
+        SetHandleInformation(file_handle, 1, 0)
+
+        test_file.close()
+        os.unlink(filename)
+        os.rmdir(dirname)
+
+    def test_set_handle_info_socket_inherit(self):
+        ffi, _ = dist.load()
+        s = socket.socket()
+        socket_handle = ffi.cast('void *', s.fileno())
+
+        SetHandleInformation(socket_handle, 1, 1)
+        s.close()
+
+    def test_set_handle_info_socket_noinherit(self):
+        ffi, _ = dist.load()
+        s = socket.socket()
+        socket_handle = ffi.cast('void *', s.fileno())
+
+        SetHandleInformation(socket_handle, 1, 0)
         s.close()
 
