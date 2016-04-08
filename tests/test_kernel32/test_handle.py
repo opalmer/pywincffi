@@ -1,5 +1,7 @@
+import sys
 import os
 import tempfile
+import socket
 from errno import EBADF
 
 from pywincffi.core import dist
@@ -7,7 +9,7 @@ from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError, WindowsAPIError
 from pywincffi.kernel32 import (
     GetStdHandle, CloseHandle, OpenProcess, WaitForSingleObject,
-    handle_from_file)
+    handle_from_file, GetHandleInformation)
 
 try:
     WindowsError
@@ -120,3 +122,49 @@ class TestWaitForSingleObject(TestCase):
         self.assertEqual(
             WaitForSingleObject(hProcess, library.INFINITE),
             library.WAIT_OBJECT_0)
+
+
+class TestGetHandleInformation(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.GetHandleInformation`
+    """
+    def _expected_inheritance(self):
+        # Python >= 3.4 creates non-inheritable handles (PEP 0446)
+        if sys.hexversion >= 0x30400f0:
+            return 0
+        else:
+            return 1
+
+    def test_get_handle_info_stdin(self):
+        _, library = dist.load()
+        handle_stdin = GetStdHandle(library.STD_INPUT_HANDLE)
+        inherit = GetHandleInformation(handle_stdin) & 1
+        expected = self._expected_inheritance()
+        self.assertEqual(inherit, expected)
+
+    def test_get_handle_info_file(self):
+        # can't use mkstemp: not inheritable on Python < 3.4
+        dirname = tempfile.mkdtemp()
+        filename = os.path.join(dirname, "test_file")
+        test_file = open(filename, "w")
+        test_file.write("data")
+        file_handle = handle_from_file(test_file)
+        inherit = GetHandleInformation(file_handle) & 1
+
+        expected = self._expected_inheritance()
+        self.assertEqual(inherit, expected)
+        test_file.close()
+        os.unlink(filename)
+        os.rmdir(dirname)
+
+
+    def test_get_handle_info_socket(self):
+        ffi, _ = dist.load()
+        s = socket.socket()
+        socket_handle = ffi.cast('void *', s.fileno())
+
+        inherit = GetHandleInformation(socket_handle) & 1
+        expected = self._expected_inheritance()
+        self.assertEqual(inherit, expected)
+        s.close()
+

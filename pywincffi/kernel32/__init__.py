@@ -13,7 +13,8 @@ from pywincffi.kernel32.file import (
     ReadFile, WriteFile, FlushFileBuffers, MoveFileEx, CreateFile, LockFileEx,
     UnlockFileEx)
 from pywincffi.kernel32.handle import (
-    CloseHandle, GetStdHandle, WaitForSingleObject, handle_from_file)
+    CloseHandle, GetStdHandle, WaitForSingleObject, handle_from_file,
+    GetHandleInformation, SetHandleInformation)
 from pywincffi.kernel32.pipe import (
     CreatePipe, PeekNamedPipe, PeekNamedPipeResult, SetNamedPipeHandleState)
 from pywincffi.kernel32.process import (
