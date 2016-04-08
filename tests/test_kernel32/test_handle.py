@@ -170,7 +170,7 @@ class TestGetHandleInformation(TestCase):
 
 class TestSetHandleInformation(TestCase):
     """
-    Tests for :func:`pywincffi.kernel32.GetHandleInformation`
+    Tests for :func:`pywincffi.kernel32.SetHandleInformation`
     """
     def test_set_handle_info_file_inherit(self):
         dirname = tempfile.mkdtemp()
