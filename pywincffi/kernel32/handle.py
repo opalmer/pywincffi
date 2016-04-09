@@ -128,15 +128,19 @@ def GetHandleInformation(hObject):
 
     .. seealso::
 
-        https://msdn.microsoft.com/en-us/library/windows/desktop/ms724329(v=vs.85).aspx
+        https://msdn.microsoft.com/en-us/library/ms724329
 
     :param handle hObject:
         A handle to an object whose information is to be retrieved.
+
+    :rtype: int
+    :return:
+        Returns the set of bit flags that specify properties of ``hObject``.
     """
     input_check("hObject", hObject, Enums.HANDLE)
     ffi, library = dist.load()
 
-    lpdwFlags = ffi.new('LPDWORD')
+    lpdwFlags = ffi.new("LPDWORD")
     code = library.GetHandleInformation(hObject, lpdwFlags)
     error_check("GetHandleInformation", code=code, expected=Enums.NON_ZERO)
 
@@ -149,21 +153,25 @@ def SetHandleInformation(hObject, dwMask, dwFlags):
 
     .. seealso::
 
-        https://msdn.microsoft.com/en-us/library/windows/desktop/ms724935(v=vs.85).aspx
+        https://msdn.microsoft.com/en-us/ms724935
 
     :param handle hObject:
         A handle to an object whose information is to be set.
 
-    :param DWORD dwMask:
+    :param int dwMask:
         A mask that specifies the bit flags to be changed.
 
-    :param DWORD dwFlags:
-        Set of bit flags that specifies properties of the object handle.
+    :param int dwFlags:
+        Set of bit flags that specifies properties of ``hObject``.
     """
     input_check("hObject", hObject, Enums.HANDLE)
     input_check("dwMask", dwMask, integer_types)
     input_check("dwFlags", dwFlags, integer_types)
-    _, library = dist.load()
+    ffi, library = dist.load()
 
-    code = library.SetHandleInformation(hObject, dwMask, dwFlags)
+    code = library.SetHandleInformation(
+        hObject,
+        ffi.cast("DWORD", dwMask),
+        ffi.cast("DWORD", dwFlags),
+    )
     error_check("SetHandleInformation", code=code, expected=Enums.NON_ZERO)
