@@ -8,6 +8,12 @@ versions are shown first.
 Versions
 --------
 
+latest
+~~~~~~
+
+* Fixed broken urls in `PyCharm Remote Interpreter` section of vagrant
+  documentation for developers.
+
 0.1.2
 ~~~~~
 
