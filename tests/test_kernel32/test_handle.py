@@ -128,17 +128,17 @@ class TestGetHandleInformation(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.GetHandleInformation`
     """
-    def _expected_inheritance(self):
-        # Python >= 3.4 creates non-inheritable handles (PEP 0446)
-        return 1 if sys.version_info[:2] < (3, 4) else 0
-
     def test_get_handle_info_stdin(self):
         _, library = dist.load()
         stdin_handle = GetStdHandle(library.STD_INPUT_HANDLE)
         handle_flags = GetHandleInformation(stdin_handle)
         inherit = handle_flags & library.HANDLE_FLAG_INHERIT
-        expected = 1 # PEP 0446 not 100% clear, but observed to be the case
-        self.assertEqual(inherit, expected)
+        expected = (0, 1)
+        self.assertIn(inherit, expected)
+
+    def _expected_inheritance(self):
+        # Python >= 3.4 creates non-inheritable handles (PEP 0446)
+        return 1 if sys.version_info[:2] < (3, 4) else 0
 
     def test_get_handle_info_file(self):
         _, library = dist.load()
