@@ -1,7 +1,7 @@
-import sys
 import os
-import tempfile
 import socket
+import sys
+import tempfile
 from errno import EBADF
 
 from pywincffi.core import dist
@@ -130,42 +130,40 @@ class TestGetHandleInformation(TestCase):
     """
     def _expected_inheritance(self):
         # Python >= 3.4 creates non-inheritable handles (PEP 0446)
-        if sys.hexversion >= 0x30400f0:
-            return 0
-        else:
-            return 1
+        return 1 if sys.version_info[:2] < (3, 4) else 0
 
     def test_get_handle_info_stdin(self):
         _, library = dist.load()
-        handle_stdin = GetStdHandle(library.STD_INPUT_HANDLE)
-        inherit = GetHandleInformation(handle_stdin) & 1
-        expected = self._expected_inheritance()
+        stdin_handle = GetStdHandle(library.STD_INPUT_HANDLE)
+        handle_flags = GetHandleInformation(stdin_handle)
+        inherit = handle_flags & library.HANDLE_FLAG_INHERIT
+        expected = 1 # PEP 0446 not 100% clear, but observed to be the case
         self.assertEqual(inherit, expected)
 
     def test_get_handle_info_file(self):
+        _, library = dist.load()
         # can't use mkstemp: not inheritable on Python < 3.4
-        dirname = tempfile.mkdtemp()
-        filename = os.path.join(dirname, "test_file")
-        test_file = open(filename, "w")
-        test_file.write("data")
-        file_handle = handle_from_file(test_file)
-        inherit = GetHandleInformation(file_handle) & 1
-
+        tempdir = tempfile.mkdtemp()
+        self.addCleanup(os.rmdir, tempdir)
+        filename = os.path.join(tempdir, "test_file")
+        with open(filename, "w") as test_file:
+            self.addCleanup(os.unlink, filename)
+            test_file.write("data")
+            file_handle = handle_from_file(test_file)
+            handle_flags = GetHandleInformation(file_handle)
+            inherit = handle_flags & library.HANDLE_FLAG_INHERIT
         expected = self._expected_inheritance()
         self.assertEqual(inherit, expected)
-        test_file.close()
-        os.unlink(filename)
-        os.rmdir(dirname)
 
     def test_get_handle_info_socket(self):
-        ffi, _ = dist.load()
-        s = socket.socket()
-        socket_handle = ffi.cast('void *', s.fileno())
-
-        inherit = GetHandleInformation(socket_handle) & 1
+        ffi, library = dist.load()
+        sock = socket.socket()
+        self.addCleanup(sock.close)
+        sock_handle = ffi.cast("void *", sock.fileno())
+        handle_flags = GetHandleInformation(sock_handle)
+        inherit = handle_flags & library.HANDLE_FLAG_INHERIT
         expected = self._expected_inheritance()
         self.assertEqual(inherit, expected)
-        s.close()
 
 
 class TestSetHandleInformation(TestCase):
@@ -173,44 +171,37 @@ class TestSetHandleInformation(TestCase):
     Tests for :func:`pywincffi.kernel32.SetHandleInformation`
     """
     def test_set_handle_info_file_inherit(self):
-        dirname = tempfile.mkdtemp()
-        filename = os.path.join(dirname, "test_file")
-        test_file = open(filename, "w")
-        test_file.write("data")
-        file_handle = handle_from_file(test_file)
-
-        SetHandleInformation(file_handle, 1, 1)
-
-        test_file.close()
-        os.unlink(filename)
-        os.rmdir(dirname)
+        _, library = dist.load()
+        tempdir = tempfile.mkdtemp()
+        self.addCleanup(os.rmdir, tempdir)
+        filename = os.path.join(tempdir, "test_file")
+        with open(filename, "w") as test_file:
+            self.addCleanup(os.unlink, filename)
+            test_file.write("data")
+            file_handle = handle_from_file(test_file)
+            SetHandleInformation(file_handle, library.HANDLE_FLAG_INHERIT, 1)
 
     def test_set_handle_info_file_noinherit(self):
-        dirname = tempfile.mkdtemp()
-        filename = os.path.join(dirname, "test_file")
-        test_file = open(filename, "w")
-        test_file.write("data")
-        file_handle = handle_from_file(test_file)
-
-        SetHandleInformation(file_handle, 1, 0)
-
-        test_file.close()
-        os.unlink(filename)
-        os.rmdir(dirname)
+        _, library = dist.load()
+        tempdir = tempfile.mkdtemp()
+        self.addCleanup(os.rmdir, tempdir)
+        filename = os.path.join(tempdir, "test_file")
+        with open(filename, "w") as test_file:
+            self.addCleanup(os.unlink, filename)
+            test_file.write("data")
+            file_handle = handle_from_file(test_file)
+            SetHandleInformation(file_handle, library.HANDLE_FLAG_INHERIT, 1)
 
     def test_set_handle_info_socket_inherit(self):
-        ffi, _ = dist.load()
-        s = socket.socket()
-        socket_handle = ffi.cast('void *', s.fileno())
-
-        SetHandleInformation(socket_handle, 1, 1)
-        s.close()
+        ffi, library = dist.load()
+        sock = socket.socket()
+        self.addCleanup(sock.close)
+        sock_handle = ffi.cast("void *", sock.fileno())
+        SetHandleInformation(sock_handle, library.HANDLE_FLAG_INHERIT, 1)
 
     def test_set_handle_info_socket_noinherit(self):
-        ffi, _ = dist.load()
-        s = socket.socket()
-        socket_handle = ffi.cast('void *', s.fileno())
-
-        SetHandleInformation(socket_handle, 1, 0)
-        s.close()
-
+        ffi, library = dist.load()
+        sock = socket.socket()
+        self.addCleanup(sock.close)
+        sock_handle = ffi.cast("void *", sock.fileno())
+        SetHandleInformation(sock_handle, library.HANDLE_FLAG_INHERIT, 0)
