@@ -224,7 +224,6 @@ class TestSetHandleInformation(TestCase):
     def test_set_handle_info_socket_inherit(self):
         self._set_handle_info_socket(1)
 
-
     def test_set_get_handle_info_socket_noinherit(self):
         self._set_handle_info_socket(0, check=True)
 
@@ -284,4 +283,3 @@ class TestSetHandleInformationForks(TestCase):
         # stop the child process
         p.stdin.close()
         p.wait()
-
