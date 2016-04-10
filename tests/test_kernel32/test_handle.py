@@ -172,7 +172,7 @@ class TestSetHandleInformation(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.SetHandleInformation`
     """
-    def _set_handle_info_file(self, inherit):
+    def _set_handle_info_file(self, inherit, check=False):
         _, library = dist.load()
         tempdir = tempfile.mkdtemp()
         self.addCleanup(os.rmdir, tempdir)
@@ -186,6 +186,9 @@ class TestSetHandleInformation(TestCase):
                 library.HANDLE_FLAG_INHERIT,
                 inherit
             )
+            if check:
+                result = GetHandleInformation(file_handle)
+                self.assertEqual(inherit, result)
 
     def test_set_handle_info_file_noinherit(self):
         self._set_handle_info_file(0)
@@ -193,7 +196,13 @@ class TestSetHandleInformation(TestCase):
     def test_set_handle_info_file_inherit(self):
         self._set_handle_info_file(1)
 
-    def _set_handle_info_socket(self, inherit):
+    def test_set_get_handle_info_file_noinherit(self):
+        self._set_handle_info_file(0, check=True)
+
+    def test_set_get_handle_info_file_inherit(self):
+        self._set_handle_info_file(1, check=True)
+
+    def _set_handle_info_socket(self, inherit, check=False):
         ffi, library = dist.load()
         sock = socket.socket()
         self.addCleanup(sock.close)
@@ -203,10 +212,21 @@ class TestSetHandleInformation(TestCase):
             library.HANDLE_FLAG_INHERIT,
             inherit
         )
+        if check:
+            result = GetHandleInformation(sock_handle)
+            self.assertEqual(inherit, result)
 
     def test_set_handle_info_socket_noinherit(self):
         self._set_handle_info_socket(0)
 
     def test_set_handle_info_socket_inherit(self):
         self._set_handle_info_socket(1)
+
+
+    def test_set_get_handle_info_socket_noinherit(self):
+        self._set_handle_info_socket(0, check=True)
+
+    def test_set_get_handle_info_socket_inherit(self):
+        self._set_handle_info_socket(1, check=True)
+
 
