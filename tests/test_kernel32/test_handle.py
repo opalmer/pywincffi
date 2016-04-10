@@ -1,5 +1,7 @@
 import os
+import shutil
 import socket
+import subprocess
 import sys
 import tempfile
 from errno import EBADF
@@ -229,4 +231,57 @@ class TestSetHandleInformation(TestCase):
     def test_set_get_handle_info_socket_inherit(self):
         self._set_handle_info_socket(1, check=True)
 
+
+class TestSetHandleInformationForks(TestCase):
+    """
+    Integration tests for :func:`pywincffi.kernel32.SetHandleInformation`
+    """
+    def test_file_rename_after_fork(self):
+        _, library = dist.load()
+        tempdir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tempdir, ignore_errors=True)
+        filename = os.path.join(tempdir, "original_name")
+        with open(filename, "w") as test_file:
+            test_file.write("data")
+            file_handle = handle_from_file(test_file)
+            # prevent file_handle inheritance
+            SetHandleInformation(file_handle, library.HANDLE_FLAG_INHERIT, 0)
+            # spawn child while test_file is open
+            p = subprocess.Popen(
+                args=[sys.executable],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+        newfilename = os.path.join(tempdir, "new_name")
+        # works as long as file is closed and not inherited by child
+        os.rename(filename, newfilename)
+        # stop the child process
+        p.stdin.close()
+        p.wait()
+
+    def test_socket_rebind_after_fork(self):
+        ffi, library = dist.load()
+        bind_addr = (('127.0.0.1', 0))
+        sock = socket.socket()
+        try:
+            sock.bind(bind_addr)
+            bind_addr = sock.getsockname()
+            sock_handle = ffi.cast("void *", sock.fileno())
+            SetHandleInformation(sock_handle, library.HANDLE_FLAG_INHERIT, 0)
+            # spawn child while sock is bound
+            p = subprocess.Popen(
+                args=[sys.executable],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+        finally:
+            sock.close()
+        sock = socket.socket()
+        self.addCleanup(sock.close)
+        sock.bind(bind_addr)
+        # stop the child process
+        p.stdin.close()
+        p.wait()
 
