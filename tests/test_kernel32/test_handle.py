@@ -170,7 +170,7 @@ class TestSetHandleInformation(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.SetHandleInformation`
     """
-    def test_set_handle_info_file_inherit(self):
+    def _set_handle_info_file(self, inherit):
         _, library = dist.load()
         tempdir = tempfile.mkdtemp()
         self.addCleanup(os.rmdir, tempdir)
@@ -179,29 +179,32 @@ class TestSetHandleInformation(TestCase):
             self.addCleanup(os.unlink, filename)
             test_file.write("data")
             file_handle = handle_from_file(test_file)
-            SetHandleInformation(file_handle, library.HANDLE_FLAG_INHERIT, 1)
+            SetHandleInformation(
+                file_handle,
+                library.HANDLE_FLAG_INHERIT,
+                inherit
+            )
 
     def test_set_handle_info_file_noinherit(self):
-        _, library = dist.load()
-        tempdir = tempfile.mkdtemp()
-        self.addCleanup(os.rmdir, tempdir)
-        filename = os.path.join(tempdir, "test_file")
-        with open(filename, "w") as test_file:
-            self.addCleanup(os.unlink, filename)
-            test_file.write("data")
-            file_handle = handle_from_file(test_file)
-            SetHandleInformation(file_handle, library.HANDLE_FLAG_INHERIT, 1)
+        self._set_handle_info_file(0)
 
-    def test_set_handle_info_socket_inherit(self):
+    def test_set_handle_info_file_inherit(self):
+        self._set_handle_info_file(1)
+
+    def _set_handle_info_socket(self, inherit):
         ffi, library = dist.load()
         sock = socket.socket()
         self.addCleanup(sock.close)
         sock_handle = ffi.cast("void *", sock.fileno())
-        SetHandleInformation(sock_handle, library.HANDLE_FLAG_INHERIT, 1)
+        SetHandleInformation(
+            sock_handle,
+            library.HANDLE_FLAG_INHERIT,
+            inherit
+        )
 
     def test_set_handle_info_socket_noinherit(self):
-        ffi, library = dist.load()
-        sock = socket.socket()
-        self.addCleanup(sock.close)
-        sock_handle = ffi.cast("void *", sock.fileno())
-        SetHandleInformation(sock_handle, library.HANDLE_FLAG_INHERIT, 0)
+        self._set_handle_info_socket(0)
+
+    def test_set_handle_info_socket_inherit(self):
+        self._set_handle_info_socket(1)
+
