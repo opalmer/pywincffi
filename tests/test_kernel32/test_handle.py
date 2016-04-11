@@ -235,6 +235,18 @@ class TestSetHandleInformationChildSpawns(TestCase):
     """
     Integration tests for :func:`pywincffi.kernel32.SetHandleInformation`
     """
+    def _spawn_child(self):
+        return subprocess.Popen(
+            args=[sys.executable],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    def _cleanup_child(self, child):
+        child.stdin.close()
+        child.wait()
+
     def test_file_rename_after_spawn(self):
         _, library = dist.load()
         tempdir = tempfile.mkdtemp()
@@ -246,20 +258,11 @@ class TestSetHandleInformationChildSpawns(TestCase):
             # prevent file_handle inheritance
             SetHandleInformation(file_handle, library.HANDLE_FLAG_INHERIT, 0)
             # spawn child while test_file is open
-            p = subprocess.Popen(
-                args=[sys.executable],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-        try:
-            newfilename = os.path.join(tempdir, "new_name")
-            # works as long as file is closed and not inherited by child
-            os.rename(filename, newfilename)
-        finally:
-            # stop the child process
-            p.stdin.close()
-            p.wait()
+            child = self._spawn_child()
+            self.addCleanup(self._cleanup_child, child)
+        newfilename = os.path.join(tempdir, "new_name")
+        # works as long as file is closed and not inherited by child
+        os.rename(filename, newfilename)
 
     def test_socket_rebind_after_spawn(self):
         ffi, library = dist.load()
@@ -269,19 +272,14 @@ class TestSetHandleInformationChildSpawns(TestCase):
             sock.bind(bind_addr)
             bind_addr = sock.getsockname()
             sock_handle = ffi.cast("void *", sock.fileno())
+            # prevent file_handle inheritance
             SetHandleInformation(sock_handle, library.HANDLE_FLAG_INHERIT, 0)
             # spawn child while sock is bound
-            p = subprocess.Popen(
-                args=[sys.executable],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+            child = self._spawn_child()
+            self.addCleanup(self._cleanup_child, child)
         finally:
             sock.close()
         sock = socket.socket()
         self.addCleanup(sock.close)
+        # re-bind to same address: works if not inherited by child
         sock.bind(bind_addr)
-        # stop the child process
-        p.stdin.close()
-        p.wait()
