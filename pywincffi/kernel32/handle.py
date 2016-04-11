@@ -172,6 +172,6 @@ def SetHandleInformation(hObject, dwMask, dwFlags):
     code = library.SetHandleInformation(
         hObject,
         ffi.cast("DWORD", dwMask),
-        ffi.cast("DWORD", dwFlags),
+        ffi.cast("DWORD", dwFlags)
     )
     error_check("SetHandleInformation", code=code, expected=Enums.NON_ZERO)
