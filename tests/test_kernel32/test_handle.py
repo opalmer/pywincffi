@@ -231,11 +231,11 @@ class TestSetHandleInformation(TestCase):
         self._set_handle_info_socket(1, check=True)
 
 
-class TestSetHandleInformationForks(TestCase):
+class TestSetHandleInformationChildSpawns(TestCase):
     """
     Integration tests for :func:`pywincffi.kernel32.SetHandleInformation`
     """
-    def test_file_rename_after_fork(self):
+    def test_file_rename_after_spawn(self):
         _, library = dist.load()
         tempdir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, tempdir, ignore_errors=True)
@@ -261,7 +261,7 @@ class TestSetHandleInformationForks(TestCase):
             p.stdin.close()
             p.wait()
 
-    def test_socket_rebind_after_fork(self):
+    def test_socket_rebind_after_spawn(self):
         ffi, library = dist.load()
         bind_addr = (('127.0.0.1', 0))
         sock = socket.socket()
