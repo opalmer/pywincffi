@@ -252,12 +252,14 @@ class TestSetHandleInformationForks(TestCase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
-        newfilename = os.path.join(tempdir, "new_name")
-        # works as long as file is closed and not inherited by child
-        os.rename(filename, newfilename)
-        # stop the child process
-        p.stdin.close()
-        p.wait()
+        try:
+            newfilename = os.path.join(tempdir, "new_name")
+            # works as long as file is closed and not inherited by child
+            os.rename(filename, newfilename)
+        finally:
+            # stop the child process
+            p.stdin.close()
+            p.wait()
 
     def test_socket_rebind_after_fork(self):
         ffi, library = dist.load()
