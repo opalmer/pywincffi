@@ -33,3 +33,5 @@ HANDLE handle_from_fd(int);
 BOOL CloseHandle(HANDLE);
 HANDLE GetStdHandle(DWORD);
 DWORD WaitForSingleObject(HANDLE, DWORD);
+BOOL GetHandleInformation(HANDLE, LPDWORD);
+BOOL SetHandleInformation(HANDLE, DWORD, DWORD);
