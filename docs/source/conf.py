@@ -10,6 +10,9 @@ import subprocess
 from errno import EEXIST, ENOENT
 from os.path import join, abspath, dirname
 
+import sphinx.environment
+from docutils.utils import get_source_line
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -43,7 +46,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
-    "sphinx.ext.viewcode"
+    "sphinx.ext.viewcode",
+    "sphinx.ext.extlinks"
 ]
 
 linkcheck_timeout = 60
@@ -289,7 +293,6 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
@@ -326,3 +329,30 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node"s menu.
 #texinfo_no_detailmenu = False
+
+
+def _warn_node(self, msg, node):
+    if not msg.startswith('nonlocal image URI found:'):
+        self._warnfunc(msg, '%s:%s' % get_source_line(node))
+
+sphinx.environment.BuildEnvironment.warn_node = _warn_node
+
+
+extlinks = {
+    "issue": (
+        "https://github.com/opalmer/pywincffi/issues/%s",
+        "#"
+    ),
+    "blob": (
+        "https://github.com/opalmer/pywincffi/blob/master/%s",
+        ""
+    ),
+    "msdn": (
+        "https://msdn.microsoft.com/library/%s",
+        ""
+    ),
+    "msdn-full": (
+        "https://msdn.microsoft.com/library/%s",
+        "https://msdn.microsoft.com/library/"
+    )
+}

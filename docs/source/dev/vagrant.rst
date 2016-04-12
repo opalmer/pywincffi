@@ -155,9 +155,8 @@ a virtual machine.
 For more information on how to set this up, check out these guides direct from
 JetBrains:
 
-    * https://www.jetbrains.com/pycharm/help/configuring-remote-python-interpreters.html
-    * https://confluence.jetbrains.com/display/PYH/Configuring+Interpreters+with+PyCharm
-    * https://www.jetbrains.com/pycharm/help/configuring-remote-interpreters-via-virtual-boxes.html
+    * https://www.jetbrains.com/help/pycharm/2016.1/configuring-remote-python-interpreters.html
+    * https://www.jetbrains.com/help/pycharm/2016.1/tutorial-configuring-pycharm-to-work-on-the-vm.html
 
 .. note::
 

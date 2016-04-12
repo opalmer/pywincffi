@@ -120,3 +120,58 @@ def WaitForSingleObject(hHandle, dwMilliseconds):
     error_check("WaitForSingleObject")
 
     return result
+
+
+def GetHandleInformation(hObject):
+    """
+    Returns properties of an object handle.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms724329
+
+    :param handle hObject:
+        A handle to an object whose information is to be retrieved.
+
+    :rtype: int
+    :return:
+        Returns the set of bit flags that specify properties of ``hObject``.
+    """
+    input_check("hObject", hObject, Enums.HANDLE)
+    ffi, library = dist.load()
+
+    lpdwFlags = ffi.new("LPDWORD")
+    code = library.GetHandleInformation(hObject, lpdwFlags)
+    error_check("GetHandleInformation", code=code, expected=Enums.NON_ZERO)
+
+    return lpdwFlags[0]
+
+
+def SetHandleInformation(hObject, dwMask, dwFlags):
+    """
+    Sets properties of an object handle.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/ms724935
+
+    :param handle hObject:
+        A handle to an object whose information is to be set.
+
+    :param int dwMask:
+        A mask that specifies the bit flags to be changed.
+
+    :param int dwFlags:
+        Set of bit flags that specifies properties of ``hObject``.
+    """
+    input_check("hObject", hObject, Enums.HANDLE)
+    input_check("dwMask", dwMask, integer_types)
+    input_check("dwFlags", dwFlags, integer_types)
+    ffi, library = dist.load()
+
+    code = library.SetHandleInformation(
+        hObject,
+        ffi.cast("DWORD", dwMask),
+        ffi.cast("DWORD", dwFlags)
+    )
+    error_check("SetHandleInformation", code=code, expected=Enums.NON_ZERO)
