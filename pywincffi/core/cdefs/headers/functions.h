@@ -32,3 +32,6 @@ HANDLE handle_from_fd(int);
 BOOL CloseHandle(HANDLE);
 HANDLE GetStdHandle(DWORD);
 DWORD WaitForSingleObject(HANDLE, DWORD);
+
+// Events
+HANDLE CreateEvent(LPSECURITY_ATTRIBUTES, BOOL, BOOL, LPCTSTR);
