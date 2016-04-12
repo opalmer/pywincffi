@@ -50,6 +50,17 @@ This section gives a basic overview of the development process including
 the major goals.  This is not comprehensive but should be a good
 introduction before submitting a pull request.
 
+Support and Documentation
+-------------------------
+
+Besides this readme there are two other locations you can go to receive some
+help:
+
+    * https://pywincffi.readthedocs.org/en/latest/dev/ - Goes beyond
+      what's in this readme.
+    * https://groups.google.com/forum/#!forum/pywincffi - Google group for
+      discussions, questions, etc.
+
 Python Version Support
 ----------------------
 
@@ -110,6 +121,9 @@ It's important to note that the docs contain a ``seealso`` stanza.  This is
 typically used to reference the MSDN documentation but may also be used to
 reference examples, white papers or other reference which may be useful in
 describing the function.
+
+Adding new functions is covered in greater detail
+`here <https://pywincffi.readthedocs.org/en/latest/dev/functions.html>`_
 
 
 Testing
