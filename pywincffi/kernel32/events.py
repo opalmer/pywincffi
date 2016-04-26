@@ -14,7 +14,7 @@ from pywincffi.util import string_to_cdata
 
 
 def CreateEvent(
-    bManualReset, bInitialState, lpEventAttributes=None, lpName=None):
+        bManualReset, bInitialState, lpEventAttributes=None, lpName=None):
     """
     Creates or opens an named or unnamed event object.
 
