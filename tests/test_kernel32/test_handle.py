@@ -54,7 +54,8 @@ class TestGetHandleFromFile(TestCase):
             handle_from_file(0)
 
     def test_fails_if_file_is_not_open(self):
-        fd, _ = tempfile.mkstemp()
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.unlink, path)
         test_file = os.fdopen(fd, "r")
         test_file.close()
 
@@ -63,6 +64,7 @@ class TestGetHandleFromFile(TestCase):
 
     def test_opens_correct_file_handle(self):
         fd, path = tempfile.mkstemp()
+        self.addCleanup(os.unlink, path)
         os.close(fd)
 
         test_file = open(path, "w")
