@@ -276,6 +276,9 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
             elif "unittest" in labels:
                 issue_type = "unittests"
 
+            elif "refactor" in labels:
+                issue_type = "refactor"
+
             else:
                 issue_type = "other"
 
@@ -315,7 +318,8 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
             issues_list.sort(key=lambda item: item.number)
 
         for name in (
-                "enhancements", "bugs", "documentation", "unittests", "other"):
+                "enhancements", "bugs", "documentation", "unittests", "other",
+                "refactor"):
             issues_for_name = issues.pop(name, [])
 
             if issues_for_name:

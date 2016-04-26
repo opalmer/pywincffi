@@ -8,13 +8,30 @@ versions are shown first.
 Versions
 --------
 
-latest
-~~~~~~
+0.2.0
+~~~~~
 
+This release contains several enhancements, bug fixes and other
+changes.  You can see all of the major issues by viewing the milestone
+on GitHub: https://github.com/opalmer/pywincffi/issues?q=milestone:0.2.0.
+
+Notable enhancements and changes are:
+
+    * Improved error handling which brings more consistent error messages with
+      better information.
+    * Several new Windows API function implementations including
+      FlushFileBuffers, CreateFile, LockFileEx, UnlockFileEx, MoveFileEx,
+      GetProcessId, and GetCurrentProcess.
+    * New wrapper function pid_exists().
+    * Refactored kernel32 module structure.
+    * Several bug fixes to existing tests and functions.
     * Updated developer documentation to better cover code reviews, style,
       functions, etc.
     * Fixed broken urls in `PyCharm Remote Interpreter` section of vagrant
       documentation for developers.
+    * Added :func:`pywincffi.kernel32.handle.GetHandleInformation` and
+      :func:`pywincffi.kernel32.handle.SetHandleInformation` in
+      :issue:`66` - Thanks exvito!
 
 0.1.2
 ~~~~~
