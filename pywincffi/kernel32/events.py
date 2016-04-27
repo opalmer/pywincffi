@@ -5,7 +5,7 @@ Events
 A module containing Windows functions for working with events.
 """
 
-from six import string_types
+from six import string_types, integer_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
@@ -73,4 +73,36 @@ def CreateEvent(
         if error.errno != library.ERROR_ALREADY_EXISTS:
             raise
 
+    return handle
+
+
+def OpenEvent(dwDesiredAccess, bInheritHandle, lpName):
+    """
+    Opens an existing named event.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms684305
+
+    :param int dwDesiredAccess:
+        The access desired for the event object.
+
+    :param bool bInheritHandle:
+    :param str lpName:
+
+    :return:
+        Returns the
+    """
+    input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
+    input_check("bInheritHandle", bInheritHandle, bool)
+    input_check("lpName", lpName, string_types)
+
+    ffi, library = dist.load()
+
+    handle = library.OpenEvent(
+        ffi.cast("DWORD", dwDesiredAccess),
+        ffi.cast("BOOL", bInheritHandle),
+        string_to_cdata(lpName)
+    )
+    error_check("OpenEvent")
     return handle
