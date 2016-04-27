@@ -8,6 +8,15 @@ versions are shown first.
 Versions
 --------
 
+latest
+~~~~~~
+
+Notable enhancements and changes are:
+
+    * Several enhancements bringing :issue:`69` closer to closure.
+    * Addition of the :func:`pywincffi.kernel32.events.CreateEvent` and
+      :func:`pywincffi.kernel32.events.OpenEvent` functions in :issue:`70`.
+
 0.2.0
 ~~~~~
 
