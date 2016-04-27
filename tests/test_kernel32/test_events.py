@@ -1,5 +1,9 @@
-from pywincffi.dev.testutil import TestCase
+from mock import patch
+
 from pywincffi.core import dist
+from pywincffi.dev.testutil import TestCase
+from pywincffi.exceptions import WindowsAPIError, InputError
+from pywincffi.kernel32 import events  # used by mocks
 from pywincffi.kernel32 import CloseHandle, CreateEvent, OpenEvent
 
 
@@ -22,6 +26,14 @@ class TestCreateEvent(TestCase):
         handle2 = CreateEvent(False, False, lpName=name)
         self.addCleanup(CloseHandle, handle2)
 
+    def test_raises_non_error_already_exists(self):
+        def raise_(*_):
+            raise WindowsAPIError("CreateEvent", "", -1)
+
+        with patch.object(events, "error_check", side_effect=raise_):
+            with self.assertRaises(WindowsAPIError):
+                CreateEvent(False, False)
+
     def test_can_retrieve_named_event(self):
         _, library = dist.load()
         name = "Global\\pywincffi-%s" % self.random_string(5)
@@ -29,3 +41,7 @@ class TestCreateEvent(TestCase):
         self.addCleanup(CloseHandle, handle)
         opened_event = OpenEvent(library.EVENT_ALL_ACCESS, True, name)
         self.addCleanup(CloseHandle, opened_event)
+
+    def test_check_lpeventattributes_type(self):
+        with self.assertRaises(InputError):
+            CreateEvent(False, False, lpEventAttributes="")
