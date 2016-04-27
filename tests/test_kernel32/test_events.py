@@ -23,7 +23,7 @@ class TestCreateEvent(TestCase):
         self.addCleanup(CloseHandle, handle2)
 
     def test_can_retrieve_named_event(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
         name = "Global\\pywincffi-%s" % self.random_string(5)
         handle = CreateEvent(False, False, lpName=name)
         self.addCleanup(CloseHandle, handle)
