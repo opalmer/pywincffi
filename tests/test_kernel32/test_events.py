@@ -36,7 +36,7 @@ class TestCreateEvent(TestCase):
 
     def test_can_retrieve_named_event(self):
         _, library = dist.load()
-        name = "Global\\pywincffi-%s" % self.random_string(5)
+        name = "pywincffi-%s" % self.random_string(5)
         handle = CreateEvent(False, False, lpName=name)
         self.addCleanup(CloseHandle, handle)
         opened_event = OpenEvent(library.EVENT_ALL_ACCESS, True, name)
