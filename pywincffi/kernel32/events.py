@@ -106,3 +106,22 @@ def OpenEvent(dwDesiredAccess, bInheritHandle, lpName):
     )
     error_check("OpenEvent")
     return handle
+
+
+def ResetEvent(hEvent):
+    """
+    Sets the specified event object to the nonsignaled state.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms684305
+
+    :param handle hEvent:
+        A handle to the event object to be reset. The handle must
+        have the ``EVENT_MODIFY_STATE`` access right.
+    """
+    input_check("hEvent", hEvent, Enums.HANDLE)
+
+    _, library = dist.load()
+    code = library.ResetEvent(hEvent)
+    error_check("ResetEvent", code=code, expected=Enums.NON_ZERO)

@@ -20,4 +20,4 @@ from pywincffi.kernel32.pipe import (
 from pywincffi.kernel32.process import (
     GetProcessId, GetCurrentProcess, OpenProcess, GetExitCodeProcess,
     pid_exists)
-from pywincffi.kernel32.events import CreateEvent, OpenEvent
+from pywincffi.kernel32.events import CreateEvent, OpenEvent, ResetEvent
