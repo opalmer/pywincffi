@@ -15,7 +15,9 @@ Notable enhancements and changes are:
 
     * Fixed a bug where :func:`pywincffi.checks.input_check` might raise
       ``ffi.error`` in :issue:`73`
-
+    * Several enhancements bringing :issue:`69` closer to closure.
+    * Addition of the :func:`pywincffi.kernel32.events.CreateEvent` and
+      :func:`pywincffi.kernel32.events.OpenEvent` functions in :issue:`70`.
 
 0.2.0
 ~~~~~

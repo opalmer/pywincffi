@@ -35,3 +35,7 @@ HANDLE GetStdHandle(DWORD);
 DWORD WaitForSingleObject(HANDLE, DWORD);
 BOOL GetHandleInformation(HANDLE, LPDWORD);
 BOOL SetHandleInformation(HANDLE, DWORD, DWORD);
+
+// Events
+HANDLE CreateEvent(LPSECURITY_ATTRIBUTES, BOOL, BOOL, LPCTSTR);
+HANDLE OpenEvent(DWORD, BOOL, LPCTSTR);
