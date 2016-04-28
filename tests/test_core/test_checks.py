@@ -30,6 +30,12 @@ class TestTypeCheckFailure(TestCase):
         with self.assertRaises(InputError):
             input_check("", ffi.new("void *[2]"), Enums.HANDLE)
 
+    def test_ffi_error_raises_input_error(self):
+        with self.assertRaises(InputError):
+            input_check(
+                "lpEventAttributes", "",
+                allowed_types=Enums.SECURITY_ATTRIBUTES)
+
 
 class TestEnumMapping(TestCase):
     def setUp(self):

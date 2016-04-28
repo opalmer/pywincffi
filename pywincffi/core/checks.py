@@ -155,7 +155,7 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
                     mapping.cname.match(typeof.cname)):
                 raise TypeError
 
-        except TypeError:
+        except (TypeError, ffi.error):
             raise InputError(name, value, allowed_types)
 
     elif allowed_types is Enums.UTF8:

@@ -8,6 +8,15 @@ versions are shown first.
 Versions
 --------
 
+latest
+~~~~~~
+
+Notable enhancements and changes are:
+
+    * Fixed a bug where :func:`pywincffi.checks.input_check` might raise
+      ``ffi.error`` in :issue:`73`
+
+
 0.2.0
 ~~~~~
 
