@@ -68,25 +68,3 @@ class TestCreateEvent(TestCase):
     def test_check_lpeventattributes_type(self):
         with self.assertRaises(InputError):
             CreateEvent(False, False, lpEventAttributes="")
-
-
-class TestResetEvent(TestCase):
-    """
-    Tests for :func:`pywincffi.kernel32.ResetEvent`
-    """
-    def test_basic_reset(self):
-        handle = CreateEvent(True, True)
-        self.addCleanup(CloseHandle, handle)
-        ResetEvent(handle)
-
-    def test_resets_event(self):
-        handle = CreateEvent(True, True)
-        self.addCleanup(CloseHandle, handle)
-        ResetEvent(handle)
-
-        # If the event is not in a signaled state,
-        # because ResetEvent was called, then it should
-        # take >= 1 second to reset the assert statement.
-        start = time.time()
-        WaitForSingleObject(handle, 1000)
-        self.assertGreaterEqual(time.time() - start, 1)
