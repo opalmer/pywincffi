@@ -1,5 +1,4 @@
 import sys
-import time
 
 from mock import patch
 
