@@ -216,7 +216,20 @@ def GetProcessId(Process):  # pylint: disable=invalid-name
 
 
 def TerminateProcess(hProcess, uExitCode):
-    """Terminates the specified process and all of its threads."""
+    """
+    Terminates the specified process and all of its threads.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms686714
+
+    :param handle hProcess:
+        A handle to the process to be terminated.
+
+    :param int uExitCode:
+        The exit code of the processes and threads as a result of calling
+        this function.
+    """
     input_check("hProcess", hProcess, Enums.HANDLE)
     input_check("uExitCode", uExitCode, integer_types)
     ffi, library = dist.load()
