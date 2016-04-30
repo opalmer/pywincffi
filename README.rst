@@ -160,6 +160,52 @@ utilized to test or analyze every commit and pull request:
       The official location where documentation is built and posted.  This is
       generally for merges into the master branch however.
 
+Additional Testing
+~~~~~~~~~~~~~~~~~~
+
+As seen above, there are numerous tests besides the unittests.  To run all
+the tests on Windows, much like the continuous integration systems do, you can
+run ``test.bat``:
+
+.. code-block:: console
+
+    > test.bat
+    ========================================================================================
+    pep8 pywincffi
+    ========================================================================================
+    ========================================================================================
+    pep8 tests
+    ========================================================================================
+    ========================================================================================
+    pylint pywincffi
+    ========================================================================================
+    ========================================================================================
+    pylint tests
+    ========================================================================================
+    ========================================================================================
+    sphinx-build -q -b html -W -E -a -d docs/build/doctrees docs/source docs/build/html
+    ========================================================================================
+    ========================================================================================
+    sphinx-build -q -b linkcheck -W -E -a -d docs/build/doctrees docs/source docs/build/html
+    ========================================================================================
+    ========================================================================================
+    setup.py bdist_wheel
+    ========================================================================================
+    RuntimeWarning: Config variable 'Py_DEBUG' is unset, Python ABI tag may be incorrect
+      warn=(impl == 'cp')):
+    RuntimeWarning: Config variable 'WITH_PYMALLOC' is unset, Python ABI tag may be incorrect
+      warn=(impl == 'cp')):
+    ========================================================================================
+    nosetests -sv tests
+    ========================================================================================
+    [ omitted ]
+    ========================================================================================
+
+
+Keep in mind that this will not setup the virtualenv or build environment for
+you.  So if you can't build the library or are missing a dependency then
+the above may fail.
+
 
 Vagrant
 ~~~~~~~
