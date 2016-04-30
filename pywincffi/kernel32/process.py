@@ -15,7 +15,7 @@ documentation for the constant names and their purpose:
     Not all constants may be defined
 """
 
-import six
+from six import integer_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
@@ -39,7 +39,7 @@ def pid_exists(pid, wait=0):
     :raises ValidationError:
         Raised if there's a problem with the value provided for ``pid``.
     """
-    input_check("pid", pid, six.integer_types)
+    input_check("pid", pid, integer_types)
 
     # Process IDs which always exist shouldn't need to continue
     # further.
@@ -159,9 +159,9 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
         a void pointer.  This value can be used by other functions
         such as :func:`TerminateProcess`
     """
-    input_check("dwDesiredAccess", dwDesiredAccess, six.integer_types)
+    input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
     input_check("bInheritHandle", bInheritHandle, bool)
-    input_check("dwProcessId", dwProcessId, six.integer_types)
+    input_check("dwProcessId", dwProcessId, integer_types)
     ffi, library = dist.load()
 
     handle = library.OpenProcess(
@@ -213,3 +213,15 @@ def GetProcessId(Process):  # pylint: disable=invalid-name
     pid = library.GetProcessId(Process)
     error_check("GetProcessId")
     return pid
+
+
+def TerminateProcess(hProcess, uExitCode):
+    """Terminates the specified process and all of its threads."""
+    input_check("hProcess", hProcess, Enums.HANDLE)
+    input_check("uExitCode", uExitCode, integer_types)
+    ffi, library = dist.load()
+    code = library.TerminateProcess(
+        hProcess,
+        ffi.cast("UINT", uExitCode)
+    )
+    error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)

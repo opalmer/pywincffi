@@ -12,6 +12,7 @@ HANDLE OpenProcess(DWORD, BOOL, DWORD);
 BOOL GetExitCodeProcess(HANDLE, LPDWORD);
 HANDLE GetCurrentProcess();
 DWORD GetProcessId(HANDLE);
+BOOL TerminateProcess(HANDLE, UINT);
 
 // Pipes
 BOOL CreatePipe(PHANDLE, PHANDLE, LPSECURITY_ATTRIBUTES, DWORD);

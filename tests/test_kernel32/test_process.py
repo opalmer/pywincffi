@@ -9,7 +9,7 @@ from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
 from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
-    GetProcessId, pid_exists)
+    GetProcessId, pid_exists, TerminateProcess)
 
 try:
     IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -226,3 +226,18 @@ class TestPidExists(TestCase):
             self.assertTrue(pid_exists(process.pid))
 
         self.assertEqual(mocked.call_count, 1)
+
+
+class TestTerminateProcess(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.TerminateProcess`
+    """
+    def test_terminates_process(self):
+        process = self.create_python_process("import time; time.sleep(5)")
+        _, library = dist.load()
+
+        handle = OpenProcess(library.PROCESS_TERMINATE, False, process.pid)
+        self.addCleanup(CloseHandle, handle)
+        TerminateProcess(handle, 42)
+        process.communicate()
+        self.assertEqual(process.returncode, 42)
