@@ -57,6 +57,7 @@ HEADER_FILES = (
 SOURCE_FILES = (
     resource_filename(
         "pywincffi", join("core", "cdefs", "sources", "main.c")), )
+LIBRARIES = ("kernel32", "user32")
 
 
 class Module(object):  # pylint: disable=too-few-public-methods
@@ -144,7 +145,9 @@ def _read(*paths):
     return output
 
 
-def _ffi(module_name=MODULE_NAME, headers=HEADER_FILES, sources=SOURCE_FILES):
+def _ffi(
+        module_name=MODULE_NAME, headers=HEADER_FILES, sources=SOURCE_FILES,
+        libraries=LIBRARIES):
     """
     Returns an instance of :class:`FFI` without compiling
     the module.  This function is used internally but also
@@ -168,7 +171,7 @@ def _ffi(module_name=MODULE_NAME, headers=HEADER_FILES, sources=SOURCE_FILES):
 
     ffi = FFI()
     ffi.set_unicode(True)
-    ffi.set_source(module_name, source)
+    ffi.set_source(module_name, source, libraries=libraries)
     ffi.cdef(header)
 
     return ffi

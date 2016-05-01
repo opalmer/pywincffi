@@ -11,8 +11,8 @@ from cffi import FFI
 from mock import Mock, patch
 
 from pywincffi.core.dist import (
-    MODULE_NAME, HEADER_FILES, SOURCE_FILES, Module, _import_path, _ffi,
-    _compile, _read, load)
+    MODULE_NAME, HEADER_FILES, SOURCE_FILES, LIBRARIES, Module, _import_path,
+    _ffi, _compile, _read, load)
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
 
@@ -132,7 +132,7 @@ class TestFFI(TestCase):
             _ffi(module_name=self.module_name)
 
         mocked_set_source.assert_called_once_with(
-            self.module_name, _read(*SOURCE_FILES))
+            self.module_name, _read(*SOURCE_FILES), libraries=LIBRARIES)
 
     def test_default_cdefs(self):
         with patch.object(FFI, "cdef") as mocked_cdef:
@@ -147,7 +147,7 @@ class TestFFI(TestCase):
             _ffi(module_name=self.module_name, sources=[path])
 
         mocked_set_source.assert_called_once_with(
-            self.module_name, _read(*[path]))
+            self.module_name, _read(*[path]), libraries=LIBRARIES)
 
 
 class TestCompile(TestCase):

@@ -23,6 +23,7 @@ Notable enhancements and changes are:
         * :issue:`76` - :func:`pywincffi.kernel32.process.TerminateProcess`
         * :issue:`78` - :func:`pywincffi.kernel32.handle.DuplicateHandle`
         * :issue:`79` - :func:`pywincffi.kernel32.process.ClearCommError`
+        * :issue:`80` - :func:`pywincffi.user32.synchronization.MsgWaitForMultipleObjects`
 
 0.2.0
 ~~~~~

@@ -20,7 +20,8 @@ from six import integer_types
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
-from pywincffi.kernel32.handle import CloseHandle, WaitForSingleObject
+from pywincffi.kernel32.handle import CloseHandle
+from pywincffi.kernel32.synchronization import WaitForSingleObject
 
 RESERVED_PIDS = set([0, 4])
 
