@@ -21,3 +21,4 @@ from pywincffi.kernel32.process import (
     GetProcessId, GetCurrentProcess, OpenProcess, GetExitCodeProcess,
     pid_exists, TerminateProcess)
 from pywincffi.kernel32.events import CreateEvent, OpenEvent, ResetEvent
+from pywincffi.kernel32.comms import ClearCommError

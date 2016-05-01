@@ -22,6 +22,7 @@ Notable enhancements and changes are:
         * :issue:`75` - :func:`pywincffi.kernel32.events.ResetEvent`
         * :issue:`76` - :func:`pywincffi.kernel32.process.TerminateProcess`
         * :issue:`78` - :func:`pywincffi.kernel32.handle.DuplicateHandle`
+        * :issue:`79` - :func:`pywincffi.kernel32.process.ClearCommError`
 
 0.2.0
 ~~~~~

@@ -67,3 +67,17 @@ typedef struct _STARTUPINFO {
   HANDLE hStdOutput;
   HANDLE hStdError;
 } STARTUPINFO, *LPSTARTUPINFO;
+
+// https://msdn.microsoft.com/en-us/library/aa363200
+typedef struct _COMSTAT {
+  DWORD fCtsHold  :1;
+  DWORD fDsrHold  :1;
+  DWORD fRlsdHold  :1;
+  DWORD fXoffHold  :1;
+  DWORD fXoffSent  :1;
+  DWORD fEof  :1;
+  DWORD fTxim  :1;
+  DWORD fReserved  :25;
+  DWORD cbInQue;
+  DWORD cbOutQue;
+} COMSTAT, *LPCOMSTAT;
