@@ -11,7 +11,8 @@ from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError, WindowsAPIError
 from pywincffi.kernel32 import (
     GetStdHandle, CloseHandle, OpenProcess, WaitForSingleObject,
-    handle_from_file, GetHandleInformation, SetHandleInformation)
+    handle_from_file, GetHandleInformation, SetHandleInformation,
+    DuplicateHandle, GetCurrentProcess, CreateEvent)
 
 try:
     WindowsError
@@ -285,3 +286,25 @@ class TestSetHandleInformationChildSpawns(TestCase):
         self.addCleanup(sock.close)
         # re-bind to same address: works if not inherited by child
         sock.bind(bind_addr)
+
+
+class TestDuplicateHandle(TestCase):
+    """
+    Integration tests for :func:`pywincffi.kernel32.DuplicateHandle`
+    """
+    def test_duplication(self):
+        event = CreateEvent(False, False)
+        self.addCleanup(CloseHandle, event)
+
+        _, library = dist.load()
+        handle = DuplicateHandle(
+            GetCurrentProcess(),
+            event,
+            GetCurrentProcess(),
+            0,
+            True,
+            library.DUPLICATE_SAME_ACCESS
+        )
+        self.addCleanup(CloseHandle, handle)
+        info = GetHandleInformation(handle)
+        self.assertEqual(info, library.HANDLE_FLAG_INHERIT)

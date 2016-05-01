@@ -175,3 +175,67 @@ def SetHandleInformation(hObject, dwMask, dwFlags):
         ffi.cast("DWORD", dwFlags)
     )
     error_check("SetHandleInformation", code=code, expected=Enums.NON_ZERO)
+
+
+def DuplicateHandle(  # pylint: disable=too-many-arguments
+        hSourceProcessHandle, hSourceHandle, hTargetProcessHandle,
+        dwDesiredAccess, bInheritHandle, dwOptions):
+    """
+    Duplicates an object handle.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/ms724251
+
+    :param handle hSourceProcessHandle:
+        A handle to the process which owns the handle to be duplicated.
+
+    :param handle hSourceHandle:
+        The handle to be duplicated.
+
+    :param handle hTargetProcessHandle:
+        A handle to the process which should receive the duplicated handle.
+
+    :param int dwDesiredAccess:
+        The access requested for the new handle.
+
+    :param bool bInheritHandle:
+        True if the handle should be inheritable by new processes.
+
+    :param int dwOptions:
+        Options which control how the handle is duplicated.  Valid
+        values are any of the below (or a combination of):
+
+            * ``DUPLICATE_CLOSE_SOURCE`` - Closes the source handle, even
+               if there's an error.
+            * ``DUPLICATE_SAME_ACCESS`` - Ignores the ``dwDesiredAccess``
+               parameter duplicates with the same access as the original
+               handle.
+
+    :rtype: handle
+    :return:
+        Returns the duplicated handle.
+    """
+    ffi, library = dist.load()
+    input_check("hSourceProcessHandle", hSourceProcessHandle, Enums.HANDLE)
+    input_check("hSourceHandle", hSourceHandle, Enums.HANDLE)
+    input_check("hTargetProcessHandle", hTargetProcessHandle, Enums.HANDLE)
+    input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
+    input_check("bInheritHandle", bInheritHandle, bool)
+    input_check("dwOptions", dwOptions, allowed_values=(
+        library.DUPLICATE_CLOSE_SOURCE, library.DUPLICATE_SAME_ACCESS,
+        library.DUPLICATE_CLOSE_SOURCE | library.DUPLICATE_SAME_ACCESS
+    ))
+
+    lpTargetHandle = ffi.new("LPHANDLE")
+    code = library.DuplicateHandle(
+        hSourceProcessHandle,
+        hSourceHandle,
+        hTargetProcessHandle,
+        lpTargetHandle,
+        ffi.cast("DWORD", dwDesiredAccess),
+        ffi.cast("BOOL", bInheritHandle),
+        ffi.cast("DWORD", dwOptions)
+    )
+    error_check("DuplicateHandle", code, expected=Enums.NON_ZERO)
+    return lpTargetHandle[0]
