@@ -57,7 +57,7 @@ HEADER_FILES = (
 SOURCE_FILES = (
     resource_filename(
         "pywincffi", join("core", "cdefs", "sources", "main.c")), )
-LIBRARIES = ("kernel32", "user32")
+LIBRARIES = ("kernel32", "user32", "Ws2_32")
 
 
 class Module(object):  # pylint: disable=too-few-public-methods
