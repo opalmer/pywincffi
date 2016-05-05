@@ -47,3 +47,4 @@ BOOL ResetEvent(HANDLE);
 // Communications
 BOOL ClearCommError(HANDLE, LPDWORD, LPCOMSTAT);
 int WSAEventSelect(int, HANDLE, long);
+int WSAGetLastError(void);

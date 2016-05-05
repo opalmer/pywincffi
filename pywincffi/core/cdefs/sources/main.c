@@ -1,5 +1,6 @@
 #include <io.h>
 #include <winsock2.h>
+#include <winerror.h>
 #include <windows.h>
 
 // Extra constants which are not defined in all versions of Windows or
