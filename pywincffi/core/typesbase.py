@@ -9,8 +9,6 @@ Provides the base types on top of which user visible types will be built.
 import cffi
 
 
-_ffi = cffi.FFI()
-
 
 class CFFICDataWrapper(object):
 
@@ -24,7 +22,9 @@ class CFFICDataWrapper(object):
     is in place to support @property in sub-classes.
     """
 
-    def __init__(self, cdecl, ffi=_ffi):
+    def __init__(self, cdecl, ffi=None):
+        if ffi is None:
+            ffi = cffi.FFI()
         self._cdata = ffi.new(cdecl)
 
     def __getattr__(self, name):
