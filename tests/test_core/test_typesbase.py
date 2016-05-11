@@ -15,7 +15,11 @@ class TestCFFICDataWrapper(TestCase):
 
     def test_simple_struct_set_and_get(self):
         o = typesbase.CFFICDataWrapper("""
-            struct _point { float x; float y; float z;} *
+            struct _point {
+                float x;
+                float y;
+                float z;
+            } *
         """)
         o.x = 123.0
         o.y = 456.0
@@ -25,7 +29,7 @@ class TestCFFICDataWrapper(TestCase):
         self.assertAlmostEqual(o.z, 789.0)
 
     def test_char_array_set_and_get(self):
-        o = typesbase.CFFICDataWrapper("""char [256]""")
+        o = typesbase.CFFICDataWrapper("char [256]")
         content = string.letters
         content_len = len(content)
         for i in range(256):
@@ -35,7 +39,7 @@ class TestCFFICDataWrapper(TestCase):
 
     def test_char_array_set_and_ffi_string(self):
         ffi = cffi.FFI()
-        o = typesbase.CFFICDataWrapper("""char [256]""")
+        o = typesbase.CFFICDataWrapper("char [256]")
         content = string.digits
         content_len = len(content)
         for i in range(content_len):
@@ -46,7 +50,11 @@ class TestCFFICDataWrapper(TestCase):
 
     def test_simple_struct_array_set_and_get(self):
         o = typesbase.CFFICDataWrapper("""
-            struct _time { int hour; int minute; int second;} [20]
+            struct _time {
+                int hour;
+                int minute;
+                int second;
+            } [20]
         """)
         for i in range(20):
             o[i].hour = i;
