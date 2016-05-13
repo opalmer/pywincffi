@@ -5,9 +5,7 @@ Types Base
 Provides the base types on top of which user visible types will be built.
 """
 
-
 import cffi
-
 
 
 class CFFICDataWrapper(object):
@@ -57,5 +55,4 @@ class CFFICDataWrapper(object):
 
     def __setitem__(self, key, value):
         return self._cdata.__setitem__(key, value)
-
 
