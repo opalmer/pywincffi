@@ -14,6 +14,16 @@ from pywincffi.core import dist
 _ffi, _ = dist.load()
 
 
+def wintype_to_cdata(wintype):
+    """
+    :param wintype:
+        A type derived from :class:`pywincffi.core.typesbase.CFFICDataWrapper`
+    :return:
+        The underlying CFFI <cdata> object.
+    """
+    return _ffi.NULL if wintype is None else wintype._cdata
+
+
 class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
     """
     .. seealso: https://msdn.microsoft.com/en-us/library/aa379560

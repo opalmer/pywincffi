@@ -8,9 +8,10 @@ A module containing Windows functions for working with events.
 from six import string_types, integer_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.util import string_to_cdata
+from pywincffi.wintypes import SECURITY_ATTRIBUTES, wintype_to_cdata
 
 
 def CreateEvent(
@@ -53,12 +54,11 @@ def CreateEvent(
         input_check("lpName", lpName, string_types)
         lpName = string_to_cdata(lpName)
 
-    if lpEventAttributes is None:
-        lpEventAttributes = ffi.NULL
-    else:
-        input_check(
-            "lpEventAttributes", lpEventAttributes,
-            allowed_types=Enums.SECURITY_ATTRIBUTES)
+    input_check(
+        "lpEventAttributes", lpEventAttributes,
+        allowed_types=(SECURITY_ATTRIBUTES, NoneType)
+    )
+    lpEventAttributes = wintype_to_cdata(lpEventAttributes)
 
     handle = library.CreateEvent(
         lpEventAttributes,
