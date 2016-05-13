@@ -24,9 +24,9 @@ class TestCFFICDataWrapper(TestCase):
         o.x = 123.0
         o.y = 456.0
         o.z = 789.0
-        self.assertAlmostEqual(o.x, 123.0)
-        self.assertAlmostEqual(o.y, 456.0)
-        self.assertAlmostEqual(o.z, 789.0)
+        self.assertAlmostEqual(o.x, 123.0, places=2)
+        self.assertAlmostEqual(o.y, 456.0, places=2)
+        self.assertAlmostEqual(o.z, 789.0, places=2)
 
     def test_char_array_set_and_get(self):
         o = typesbase.CFFICDataWrapper("char [256]")
@@ -57,7 +57,7 @@ class TestCFFICDataWrapper(TestCase):
             } [20]
         """)
         for i in range(20):
-            o[i].hour = i;
+            o[i].hour = i
             o[i].minute = (12 - i*2) % 60
             o[i].second = (i * 9871) % 60
         for i in range(20):
@@ -111,4 +111,144 @@ class TestCFFICDataWrapper(TestCase):
         o.last_name = u'Last Name'
         self.assertEqual(ffi.string(o.first_name), u'First Name')
         self.assertEqual(ffi.string(o.last_name), u'Last Name')
+
+
+_ffi_with_circle_t = cffi.FFI()
+_ffi_with_circle_t.cdef("""
+    typedef struct _circle {
+        float x;
+        float y;
+        float radius;
+    } circle_t;
+""")
+
+
+class _Circle(typesbase.CFFICDataWrapper):
+    """
+    Used in TestDerivedStructTypes.
+    """
+    def __init__(self):
+        super(_Circle, self).__init__("circle_t *", _ffi_with_circle_t)
+
+
+class _CircleWithArgs(_Circle):
+    """
+    Used in TestDerivedStructTypes.
+    """
+    def __init__(self, x=1.23, y=4.56, radius=7.89):
+        super(_CircleWithArgs, self).__init__()
+        self.x = x
+        self.y = y
+        self.radius = radius
+
+
+class _CircleWithProperties(_CircleWithArgs):
+    """
+    Used in TestDerivedStructTypes.
+    """
+    @property
+    def radius(self):
+        return self._cdata.radius
+
+    @radius.setter
+    def radius(self, value):
+        if not isinstance(value, float):
+            raise TypeError('%r not a float' % value)
+        if value < 0.0:
+            raise ValueError('negative radius')
+        self._cdata.radius = value
+
+
+class TestDerivedStructTypes(TestCase):
+    """
+    Tests for types based on :class:`pywincffi.core.typesbase.CFFICDataWrapper`
+    """
+
+    def test_derived_circle_simple(self):
+        c = _Circle()
+        c.x = 0.0
+        c.y = 0.0
+        c.radius = 1.0
+        self.assertAlmostEqual(c.x, 0.0, places=2)
+        self.assertAlmostEqual(c.y, 0.0, places=2)
+        self.assertAlmostEqual(c.radius, 1.0, places=2)
+
+    def test_derived_circle_bad_attr(self):
+        c = _Circle()
+        with self.assertRaises(AttributeError):
+            c.no_such_attr = 42
+
+    def test_derived_circle_with_args(self):
+        c = _CircleWithArgs()
+        self.assertAlmostEqual(c.x, 1.23, places=2)
+        self.assertAlmostEqual(c.y, 4.56, places=2)
+        self.assertAlmostEqual(c.radius, 7.89, places=2)
+
+    def test_derived_circle_with_args_bad_attr(self):
+        c = _CircleWithArgs()
+        with self.assertRaises(AttributeError):
+            c.this_attr_is_missing = 42
+
+    def test_derived_circle_with_explicit_args(self):
+        c = _CircleWithArgs(-1.1, -2.2, 3.3)
+        self.assertAlmostEqual(c.x, -1.1, places=2)
+        self.assertAlmostEqual(c.y, -2.2, places=2)
+        self.assertAlmostEqual(c.radius, 3.3, places=2)
+
+    def test_derived_circle_with_property(self):
+        c = _CircleWithProperties()
+        c.radius = 12.34
+        self.assertAlmostEqual(c.radius, 12.34, places=2)
+
+    def test_derived_circle_with_property_bad_attr(self):
+        c = _CircleWithProperties()
+        with self.assertRaises(AttributeError):
+            c.this_attr_is_also_missing = 42
+
+    def test_derived_circle_with_property_bad_type(self):
+        c = _CircleWithProperties()
+        with self.assertRaises(TypeError):
+            c.radius = u'fail please'
+
+    def test_derived_circle_with_property_bad_value(self):
+        c = _CircleWithProperties()
+        with self.assertRaises(ValueError):
+            c.radius = -4.4
+
+
+class _CircleArray(typesbase.CFFICDataWrapper):
+    """
+    Used in TestDerivedArrayTypes.
+    """
+    def __init__(self, size):
+        cdecl = "circle_t[%i]" % size
+        super(_CircleArray, self).__init__(cdecl, _ffi_with_circle_t)
+
+
+class TestDerivedArrayTypes(TestCase):
+    """
+    Tests for types based on :class:`pywincffi.core.typesbase.CFFICDataWrapper`
+    """
+
+    def test_derived_circle_array(self):
+        c = _CircleArray(4)
+        for i in range(4):
+            c[i].x = i
+            c[i].y = 0.0
+            c[i].radius = 1.5
+        for i in range(4):
+            self.assertAlmostEqual(c[i].x, i, places=2)
+            self.assertAlmostEqual(c[i].y, 0.0, places=2)
+            self.assertAlmostEqual(c[i].radius, 1.5, places=2)
+
+    def test_derived_circle_array_out_of_bounds(self):
+        c = _CircleArray(4)
+        with self.assertRaises(IndexError):
+            c[4].x = -9.9
+
+    def test_derived_circle_array_bad_attr(self):
+        c = _CircleArray(4)
+        with self.assertRaises(AttributeError):
+            c[2].crazy_missing_attr = 42
+
 
