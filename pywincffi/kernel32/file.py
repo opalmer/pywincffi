@@ -8,9 +8,10 @@ A module containing common Windows file functions for working with files.
 from six import PY3, integer_types, string_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.util import string_to_cdata
+from pywincffi.wintypes import SECURITY_ATTRIBUTES, wintype_to_cdata
 
 
 def CreateFile(  # pylint: disable=too-many-arguments
@@ -68,9 +69,6 @@ def CreateFile(  # pylint: disable=too-many-arguments
     if dwShareMode is None:
         dwShareMode = library.FILE_SHARE_READ
 
-    if lpSecurityAttributes is None:
-        lpSecurityAttributes = ffi.NULL
-
     if dwCreationDisposition is None:
         dwCreationDisposition = library.CREATE_ALWAYS
 
@@ -85,8 +83,9 @@ def CreateFile(  # pylint: disable=too-many-arguments
     input_check("dwShareMode", dwShareMode, integer_types)
     input_check(
         "lpSecurityAttributes", lpSecurityAttributes,
-        Enums.SECURITY_ATTRIBUTES
+        allowed_types=(NoneType, SECURITY_ATTRIBUTES)
     )
+    lpSecurityAttributes = wintype_to_cdata(lpSecurityAttributes)
     input_check(
         "dwCreationDisposition", dwCreationDisposition,
         allowed_values=(
