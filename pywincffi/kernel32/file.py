@@ -41,10 +41,8 @@ def CreateFile(  # pylint: disable=too-many-arguments
         other open operations or process to continue to read from the file.
 
     :keyword struct lpSecurityAttributes:
-        A pointer to a ``SECURITY_ATTRIBUTES`` structure, see Microsoft's
-        documentation for more detailed information.  If not provided with
-        an explicit value, NULL will be used instead which will mean the
-        handle can't be inherited by any child process.
+        :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES` or None.
+        See Microsoft's documentation for more detailed information.
 
     :keyword int dwCreationDisposition:
         Action to take when the file or device does not exist.  If not
