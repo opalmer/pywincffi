@@ -34,6 +34,7 @@ class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
             _ffi,
         )
         self._cdata.nLength = _ffi.sizeof(self._cdata)
+        self.lpSecurityDescriptor = _ffi.NULL
 
     @property
     def nLength(self):

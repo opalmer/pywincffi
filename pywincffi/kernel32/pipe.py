@@ -11,6 +11,7 @@ from six import integer_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
+from pywincffi.wintypes import SECURITY_ATTRIBUTES, wintype_to_cdata
 
 PeekNamedPipeResult = namedtuple(
     "PeekNamedPipeResult",
@@ -30,14 +31,9 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
 
     >>> from pywincffi.core import dist
     >>> from pywincffi.kernel32 import CreatePipe
-    >>> ffi, library = dist.load()
-    >>> lpPipeAttributes = ffi.new(
-    ...     "SECURITY_ATTRIBUTES[1]", [{
-    ...     "nLength": ffi.sizeof("SECURITY_ATTRIBUTES"),
-    ...     "bInheritHandle": True,
-    ...     "lpSecurityDescriptor": ffi.NULL
-    ...     }]
-    ... )
+    >>> from pywincffi.wintypes import SECURITY_ATTRIBUTES
+    >>> lpPipeAttributes = SECURITY_ATTRIBUTES()
+    >>> lpPipeAttributes.bInheritHandle = True
     >>> reader, writer = CreatePipe(lpPipeAttributes=lpPipeAttributes)
 
     :keyword int nSize:
@@ -56,14 +52,16 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         is responsible for calling CloseHandle at some point.
     """
     input_check("nSize", nSize, integer_types)
-    input_check("lpPipeAttributes", lpPipeAttributes, (NoneType, dict))
+    input_check(
+        "lpPipeAttributes", lpPipeAttributes,
+        allowed_types=(NoneType, SECURITY_ATTRIBUTES)
+    )
+    lpPipeAttributes = wintype_to_cdata(lpPipeAttributes)
+
     ffi, library = dist.load()
 
     hReadPipe = ffi.new("PHANDLE")
     hWritePipe = ffi.new("PHANDLE")
-
-    if lpPipeAttributes is None:
-        lpPipeAttributes = ffi.NULL
 
     code = library.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
     error_check("CreatePipe", code=code, expected=Enums.NON_ZERO)
