@@ -31,42 +31,12 @@ class TestWriteFile(TestCase):
         handle = handle_from_file(file_)
         return handle, path
 
-    @skip_unless_python2
-    def test_python2_write_string(self):
+    def test_write_binary(self):
         handle, path = self.create_handle()
-        WriteFile(
-            handle, "hello world", lpBufferType="char[]")
+        WriteFile(handle, b"hello world")
         FlushFileBuffers(handle)
         with open(path, "r") as file_:
-            self.assertEqual(file_.read(), "hello world\x00")
-
-    @skip_unless_python2
-    def test_python2_write_unicode(self):
-        handle, path = self.create_handle()
-        WriteFile(handle, u"hello world")
-        FlushFileBuffers(handle)
-        with open(path, "r") as file_:
-            self.assertEqual(
-                file_.read(),
-                "h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l"
-                "\x00d\x00\x00\x00")
-
-    @skip_unless_python3
-    def test_python3_write_string(self):
-        handle, path = self.create_handle()
-        WriteFile(handle, "hello world")
-        FlushFileBuffers(handle)
-        v = b"h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l\x00d\x00\x00\x00"
-        with open(path, "rb") as file_:
-            self.assertEqual(file_.read(), v)
-
-    @skip_unless_python3
-    def test_python3_write_bytes(self):
-        handle, path = self.create_handle()
-        WriteFile(handle, b"hello world", lpBufferType="char[]")
-        FlushFileBuffers(handle)
-        with open(path, "rb") as file_:
-            self.assertEqual(file_.read(), b"hello world\x00")
+            self.assertEqual(file_.read(), b"hello world")
 
 
 class TestMoveFileEx(TestCase):
@@ -202,12 +172,7 @@ class LockFileCase(TestCase):
         self.handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, self.handle)
 
-        if PY3:
-            lpBufferType = "wchar_t[]"
-        else:
-            lpBufferType = "char[]"
-
-        WriteFile(self.handle, "hello", lpBufferType=lpBufferType)
+        WriteFile(self.handle, b"hello")
 
 
 class TestLockFileEx(LockFileCase):

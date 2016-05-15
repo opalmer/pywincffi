@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import PY3, integer_types, string_types, text_type
+from six import PY3, integer_types, string_types, text_type, binary_type
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
@@ -118,8 +118,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
     return handle
 
 
-def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
-              lpBufferType="wchar_t[]"):
+def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
     """
     Writes data to ``hFile`` which may be an I/O device for file.
 
@@ -130,14 +129,13 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
     :param handle hFile:
         The handle to write to
 
-    :type lpBuffer: bytes, string or unicode.
+    :type lpBuffer: str/bytes
     :param lpBuffer:
-        The data to be written to the file or device. We should be able
-        to convert this value to unicode.
+        Type is str on Python 2, bytes on Python 3.
+        The data to be written to the file or device.
 
     :keyword int nNumberOfBytesToWrite:
-        The number of bytes to be written.  By default this will
-        be determinted based on the size of ``lpBuffer``
+        The number of bytes to be written.  Defaults to len(lpBuffer).
 
     :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
     :keyword lpOverlapped:
@@ -153,36 +151,25 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
         >>> bytes_written = WriteFile(
         ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
-    :keyword str lpBufferType:
-        The type which should be passed to :meth:`ffi.new`.  If the data
-        you're passing into this function is a string and you're using Python
-        2 for example you might use ``char[]`` here instead.
-
     :returns:
         Returns the number of bytes written
     """
     ffi, library = dist.load()
 
-    lpBufferTypes = string_types
-    if PY3:
-        lpBufferTypes = tuple(list(string_types) + [bytes])
-
     input_check("hFile", hFile, Enums.HANDLE)
-    input_check("lpBuffer", lpBuffer, lpBufferTypes)
+    input_check("lpBuffer", lpBuffer, binary_type)
     input_check(
         "lpOverlapped", lpOverlapped,
         allowed_types=(NoneType, OVERLAPPED)
     )
 
-    input_check(
-        "lpBufferType", lpBufferType, allowed_values=("char[]", "wchar_t[]"))
-
-    lpBuffer = ffi.new(lpBufferType, lpBuffer)
-
     if nNumberOfBytesToWrite is None:
-        nNumberOfBytesToWrite = ffi.sizeof(lpBuffer)
-
-    input_check("nNumberOfBytesToWrite", nNumberOfBytesToWrite, integer_types)
+        nNumberOfBytesToWrite = len(lpBuffer)
+    else:
+        input_check(
+            "nNumberOfBytesToWrite", nNumberOfBytesToWrite,
+            integer_types
+        )
 
     bytes_written = ffi.new("LPDWORD")
     code = library.WriteFile(
