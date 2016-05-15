@@ -5,12 +5,11 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import PY3, integer_types, string_types, text_type, binary_type
+from six import PY3, integer_types, text_type, binary_type
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.util import string_to_cdata
 from pywincffi.wintypes import (
     SECURITY_ATTRIBUTES, OVERLAPPED, wintype_to_cdata
 )
