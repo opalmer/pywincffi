@@ -246,7 +246,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         wintype_to_cdata(lpOverlapped)
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
-    return ffi.string(lpBuffer)
+    return ffi.unpack(lpBuffer, bytes_read[0])
 
 
 def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):

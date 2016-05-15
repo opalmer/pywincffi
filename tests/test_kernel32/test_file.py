@@ -60,11 +60,17 @@ class TestReadFile(TestCase):
         self.addCleanup(CloseHandle, hFile)
         return hFile
 
-    def test_write_then_read(self):
-        path = self._create_file(b"test_write_then_read contents")
+    def test_write_then_read_bytes_ascii(self):
+        path = self._create_file(b"test_write_then_read_bytes_ascii contents")
         hFile = self._handle_to_read_file(path)
         contents = ReadFile(hFile, 1024)
-        self.assertEqual(contents, b"test_write_then_read contents")
+        self.assertEqual(contents, b"test_write_then_read_bytes_ascii contents")
+
+    def test_write_then_read_null_bytes(self):
+        path = self._create_file(b"hello\x00world")
+        hFile = self._handle_to_read_file(path)
+        contents = ReadFile(hFile, 1024)
+        self.assertEqual(contents, b"hello\x00world")
 
     def test_write_then_read_partial(self):
         path = self._create_file(b"test_write_then_read_partial contents")
