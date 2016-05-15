@@ -34,7 +34,7 @@ class TestTypeCheckFailure(TestCase):
         with self.assertRaises(InputError):
             input_check(
                 "lpEventAttributes", "",
-                allowed_types=Enums.SECURITY_ATTRIBUTES)
+                allowed_types=Enums.HANDLE)
 
 
 class TestEnumMapping(TestCase):
@@ -57,23 +57,6 @@ class TestEnumMapping(TestCase):
 
         ffi, _ = dist.load()
         input_check("", ffi.NULL, "mapping")
-
-    def test_overlapped(self):
-        ffi, _ = dist.load()
-        input_check("", ffi.new("OVERLAPPED[1]"), Enums.OVERLAPPED)
-
-    def test_overlapped_nullable(self):
-        ffi, _ = dist.load()
-        input_check("", ffi.NULL, Enums.OVERLAPPED)
-
-    def test_lp_security_attributes(self):
-        ffi, _ = dist.load()
-        input_check(
-            "", ffi.new("SECURITY_ATTRIBUTES[1]"), Enums.SECURITY_ATTRIBUTES)
-
-    def test_lp_security_attributes_nullable(self):
-        ffi, _ = dist.load()
-        input_check("", ffi.NULL, Enums.SECURITY_ATTRIBUTES)
 
 
 class TestEnumUTF8(TestCase):
