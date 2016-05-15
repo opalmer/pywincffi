@@ -80,7 +80,7 @@ class TestSession(TestCase):
     Tests for constants of :class:`pywincffi.dev.release.Session`
     """
     REQUIRES_INTERNET = True
-    DOWNLOAD_SHA1 = "89ff14348b410051fff2eb206183993f659d85e0"
+    DOWNLOAD_SHA1 = "b34ffce316e11eebc5b2ceb4398a9606630c72bf"
     DOWNLOAD_URL = \
         "https://raw.githubusercontent.com/opalmer/pywincffi/" \
         "master/.ci/appveyor/run_with_compiler.cmd"
