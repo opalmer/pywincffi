@@ -10,7 +10,6 @@ from six import string_types, integer_types, text_type
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.util import string_to_cdata
 from pywincffi.wintypes import SECURITY_ATTRIBUTES, wintype_to_cdata
 
 
