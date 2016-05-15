@@ -9,14 +9,13 @@ from mock import patch
 from six import PY2, PY3
 
 from pywincffi.core import dist
-from pywincffi.dev.testutil import (
-    TestCase, skip_unless_python2, skip_unless_python3)
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 
 from pywincffi.kernel32 import file as _file  # used for mocks
 from pywincffi.kernel32 import (
     CreateFile, CloseHandle, MoveFileEx, WriteFile, FlushFileBuffers,
-    LockFileEx, UnlockFileEx, handle_from_file)
+    LockFileEx, UnlockFileEx, handle_from_file, ReadFile)
 
 
 class TestWriteFile(TestCase):
@@ -37,6 +36,41 @@ class TestWriteFile(TestCase):
         FlushFileBuffers(handle)
         with open(path, "r") as file_:
             self.assertEqual(file_.read(), b"hello world")
+
+
+class TestReadFile(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.ReadFile`
+    """
+    def _create_file(self, contents):
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        with os.fdopen(fd, "w") as file_:
+            file_.write(contents)
+        return path if PY3 else unicode(path)
+
+    def _handle_to_read_file(self, path):
+        _, library = dist.load()
+        # OPEN_EXISTING prevents the file from being truncated.
+        hFile = CreateFile(
+            path,
+            dwDesiredAccess=library.GENERIC_READ,
+            dwCreationDisposition=library.OPEN_EXISTING,
+        )
+        self.addCleanup(CloseHandle, hFile)
+        return hFile
+
+    def test_write_then_read(self):
+        path = self._create_file(b"test_write_then_read contents")
+        hFile = self._handle_to_read_file(path)
+        contents = ReadFile(hFile, 1024)
+        self.assertEqual(contents, b"test_write_then_read contents")
+
+    def test_write_then_read_partial(self):
+        path = self._create_file(b"test_write_then_read_partial contents")
+        hFile = self._handle_to_read_file(path)
+        contents = ReadFile(hFile, 4)
+        self.assertEqual(contents, b"test")
 
 
 class TestMoveFileEx(TestCase):
