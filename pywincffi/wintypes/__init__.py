@@ -19,7 +19,7 @@ def wintype_to_cdata(wintype):
     :param wintype:
         A type derived from :class:`pywincffi.core.typesbase.CFFICDataWrapper`
     :return:
-        The underlying CFFI <cdata> object.
+        The underlying CFFI <cdata> object, or ffi.NULL if wintype is None.
     """
     return _ffi.NULL if wintype is None else wintype._cdata
 
