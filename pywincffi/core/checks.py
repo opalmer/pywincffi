@@ -25,7 +25,6 @@ Enums = enum.Enum("Enums", """
 NON_ZERO
 HANDLE
 UTF8
-OVERLAPPED
 PYFILE
 """.strip())
 
@@ -44,11 +43,6 @@ INPUT_CHECK_MAPPINGS = {
         kind="pointer",
         cname=re.compile(r"^void \*$"),
         nullable=False
-    ),
-    Enums.OVERLAPPED: CheckMapping(
-        kind="array",
-        cname=re.compile(r"^(?:struct _|).*OVERLAPPED\[.*\]$"),
-        nullable=True
     )
 }
 
