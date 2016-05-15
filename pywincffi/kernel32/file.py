@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import PY3, integer_types, string_types
+from six import PY3, integer_types, string_types, text_type
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
@@ -30,7 +30,8 @@ def CreateFile(  # pylint: disable=too-many-arguments
         https://msdn.microsoft.com/en-us/library/aa363858
         https://msdn.microsoft.com/en-us/library/gg258116
 
-    :param str lpFileName:
+    :param unicode/str lpFileName:
+        Type is unicode on Python 2, str on Python 3.
         The path to the file or device being created or opened.
 
     :param int dwDesiredAccess:
@@ -78,7 +79,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
     if hTemplateFile is None:
         hTemplateFile = ffi.NULL
 
-    input_check("lpFileName", lpFileName, string_types)
+    input_check("lpFileName", lpFileName, text_type)
     input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
     input_check("dwShareMode", dwShareMode, integer_types)
     input_check(
@@ -99,7 +100,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
     input_check("hTemplateFile", hTemplateFile, Enums.HANDLE)
 
     handle = library.CreateFile(
-        string_to_cdata(lpFileName), dwDesiredAccess, dwShareMode,
+        lpFileName, dwDesiredAccess, dwShareMode,
         wintype_to_cdata(lpSecurityAttributes), dwCreationDisposition,
         dwFlagsAndAttributes, hTemplateFile
     )

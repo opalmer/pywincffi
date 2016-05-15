@@ -6,7 +6,7 @@ import sys
 from os.path import isfile
 
 from mock import patch
-from six import PY3
+from six import PY2, PY3
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import (
@@ -137,6 +137,8 @@ class TestCreateFile(TestCase):
         os.close(fd)
         os.remove(path)
 
+        if PY2:
+            path = unicode(path)
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
         self.assertTrue(isfile(path))
@@ -150,6 +152,8 @@ class TestCreateFile(TestCase):
             file_.flush()
             os.fsync(file_.fileno())
 
+        if PY2:
+            path = unicode(path)
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
 
@@ -166,6 +170,8 @@ class TestCreateFile(TestCase):
             raise WindowsAPIError("", "", library.ERROR_ALREADY_EXISTS)
 
         with patch.object(_file, "error_check", side_effect=raise_):
+            if PY2:
+                path = unicode(path)
             handle = CreateFile(
                 path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
@@ -177,7 +183,7 @@ class TestCreateFile(TestCase):
 
         with self.assertRaises(WindowsAPIError) as error:
             handle = CreateFile(
-                "", 0, dwCreationDisposition=library.CREATE_ALWAYS)
+                u"", 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
 
         self.assertEqual(error.exception.errno, library.ERROR_PATH_NOT_FOUND)
@@ -191,6 +197,8 @@ class LockFileCase(TestCase):
         os.close(fd)
         self.addCleanup(os.remove, path)
         _, library = dist.load()
+        if PY2:
+            path = unicode(path)
         self.handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, self.handle)
 
