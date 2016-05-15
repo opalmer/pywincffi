@@ -409,8 +409,6 @@ def UnlockFileEx(
     else:
         input_check("lpOverlapped", lpOverlapped, allowed_types=OVERLAPPED)
 
-    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
-
     code = library.UnlockFileEx(
         hFile,
         ffi.cast("DWORD", 0),  # "_Reserveved_"
