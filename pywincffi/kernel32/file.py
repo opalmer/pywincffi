@@ -11,7 +11,9 @@ from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.util import string_to_cdata
-from pywincffi.wintypes import SECURITY_ATTRIBUTES, wintype_to_cdata
+from pywincffi.wintypes import (
+    SECURITY_ATTRIBUTES, OVERLAPPED, wintype_to_cdata
+)
 
 
 def CreateFile(  # pylint: disable=too-many-arguments
@@ -83,7 +85,6 @@ def CreateFile(  # pylint: disable=too-many-arguments
         "lpSecurityAttributes", lpSecurityAttributes,
         allowed_types=(NoneType, SECURITY_ATTRIBUTES)
     )
-    lpSecurityAttributes = wintype_to_cdata(lpSecurityAttributes)
     input_check(
         "dwCreationDisposition", dwCreationDisposition,
         allowed_values=(
@@ -99,8 +100,8 @@ def CreateFile(  # pylint: disable=too-many-arguments
 
     handle = library.CreateFile(
         string_to_cdata(lpFileName), dwDesiredAccess, dwShareMode,
-        lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes,
-        hTemplateFile
+        wintype_to_cdata(lpSecurityAttributes), dwCreationDisposition,
+        dwFlagsAndAttributes, hTemplateFile
     )
 
     try:
@@ -137,21 +138,17 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
         The number of bytes to be written.  By default this will
         be determinted based on the size of ``lpBuffer``
 
-    :type lpOverlapped: None or OVERLAPPED
+    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
     :keyword lpOverlapped:
-        None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
-        documentation for intended usage and below for an example of this
-        struct.
+        See Microsoft's documentation for intended usage and below for
+        an example.
 
         >>> from pywincffi.core import dist
-        >>> from pywincffi.kernel32 import WriteFile
-        >>> ffi, library = dist.load()
-        >>> hFile = None # normally, this would be a handle
-        >>> lpOverlapped = ffi.new(
-        ...     "OVERLAPPED[1]", [{
-        ...         "hEvent": hFile
-        ...     }]
-        ... )
+        >>> from pywincffi.kernel32 import WriteFile, CreateEvent
+        >>> from pywincffi.wintypes import OVERLAPPED
+        >>> hEvent = CreateEvent(...)
+        >>> lpOverlapped = OVERLAPPED()
+        >>> lpOverlapped.hEvent = hEvent[0]
         >>> bytes_written = WriteFile(
         ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
@@ -165,16 +162,17 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
     """
     ffi, library = dist.load()
 
-    if lpOverlapped is None:
-        lpOverlapped = ffi.NULL
-
     lpBufferTypes = string_types
     if PY3:
         lpBufferTypes = tuple(list(string_types) + [bytes])
 
     input_check("hFile", hFile, Enums.HANDLE)
     input_check("lpBuffer", lpBuffer, lpBufferTypes)
-    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
+    input_check(
+        "lpOverlapped", lpOverlapped,
+        allowed_types=(NoneType, OVERLAPPED)
+    )
+
     input_check(
         "lpBufferType", lpBufferType, allowed_values=("char[]", "wchar_t[]"))
 
@@ -187,7 +185,9 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None,
 
     bytes_written = ffi.new("LPDWORD")
     code = library.WriteFile(
-        hFile, lpBuffer, nNumberOfBytesToWrite, bytes_written, lpOverlapped)
+        hFile, lpBuffer, nNumberOfBytesToWrite, bytes_written,
+        wintype_to_cdata(lpOverlapped)
+    )
     error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
 
     return bytes_written[0]
@@ -224,20 +224,17 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     :param int nNumberOfBytesToRead:
         The number of bytes to read from ``hFile``
 
-    :type lpOverlapped: None or OVERLAPPED
+    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
     :keyword lpOverlapped:
-        None or a pointer to a ``OVERLAPPED`` structure.  See Microsoft's
-        documentation for intended usage and below for an example of this
-        struct.
+        See Microsoft's documentation for intended usage and below for
+        an example.
 
         >>> from pywincffi.core import dist
-        >>> ffi, library = dist.load()
-        >>> hFile = None # normally, this would be a handle
-        >>> lpOverlapped = ffi.new(
-        ...     "OVERLAPPED[1]", [{
-        ...         "hEvent": hFile
-        ...     }]
-        ... )
+        >>> from pywincffi.kernel32 import ReadFile, CreateEvent
+        >>> from pywincffi.wintypes import OVERLAPPED
+        >>> hEvent = CreateEvent(...)
+        >>> lpOverlapped = OVERLAPPED()
+        >>> lpOverlapped.hEvent = hEvent[0]
         >>> read_data = ReadFile(  # read 12 bytes from hFile
         ...     hFile, 12, lpOverlapped=lpOverlapped)
 
@@ -246,17 +243,18 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
     ffi, library = dist.load()
 
-    if lpOverlapped is None:
-        lpOverlapped = ffi.NULL
-
     input_check("hFile", hFile, Enums.HANDLE)
     input_check("nNumberOfBytesToRead", nNumberOfBytesToRead, integer_types)
-    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
+    input_check(
+        "lpOverlapped", lpOverlapped,
+        allowed_types=(NoneType, OVERLAPPED)
+    )
 
     lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToRead)
     bytes_read = ffi.new("LPDWORD")
     code = library.ReadFile(
-        hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_read, lpOverlapped
+        hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_read,
+        wintype_to_cdata(lpOverlapped)
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
     return ffi.string(lpBuffer)
@@ -334,9 +332,12 @@ def LockFileEx(
     :param int nNumberOfBytesToLockHigh:
         The end of the byte range to lock.
 
-    :keyword LPOVERLAPPED lpOverlapped:
-        A pointer to an ``OVERLAPPED`` structure.  If not provided
-        one will be constructed for you.
+    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
+    :keyword lpOverlapped:
+        The underlying Windows API requires lpOverlapped, which acts both
+        an input argument and may contain results after calling. If None is
+        provided, a throw-away zero-filled instance will be created to
+        support such call. See Microsoft's documentation for intended usage.
     """
     input_check("hFile", hFile, Enums.HANDLE)
     input_check("dwFlags", dwFlags, integer_types)
@@ -348,9 +349,10 @@ def LockFileEx(
     ffi, library = dist.load()
 
     if lpOverlapped is None:
-        lpOverlapped = ffi.new("OVERLAPPED[]", [{"hEvent": hFile}])
-
-    input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
+        # Required by Windows API, create a throw-away zero-filled instance.
+        lpOverlapped = OVERLAPPED()
+    else:
+        input_check("lpOverlapped", lpOverlapped, allowed_types=OVERLAPPED)
 
     code = library.LockFileEx(
         hFile,
@@ -358,7 +360,7 @@ def LockFileEx(
         ffi.cast("DWORD", 0),  # "_Reserveved_"
         ffi.cast("DWORD", nNumberOfBytesToLockLow),
         ffi.cast("DWORD", nNumberOfBytesToLockHigh),
-        lpOverlapped
+        wintype_to_cdata(lpOverlapped)
     )
     error_check("LockFileEx", code=code, expected=Enums.NON_ZERO)
 
@@ -384,9 +386,12 @@ def UnlockFileEx(
     :param int nNumberOfBytesToUnlockHigh:
         The end of the byte range to unlock.
 
-    :keyword LPOVERLAPPED lpOverlapped:
-        A pointer to an ``OVERLAPPED`` structure.  If not provided
-        one will be constructed for you.
+    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
+    :keyword lpOverlapped:
+        The underlying Windows API requires lpOverlapped, which acts both
+        an input argument and may contain results after calling. If None is
+        provided, a throw-away zero-filled instance will be created to
+        support such call. See Microsoft's documentation for intended usage.
     """
     input_check("hFile", hFile, Enums.HANDLE)
     input_check(
@@ -399,7 +404,10 @@ def UnlockFileEx(
     ffi, library = dist.load()
 
     if lpOverlapped is None:
-        lpOverlapped = ffi.new("OVERLAPPED[]", [{"hEvent": hFile}])
+        # Required by Windows API, create a throw-away zero-filled instance.
+        lpOverlapped = OVERLAPPED()
+    else:
+        input_check("lpOverlapped", lpOverlapped, allowed_types=OVERLAPPED)
 
     input_check("lpOverlapped", lpOverlapped, Enums.OVERLAPPED)
 
@@ -408,6 +416,6 @@ def UnlockFileEx(
         ffi.cast("DWORD", 0),  # "_Reserveved_"
         ffi.cast("DWORD", nNumberOfBytesToUnlockLow),
         ffi.cast("DWORD", nNumberOfBytesToUnlockHigh),
-        lpOverlapped
+        wintype_to_cdata(lpOverlapped)
     )
     error_check("UnlockFileEx", code=code, expected=Enums.NON_ZERO)
