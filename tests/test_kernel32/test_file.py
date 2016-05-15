@@ -95,6 +95,9 @@ class TestMoveFileEx(TestCase):
         self.addCleanup(os.remove, path2)
         os.close(fd)
 
+        if PY2:
+            path1 = unicode(path1)
+            path2 = unicode(path2)
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -111,6 +114,9 @@ class TestMoveFileEx(TestCase):
         with os.fdopen(fd, "w") as file_:
             file_.write(file_contents)
 
+        if PY2:
+            path1 = unicode(path1)
+            path2 = unicode(path2)
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -121,6 +127,9 @@ class TestMoveFileEx(TestCase):
     def test_run_delete_after_reboot(self):
         fd, path = tempfile.mkstemp()
         os.close(fd)
+
+        if PY2:
+            path = unicode(path)
 
         _, library = dist.load()
         try:

@@ -258,10 +258,12 @@ def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
 
         https://msdn.microsoft.com/en-us/library/aa365240
 
-    :param str lpExistingFileName:
+    :param unicode/str lpExistingFileName:
+        Type is unicode on Python 2, str on Python 3.
         Name of the file or directory to perform the operation on.
 
-    :param str lpNewFileName:
+    :param unicode/str lpNewFileName:
+        Type is unicode on Python 2, str on Python 3.
         Optional new name of the path or directory.  This value may be
         ``None``.
 
@@ -276,17 +278,16 @@ def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
         dwFlags = \
             library.MOVEFILE_REPLACE_EXISTING | library.MOVEFILE_WRITE_THROUGH
 
-    input_check("lpExistingFileName", lpExistingFileName, string_types)
+    input_check("lpExistingFileName", lpExistingFileName, text_type)
     input_check("dwFlags", dwFlags, integer_types)
 
     if lpNewFileName is not None:
-        input_check("lpNewFileName", lpNewFileName, string_types)
-        lpNewFileName = string_to_cdata(lpNewFileName)
+        input_check("lpNewFileName", lpNewFileName, text_type)
     else:
         lpNewFileName = ffi.NULL
 
     code = library.MoveFileEx(
-        string_to_cdata(lpExistingFileName),
+        lpExistingFileName,
         lpNewFileName,
         ffi.cast("DWORD", dwFlags)
     )
