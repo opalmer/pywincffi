@@ -59,7 +59,7 @@ class TestCreateEvent(TestCase):
         # if an event object with the same name already exists.  The
         # pywincffi API ignores this error and returns the handle
         # object.
-        name = "pywincffi-%s" % self.random_string(5)
+        name = u"pywincffi-%s" % self.random_string(5)
         handle1 = CreateEvent(False, False, lpName=name)
         self.addCleanup(CloseHandle, handle1)
         handle2 = CreateEvent(False, False, lpName=name)
@@ -78,7 +78,7 @@ class TestCreateEvent(TestCase):
             self.skipTest("Not compatible with Python 3.4")
 
         _, library = dist.load()
-        name = "pywincffi-%s" % self.random_string(5)
+        name = u"pywincffi-%s" % self.random_string(5)
         handle = CreateEvent(False, False, lpName=name)
         self.addCleanup(CloseHandle, handle)
         opened_event = OpenEvent(library.EVENT_ALL_ACCESS, True, name)

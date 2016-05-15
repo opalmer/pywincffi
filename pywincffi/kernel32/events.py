@@ -5,7 +5,7 @@ Events
 A module containing Windows functions for working with events.
 """
 
-from six import string_types, integer_types
+from six import string_types, integer_types, text_type
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
@@ -35,7 +35,8 @@ def CreateEvent(
         A pointer to a ``SECURITY_ATTRIBUTES`` structure.  If not provided
         then by default the handle cannot be inherited by a subprocess.
 
-    :keyword str lpName:
+    :keyword unicode/str lpName:
+        Type is unicode on Python 2, str on Python 3.
         The optional case-sensitive name of the event.  If not provided then
         the event will be created without an explicit name.
 
@@ -51,17 +52,15 @@ def CreateEvent(
     if lpName is None:
         lpName = ffi.NULL
     else:
-        input_check("lpName", lpName, string_types)
-        lpName = string_to_cdata(lpName)
+        input_check("lpName", lpName, text_type)
 
     input_check(
         "lpEventAttributes", lpEventAttributes,
         allowed_types=(SECURITY_ATTRIBUTES, NoneType)
     )
-    lpEventAttributes = wintype_to_cdata(lpEventAttributes)
 
     handle = library.CreateEvent(
-        lpEventAttributes,
+        wintype_to_cdata(lpEventAttributes),
         ffi.cast("BOOL", bManualReset),
         ffi.cast("BOOL", bInitialState),
         lpName
@@ -88,21 +87,22 @@ def OpenEvent(dwDesiredAccess, bInheritHandle, lpName):
         The access desired for the event object.
 
     :param bool bInheritHandle:
-    :param str lpName:
+    :param unicode/str lpName:
+        Type is unicode on Python 2, str on Python 3.
 
     :return:
         Returns the
     """
     input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
     input_check("bInheritHandle", bInheritHandle, bool)
-    input_check("lpName", lpName, string_types)
+    input_check("lpName", lpName, text_type)
 
     ffi, library = dist.load()
 
     handle = library.OpenEvent(
         ffi.cast("DWORD", dwDesiredAccess),
         ffi.cast("BOOL", bInheritHandle),
-        string_to_cdata(lpName)
+        lpName
     )
     error_check("OpenEvent")
     return handle
