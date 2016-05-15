@@ -227,7 +227,8 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         ...     hFile, 12, lpOverlapped=lpOverlapped)
 
     :returns:
-        Returns the data read from ``hFile``
+        Returns the binary data read from ``hFile``
+        Type is str on Python 2, bytes on Python 3.
     """
     ffi, library = dist.load()
 
@@ -238,10 +239,10 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         allowed_types=(NoneType, OVERLAPPED)
     )
 
-    lpBuffer = ffi.new("wchar_t[%d]" % nNumberOfBytesToRead)
+    lpBuffer = ffi.new("char []", nNumberOfBytesToRead)
     bytes_read = ffi.new("LPDWORD")
     code = library.ReadFile(
-        hFile, lpBuffer, ffi.sizeof(lpBuffer), bytes_read,
+        hFile, lpBuffer, nNumberOfBytesToRead, bytes_read,
         wintype_to_cdata(lpOverlapped)
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
