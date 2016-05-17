@@ -32,14 +32,6 @@ if PY3:
 else:
     FileType = types.FileType  # pylint: disable=no-member
 
-# A mapping of value we can expect to get from `ffi.typeof` against
-# some known input enums.
-# NOTE: These are rough checks intended to limit typos.  Functionally speaking
-# the real test will be when a structure is passed to a Windows API.
-CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
-INPUT_CHECK_MAPPINGS = {
-}
-
 
 def error_check(function, code=None, expected=None):
     """
@@ -123,22 +115,6 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             raise InputError(
                 name, value, allowed_types,
                 allowed_values=allowed_values, ffi=ffi)
-
-    elif allowed_types in INPUT_CHECK_MAPPINGS:
-        mapping = INPUT_CHECK_MAPPINGS[allowed_types]
-
-        try:
-            typeof = ffi.typeof(value)
-
-            if mapping.nullable and value is ffi.NULL:
-                return
-
-            if (typeof.kind != mapping.kind or not
-                    mapping.cname.match(typeof.cname)):
-                raise TypeError
-
-        except (ffi.error, TypeError):
-            raise InputError(name, value, allowed_types)
 
     elif allowed_types is Enums.UTF8:
         try:

@@ -5,10 +5,7 @@ import types
 
 from six import PY3, PY2
 
-from pywincffi.core import dist
-from pywincffi.core.checks import (
-    INPUT_CHECK_MAPPINGS, FileType, CheckMapping, Enums,
-    input_check)
+from pywincffi.core.checks import FileType, Enums, input_check
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
 
@@ -24,28 +21,6 @@ class TestTypeCheckFailure(TestCase):
     def test_handle_type_failure(self):
         with self.assertRaises(InputError):
             input_check("", None, type(int))
-
-
-class TestEnumMapping(TestCase):
-    def setUp(self):
-        self.original_mappings = INPUT_CHECK_MAPPINGS.copy()
-
-    def tearDown(self):
-        super(TestEnumMapping, self).tearDown()
-        INPUT_CHECK_MAPPINGS.clear()
-        INPUT_CHECK_MAPPINGS.update(self.original_mappings)
-
-    def test_nullable(self):
-        INPUT_CHECK_MAPPINGS.update(
-            mapping=CheckMapping(
-                kind="pointer",
-                cname="void *",
-                nullable=True
-            )
-        )
-
-        ffi, _ = dist.load()
-        input_check("", ffi.NULL, "mapping")
 
 
 class TestEnumUTF8(TestCase):
