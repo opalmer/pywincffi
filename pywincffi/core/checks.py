@@ -23,7 +23,6 @@ logger = get_logger("core.check")
 NoneType = type(None)
 Enums = enum.Enum("Enums", """
 NON_ZERO
-HANDLE
 UTF8
 PYFILE
 """.strip())
@@ -39,11 +38,6 @@ else:
 # the real test will be when a structure is passed to a Windows API.
 CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
 INPUT_CHECK_MAPPINGS = {
-    Enums.HANDLE: CheckMapping(
-        kind="pointer",
-        cname=re.compile(r"^void \*$"),
-        nullable=False
-    )
 }
 
 

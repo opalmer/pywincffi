@@ -23,18 +23,7 @@ class TestTypeCheckFailure(TestCase):
 
     def test_handle_type_failure(self):
         with self.assertRaises(InputError):
-            input_check("", None, Enums.HANDLE)
-
-    def test_not_a_handle(self):
-        ffi, _ = dist.load()
-        with self.assertRaises(InputError):
-            input_check("", ffi.new("void *[2]"), Enums.HANDLE)
-
-    def test_ffi_error_raises_input_error(self):
-        with self.assertRaises(InputError):
-            input_check(
-                "lpEventAttributes", "",
-                allowed_types=Enums.HANDLE)
+            input_check("", None, type(int))
 
 
 class TestEnumMapping(TestCase):
