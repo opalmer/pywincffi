@@ -7,6 +7,8 @@ used across the exposed APIs.
 """
 
 
+from six import integer_types
+
 from pywincffi.core import typesbase
 from pywincffi.core import dist
 
@@ -21,7 +23,30 @@ def wintype_to_cdata(wintype):
     :return:
         The underlying CFFI <cdata> object, or ffi.NULL if wintype is None.
     """
-    return _ffi.NULL if wintype is None else wintype._cdata
+    if wintype is None:
+        return _ffi.NULL
+    elif isinstance(wintype, HANDLE):
+        return wintype._cdata[0]
+    else:
+        return wintype._cdata
+
+
+class HANDLE(typesbase.CFFICDataWrapper):
+    """
+    .. seealso: https://msdn.microsoft.com/en-us/library/aa383751
+    """
+    def __init__(self, data=None):
+        super(HANDLE, self).__init__("HANDLE[1]", _ffi)
+        # Initialize from a <cdata handle> object as returned by some
+        # Windows API library calls: Python AND FFI types must be equal.
+        if isinstance(data, type(self._cdata[0])):
+            if _ffi.typeof(data) == _ffi.typeof(self._cdata[0]):
+                self._cdata[0] = data
+
+    def __eq__(self, other):
+        if not isinstance(other, HANDLE):
+            raise TypeError('%r must be a HANDLE' % other)
+        return self._cdata[0] == other._cdata[0]
 
 
 class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
