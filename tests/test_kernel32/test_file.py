@@ -61,10 +61,10 @@ class TestReadFile(TestCase):
         return hFile
 
     def test_write_then_read_bytes_ascii(self):
-        path = self._create_file(b"test_write_then_read_bytes_ascii contents")
+        path = self._create_file(b"test_write_then_read_bytes_ascii")
         hFile = self._handle_to_read_file(path)
         contents = ReadFile(hFile, 1024)
-        self.assertEqual(contents, b"test_write_then_read_bytes_ascii contents")
+        self.assertEqual(contents, b"test_write_then_read_bytes_ascii")
 
     def test_write_then_read_null_bytes(self):
         path = self._create_file(b"hello\x00world")
@@ -73,7 +73,7 @@ class TestReadFile(TestCase):
         self.assertEqual(contents, b"hello\x00world")
 
     def test_write_then_read_partial(self):
-        path = self._create_file(b"test_write_then_read_partial contents")
+        path = self._create_file(b"test_write_then_read_partial")
         hFile = self._handle_to_read_file(path)
         contents = ReadFile(hFile, 4)
         self.assertEqual(contents, b"test")

@@ -102,4 +102,3 @@ class FILETIME(typesbase.CFFICDataWrapper):
     """
     def __init__(self):
         super(FILETIME, self).__init__("FILETIME*", _ffi)
-

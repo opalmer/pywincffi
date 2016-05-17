@@ -55,4 +55,3 @@ class CFFICDataWrapper(object):
 
     def __setitem__(self, key, value):
         return self._cdata.__setitem__(key, value)
-

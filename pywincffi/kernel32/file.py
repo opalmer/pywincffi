@@ -169,8 +169,8 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
 
     bytes_written = ffi.new("LPDWORD")
     code = library.WriteFile(
-        wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToWrite, bytes_written,
-        wintype_to_cdata(lpOverlapped)
+        wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToWrite,
+        bytes_written, wintype_to_cdata(lpOverlapped)
     )
     error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
 

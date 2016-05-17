@@ -250,5 +250,3 @@ class TestDerivedArrayTypes(TestCase):
         c = _CircleArray(4)
         with self.assertRaises(AttributeError):
             c[2].crazy_missing_attr = 42
-
-

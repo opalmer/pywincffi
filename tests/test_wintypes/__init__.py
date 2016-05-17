@@ -110,4 +110,3 @@ class Test_FILETIME(TestCase):
         ft = wintypes.FILETIME()
         with self.assertRaises(AttributeError):
             ft.no_such_attr = None
-
