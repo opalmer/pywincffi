@@ -50,6 +50,13 @@ class Test_OVERLAPPED(TestCase):
         with self.assertRaises(AttributeError):
             o.no_such_attr = None
 
+    def test_attr_hEvent_assign(self):
+        o = wintypes.OVERLAPPED()
+        h = wintypes.HANDLE()
+        o.hEvent = h
+        self.assertIsNot(o.hEvent, h)
+        self.assertEqual(o.hEvent, h)
+
 
 class Test_FILETIME(TestCase):
     """

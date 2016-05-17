@@ -81,7 +81,7 @@ class OVERLAPPED(typesbase.CFFICDataWrapper):
 
     @property
     def hEvent(self):
-        return self._cdata.hEvent
+        return HANDLE(self._cdata.hEvent)
 
     @hEvent.setter
     def hEvent(self, handle):
