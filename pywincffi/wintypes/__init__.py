@@ -69,7 +69,7 @@ class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
     def nLength(self, _):
         # Can't raise AttributeError.
         # CFFICDataWrapper would fall back to setting self._cdata.nLength .
-        raise TypeError('SECURITY_ATTRIBUTES.nLength is read-only')
+        raise TypeError("SECURITY_ATTRIBUTES.nLength is read-only")
 
 
 class OVERLAPPED(typesbase.CFFICDataWrapper):
@@ -78,6 +78,16 @@ class OVERLAPPED(typesbase.CFFICDataWrapper):
     """
     def __init__(self):
         super(OVERLAPPED, self).__init__("OVERLAPPED*", _ffi)
+
+    @property
+    def hEvent(self):
+        return self._cdata.hEvent
+
+    @hEvent.setter
+    def hEvent(self, handle):
+        if not isinstance(handle, HANDLE):
+            raise TypeError('%r must be a HANDLE' % handle)
+        self._cdata.hEvent = handle._cdata[0]
 
 
 class FILETIME(typesbase.CFFICDataWrapper):
