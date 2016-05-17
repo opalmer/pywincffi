@@ -10,7 +10,7 @@ from six import string_types, integer_types, text_type
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.wintypes import SECURITY_ATTRIBUTES, wintype_to_cdata
+from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, wintype_to_cdata
 
 
 def CreateEvent(
@@ -71,7 +71,7 @@ def CreateEvent(
         if error.errno != library.ERROR_ALREADY_EXISTS:
             raise
 
-    return handle
+    return HANDLE(handle)
 
 
 def OpenEvent(dwDesiredAccess, bInheritHandle, lpName):
@@ -104,7 +104,7 @@ def OpenEvent(dwDesiredAccess, bInheritHandle, lpName):
         lpName
     )
     error_check("OpenEvent")
-    return handle
+    return HANDLE(handle)
 
 
 def ResetEvent(hEvent):
@@ -119,8 +119,8 @@ def ResetEvent(hEvent):
         A handle to the event object to be reset. The handle must
         have the ``EVENT_MODIFY_STATE`` access right.
     """
-    input_check("hEvent", hEvent, Enums.HANDLE)
+    input_check("hEvent", hEvent, HANDLE)
 
     _, library = dist.load()
-    code = library.ResetEvent(hEvent)
+    code = library.ResetEvent(wintype_to_cdata(hEvent))
     error_check("ResetEvent", code=code, expected=Enums.NON_ZERO)

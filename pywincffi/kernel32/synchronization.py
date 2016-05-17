@@ -14,8 +14,9 @@ library.
 from six import integer_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
+from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 
 def WaitForSingleObject(hHandle, dwMilliseconds):
@@ -33,12 +34,12 @@ def WaitForSingleObject(hHandle, dwMilliseconds):
     :param int dwMilliseconds:
         The time-out interval.
     """
-    input_check("hHandle", hHandle, Enums.HANDLE)
+    input_check("hHandle", hHandle, HANDLE)
     input_check("dwMilliseconds", dwMilliseconds, integer_types)
 
     ffi, library = dist.load()
     result = library.WaitForSingleObject(
-        hHandle, ffi.cast("DWORD", dwMilliseconds)
+        wintype_to_cdata(hHandle), ffi.cast("DWORD", dwMilliseconds)
     )
 
     if result == library.WAIT_FAILED:

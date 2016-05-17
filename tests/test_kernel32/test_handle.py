@@ -12,6 +12,7 @@ from pywincffi.exceptions import InputError
 from pywincffi.kernel32 import (
     GetStdHandle, CloseHandle, handle_from_file, GetHandleInformation,
     SetHandleInformation, DuplicateHandle, GetCurrentProcess, CreateEvent)
+from pywincffi.wintypes import HANDLE
 
 try:
     WindowsError
@@ -27,21 +28,21 @@ class TestGetStdHandle(TestCase):
         _, library = dist.load()
         self.assertEqual(
             GetStdHandle(library.STD_INPUT_HANDLE),
-            library.GetStdHandle(library.STD_INPUT_HANDLE)
+            HANDLE(library.GetStdHandle(library.STD_INPUT_HANDLE))
         )
 
     def test_stdout_handle(self):
         _, library = dist.load()
         self.assertEqual(
             GetStdHandle(library.STD_OUTPUT_HANDLE),
-            library.GetStdHandle(library.STD_OUTPUT_HANDLE)
+            HANDLE(library.GetStdHandle(library.STD_OUTPUT_HANDLE))
         )
 
     def test_stderr_handle(self):
         _, library = dist.load()
         self.assertEqual(
             GetStdHandle(library.STD_ERROR_HANDLE),
-            library.GetStdHandle(library.STD_ERROR_HANDLE)
+            HANDLE(library.GetStdHandle(library.STD_ERROR_HANDLE))
         )
 
 
@@ -122,7 +123,7 @@ class TestGetHandleInformation(TestCase):
         ffi, library = dist.load()
         sock = socket.socket()
         self.addCleanup(sock.close)
-        sock_handle = ffi.cast("void *", sock.fileno())
+        sock_handle = HANDLE(ffi.cast("void *", sock.fileno()))
         handle_flags = GetHandleInformation(sock_handle)
         inherit = handle_flags & library.HANDLE_FLAG_INHERIT
         expected = self._expected_inheritance()
@@ -167,7 +168,7 @@ class TestSetHandleInformation(TestCase):
         ffi, library = dist.load()
         sock = socket.socket()
         self.addCleanup(sock.close)
-        sock_handle = ffi.cast("void *", sock.fileno())
+        sock_handle = HANDLE(ffi.cast("void *", sock.fileno()))
         SetHandleInformation(
             sock_handle,
             library.HANDLE_FLAG_INHERIT,
@@ -230,7 +231,7 @@ class TestSetHandleInformationChildSpawns(TestCase):
         try:
             sock.bind(bind_addr)
             bind_addr = sock.getsockname()
-            sock_handle = ffi.cast("void *", sock.fileno())
+            sock_handle = HANDLE(ffi.cast("void *", sock.fileno()))
             # prevent file_handle inheritance
             SetHandleInformation(sock_handle, library.HANDLE_FLAG_INHERIT, 0)
             # spawn child while sock is bound

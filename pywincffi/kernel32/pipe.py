@@ -11,7 +11,7 @@ from six import integer_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
-from pywincffi.wintypes import SECURITY_ATTRIBUTES, wintype_to_cdata
+from pywincffi.wintypes import SECURITY_ATTRIBUTES, HANDLE, wintype_to_cdata
 
 PeekNamedPipeResult = namedtuple(
     "PeekNamedPipeResult",
@@ -66,7 +66,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     code = library.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
     error_check("CreatePipe", code=code, expected=Enums.NON_ZERO)
 
-    return hReadPipe[0], hWritePipe[0]
+    return HANDLE(hReadPipe[0]), HANDLE(hWritePipe[0])
 
 
 def SetNamedPipeHandleState(
@@ -100,7 +100,7 @@ def SetNamedPipeHandleState(
         The maximum time, in milliseconds, that can pass before a
         remote named pipe transfers information
     """
-    input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
+    input_check("hNamedPipe", hNamedPipe, HANDLE)
     ffi, library = dist.load()
 
     if lpMode is None:
@@ -124,7 +124,7 @@ def SetNamedPipeHandleState(
         lpCollectDataTimeout = ffi.new("LPDWORD", lpCollectDataTimeout)
 
     code = library.SetNamedPipeHandleState(
-        hNamedPipe,
+        wintype_to_cdata(hNamedPipe),
         lpMode,
         lpMaxCollectionCount,
         lpCollectDataTimeout
@@ -152,7 +152,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
         Returns an instance of :class:`PeekNamedPipeResult` which
         contains the buffer read, number of bytes read and the result.
     """
-    input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
+    input_check("hNamedPipe", hNamedPipe, HANDLE)
     input_check("nBufferSize", nBufferSize, integer_types)
     ffi, library = dist.load()
 
@@ -163,7 +163,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
     lpBytesLeftThisMessage = ffi.new("LPDWORD")
 
     code = library.PeekNamedPipe(
-        hNamedPipe,
+        wintype_to_cdata(hNamedPipe),
         lpBuffer,
         nBufferSize,
         lpBytesRead,

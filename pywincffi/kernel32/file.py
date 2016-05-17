@@ -11,7 +11,7 @@ from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.wintypes import (
-    SECURITY_ATTRIBUTES, OVERLAPPED, wintype_to_cdata
+    SECURITY_ATTRIBUTES, OVERLAPPED, HANDLE, wintype_to_cdata
 )
 
 
@@ -75,9 +75,6 @@ def CreateFile(  # pylint: disable=too-many-arguments
     if dwFlagsAndAttributes is None:
         dwFlagsAndAttributes = library.FILE_ATTRIBUTE_NORMAL
 
-    if hTemplateFile is None:
-        hTemplateFile = ffi.NULL
-
     input_check("lpFileName", lpFileName, text_type)
     input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
     input_check("dwShareMode", dwShareMode, integer_types)
@@ -96,12 +93,12 @@ def CreateFile(  # pylint: disable=too-many-arguments
         )
     )
     input_check("dwFlagsAndAttributes", dwFlagsAndAttributes, integer_types)
-    input_check("hTemplateFile", hTemplateFile, Enums.HANDLE)
+    input_check("hTemplateFile", hTemplateFile, (NoneType, HANDLE))
 
     handle = library.CreateFile(
         lpFileName, dwDesiredAccess, dwShareMode,
         wintype_to_cdata(lpSecurityAttributes), dwCreationDisposition,
-        dwFlagsAndAttributes, hTemplateFile
+        dwFlagsAndAttributes, wintype_to_cdata(hTemplateFile)
     )
 
     try:
@@ -111,10 +108,10 @@ def CreateFile(  # pylint: disable=too-many-arguments
         # on the creation disposition.
         if (dwCreationDisposition == library.CREATE_ALWAYS and
                 error.errno == library.ERROR_ALREADY_EXISTS):
-            return handle
+            return HANDLE(handle)
         raise
 
-    return handle
+    return HANDLE(handle)
 
 
 def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
@@ -146,7 +143,7 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
         >>> from pywincffi.wintypes import OVERLAPPED
         >>> hEvent = CreateEvent(...)
         >>> lpOverlapped = OVERLAPPED()
-        >>> lpOverlapped.hEvent = hEvent[0]
+        >>> lpOverlapped.hEvent = hEvent
         >>> bytes_written = WriteFile(
         ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
@@ -155,7 +152,7 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
     """
     ffi, library = dist.load()
 
-    input_check("hFile", hFile, Enums.HANDLE)
+    input_check("hFile", hFile, HANDLE)
     input_check("lpBuffer", lpBuffer, binary_type)
     input_check(
         "lpOverlapped", lpOverlapped,
@@ -172,7 +169,7 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
 
     bytes_written = ffi.new("LPDWORD")
     code = library.WriteFile(
-        hFile, lpBuffer, nNumberOfBytesToWrite, bytes_written,
+        wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToWrite, bytes_written,
         wintype_to_cdata(lpOverlapped)
     )
     error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
@@ -191,9 +188,9 @@ def FlushFileBuffers(hFile):
     :param handle hFile:
         The handle to flush to disk.
     """
-    input_check("hFile", hFile, Enums.HANDLE)
+    input_check("hFile", hFile, HANDLE)
     _, library = dist.load()
-    code = library.FlushFileBuffers(hFile)
+    code = library.FlushFileBuffers(wintype_to_cdata(hFile))
     error_check("FlushFileBuffers", code=code, expected=Enums.NON_ZERO)
 
 
@@ -221,7 +218,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         >>> from pywincffi.wintypes import OVERLAPPED
         >>> hEvent = CreateEvent(...)
         >>> lpOverlapped = OVERLAPPED()
-        >>> lpOverlapped.hEvent = hEvent[0]
+        >>> lpOverlapped.hEvent = hEvent
         >>> read_data = ReadFile(  # read 12 bytes from hFile
         ...     hFile, 12, lpOverlapped=lpOverlapped)
 
@@ -231,7 +228,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     """
     ffi, library = dist.load()
 
-    input_check("hFile", hFile, Enums.HANDLE)
+    input_check("hFile", hFile, HANDLE)
     input_check("nNumberOfBytesToRead", nNumberOfBytesToRead, integer_types)
     input_check(
         "lpOverlapped", lpOverlapped,
@@ -241,7 +238,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
     lpBuffer = ffi.new("char []", nNumberOfBytesToRead)
     bytes_read = ffi.new("LPDWORD")
     code = library.ReadFile(
-        hFile, lpBuffer, nNumberOfBytesToRead, bytes_read,
+        wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToRead, bytes_read,
         wintype_to_cdata(lpOverlapped)
     )
     error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
@@ -328,7 +325,7 @@ def LockFileEx(
         provided, a throw-away zero-filled instance will be created to
         support such call. See Microsoft's documentation for intended usage.
     """
-    input_check("hFile", hFile, Enums.HANDLE)
+    input_check("hFile", hFile, HANDLE)
     input_check("dwFlags", dwFlags, integer_types)
     input_check(
         "nNumberOfBytesToLockLow", nNumberOfBytesToLockLow, integer_types)
@@ -344,7 +341,7 @@ def LockFileEx(
         input_check("lpOverlapped", lpOverlapped, allowed_types=OVERLAPPED)
 
     code = library.LockFileEx(
-        hFile,
+        wintype_to_cdata(hFile),
         ffi.cast("DWORD", dwFlags),
         ffi.cast("DWORD", 0),  # "_Reserveved_"
         ffi.cast("DWORD", nNumberOfBytesToLockLow),
@@ -382,7 +379,7 @@ def UnlockFileEx(
         provided, a throw-away zero-filled instance will be created to
         support such call. See Microsoft's documentation for intended usage.
     """
-    input_check("hFile", hFile, Enums.HANDLE)
+    input_check("hFile", hFile, HANDLE)
     input_check(
         "nNumberOfBytesToUnlockLow",
         nNumberOfBytesToUnlockLow, integer_types)
@@ -399,7 +396,7 @@ def UnlockFileEx(
         input_check("lpOverlapped", lpOverlapped, allowed_types=OVERLAPPED)
 
     code = library.UnlockFileEx(
-        hFile,
+        wintype_to_cdata(hFile),
         ffi.cast("DWORD", 0),  # "_Reserveved_"
         ffi.cast("DWORD", nNumberOfBytesToUnlockLow),
         ffi.cast("DWORD", nNumberOfBytesToUnlockHigh),

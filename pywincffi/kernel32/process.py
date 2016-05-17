@@ -22,6 +22,7 @@ from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
 from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
+from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 RESERVED_PIDS = set([0, 4])
 
@@ -129,11 +130,11 @@ def GetExitCodeProcess(hProcess):
         Returns the exit code of the requested process if one
         can be found.
     """
-    input_check("hProcess", hProcess, Enums.HANDLE)
+    input_check("hProcess", hProcess, HANDLE)
 
     ffi, library = dist.load()
     lpExitCode = ffi.new("LPDWORD")
-    code = library.GetExitCodeProcess(hProcess, lpExitCode)
+    code = library.GetExitCodeProcess(wintype_to_cdata(hProcess), lpExitCode)
     error_check("GetExitCodeProcess", code=code, expected=Enums.NON_ZERO)
     return lpExitCode[0]
 
@@ -171,7 +172,7 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
         ffi.cast("DWORD", dwProcessId)
     )
     error_check("OpenProcess")
-    return handle
+    return HANDLE(handle)
 
 
 def GetCurrentProcess():
@@ -191,7 +192,7 @@ def GetCurrentProcess():
         The handle to the current process.
     """
     _, library = dist.load()
-    return library.GetCurrentProcess()
+    return HANDLE(library.GetCurrentProcess())
 
 
 def GetProcessId(Process):  # pylint: disable=invalid-name
@@ -209,9 +210,9 @@ def GetProcessId(Process):  # pylint: disable=invalid-name
         Returns an integer which represents the pid of the given
         process handle.
     """
-    input_check("Process", Process, Enums.HANDLE)
+    input_check("Process", Process, HANDLE)
     _, library = dist.load()
-    pid = library.GetProcessId(Process)
+    pid = library.GetProcessId(wintype_to_cdata(Process))
     error_check("GetProcessId")
     return pid
 
@@ -231,11 +232,11 @@ def TerminateProcess(hProcess, uExitCode):
         The exit code of the processes and threads as a result of calling
         this function.
     """
-    input_check("hProcess", hProcess, Enums.HANDLE)
+    input_check("hProcess", hProcess, HANDLE)
     input_check("uExitCode", uExitCode, integer_types)
     ffi, library = dist.load()
     code = library.TerminateProcess(
-        hProcess,
+        wintype_to_cdata(hProcess),
         ffi.cast("UINT", uExitCode)
     )
     error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)
