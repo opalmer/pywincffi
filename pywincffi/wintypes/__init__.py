@@ -43,6 +43,12 @@ class HANDLE(typesbase.CFFICDataWrapper):
             if _ffi.typeof(data) == _ffi.typeof(self._cdata[0]):
                 self._cdata[0] = data
 
+    def __repr__(self):
+        return "<HANDLE 0x%x at 0x%x>" % (
+            _ffi.cast("DWORD", self._cdata[0]),
+            id(self)
+        )
+
     def __eq__(self, other):
         if not isinstance(other, HANDLE):
             raise TypeError('%r must be a HANDLE' % other)
