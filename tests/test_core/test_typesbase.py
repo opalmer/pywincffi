@@ -37,7 +37,10 @@ class TestCFFICDataWrapper(TestCase):
             finish = start + 1
             o[i] = content[start:finish]
         for i in range(256):
-            self.assertEqual(o[i], content[i % content_len])
+            # Have Python 3 return a len()==1 bytes object
+            start = i % content_len
+            finish = start + 1
+            self.assertEqual(o[i], content[start:finish])
 
     def test_char_array_set_and_ffi_string(self):
         ffi = cffi.FFI()
