@@ -47,7 +47,7 @@ class HANDLE(typesbase.CFFICDataWrapper):
 
     def __repr__(self):
         return "<HANDLE 0x%x at 0x%x>" % (
-            _FFI.cast("DWORD", self._cdata[0]),
+            int(_FFI.cast("DWORD", self._cdata[0])),
             id(self)
         )
 
