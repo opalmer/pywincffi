@@ -6,7 +6,7 @@ import sys
 from os.path import isfile
 
 from mock import patch
-from six import PY2, PY3
+from six import text_type
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
@@ -47,7 +47,7 @@ class TestReadFile(TestCase):
         self.addCleanup(os.remove, path)
         with os.fdopen(fd, "wb") as file_:
             file_.write(contents)
-        return path if PY3 else unicode(path)
+        return text_type(path)
 
     def _handle_to_read_file(self, path):
         _, library = dist.load()
@@ -95,9 +95,8 @@ class TestMoveFileEx(TestCase):
         self.addCleanup(os.remove, path2)
         os.close(fd)
 
-        if PY2:
-            path1 = unicode(path1)  # pylint: disable=redefined-variable-type
-            path2 = unicode(path2)  # pylint: disable=redefined-variable-type
+        path1 = text_type(path1)  # pylint: disable=redefined-variable-type
+        path2 = text_type(path2)  # pylint: disable=redefined-variable-type
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -114,9 +113,8 @@ class TestMoveFileEx(TestCase):
         with os.fdopen(fd, "w") as file_:
             file_.write(file_contents)
 
-        if PY2:
-            path1 = unicode(path1)  # pylint: disable=redefined-variable-type
-            path2 = unicode(path2)  # pylint: disable=redefined-variable-type
+        path1 = text_type(path1)  # pylint: disable=redefined-variable-type
+        path2 = text_type(path2)  # pylint: disable=redefined-variable-type
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -128,8 +126,7 @@ class TestMoveFileEx(TestCase):
         fd, path = tempfile.mkstemp()
         os.close(fd)
 
-        if PY2:
-            path = unicode(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)  # pylint: disable=redefined-variable-type
 
         _, library = dist.load()
         try:
@@ -156,8 +153,7 @@ class TestCreateFile(TestCase):
         os.close(fd)
         os.remove(path)
 
-        if PY2:
-            path = unicode(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
         self.assertTrue(isfile(path))
@@ -171,8 +167,7 @@ class TestCreateFile(TestCase):
             file_.flush()
             os.fsync(file_.fileno())
 
-        if PY2:
-            path = unicode(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
 
@@ -189,8 +184,7 @@ class TestCreateFile(TestCase):
             raise WindowsAPIError("", "", library.ERROR_ALREADY_EXISTS)
 
         with patch.object(_file, "error_check", side_effect=raise_):
-            if PY2:
-                path = unicode(path)  # pylint: disable=redefined-variable-type
+            path = text_type(path)  # pylint: disable=redefined-variable-type
             handle = CreateFile(
                 path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
@@ -216,8 +210,7 @@ class LockFileCase(TestCase):
         os.close(fd)
         self.addCleanup(os.remove, path)
         _, library = dist.load()
-        if PY2:
-            path = unicode(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)  # pylint: disable=redefined-variable-type
         self.handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, self.handle)
 
