@@ -96,8 +96,8 @@ class TestMoveFileEx(TestCase):
         os.close(fd)
 
         if PY2:
-            path1 = unicode(path1)
-            path2 = unicode(path2)
+            path1 = unicode(path1)  # pylint: disable=redefined-variable-type
+            path2 = unicode(path2)  # pylint: disable=redefined-variable-type
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -115,8 +115,8 @@ class TestMoveFileEx(TestCase):
             file_.write(file_contents)
 
         if PY2:
-            path1 = unicode(path1)
-            path2 = unicode(path2)
+            path1 = unicode(path1)  # pylint: disable=redefined-variable-type
+            path2 = unicode(path2)  # pylint: disable=redefined-variable-type
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -129,7 +129,7 @@ class TestMoveFileEx(TestCase):
         os.close(fd)
 
         if PY2:
-            path = unicode(path)
+            path = unicode(path)  # pylint: disable=redefined-variable-type
 
         _, library = dist.load()
         try:
@@ -157,7 +157,7 @@ class TestCreateFile(TestCase):
         os.remove(path)
 
         if PY2:
-            path = unicode(path)
+            path = unicode(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
         self.assertTrue(isfile(path))
@@ -172,7 +172,7 @@ class TestCreateFile(TestCase):
             os.fsync(file_.fileno())
 
         if PY2:
-            path = unicode(path)
+            path = unicode(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
 
@@ -190,7 +190,7 @@ class TestCreateFile(TestCase):
 
         with patch.object(_file, "error_check", side_effect=raise_):
             if PY2:
-                path = unicode(path)
+                path = unicode(path)  # pylint: disable=redefined-variable-type
             handle = CreateFile(
                 path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
@@ -217,7 +217,7 @@ class LockFileCase(TestCase):
         self.addCleanup(os.remove, path)
         _, library = dist.load()
         if PY2:
-            path = unicode(path)
+            path = unicode(path)  # pylint: disable=redefined-variable-type
         self.handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, self.handle)
 

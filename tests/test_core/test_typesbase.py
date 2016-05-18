@@ -171,9 +171,9 @@ class TestDerivedStructTypes(TestCase):
 
     def test_derived_circle_simple(self):
         c = _Circle()
-        c.x = 0.0
-        c.y = 0.0
-        c.radius = 1.0
+        c.x = 0.0  # pylint: disable=attribute-defined-outside-init
+        c.y = 0.0  # pylint: disable=attribute-defined-outside-init
+        c.radius = 1.0  # pylint: disable=attribute-defined-outside-init
         self.assertAlmostEqual(c.x, 0.0, places=2)
         self.assertAlmostEqual(c.y, 0.0, places=2)
         self.assertAlmostEqual(c.radius, 1.0, places=2)
@@ -181,6 +181,7 @@ class TestDerivedStructTypes(TestCase):
     def test_derived_circle_bad_attr(self):
         c = _Circle()
         with self.assertRaises(AttributeError):
+            # pylint: disable=attribute-defined-outside-init
             c.no_such_attr = 42
 
     def test_derived_circle_with_args(self):
@@ -192,6 +193,7 @@ class TestDerivedStructTypes(TestCase):
     def test_derived_circle_with_args_bad_attr(self):
         c = _CircleWithArgs()
         with self.assertRaises(AttributeError):
+            # pylint: disable=attribute-defined-outside-init
             c.this_attr_is_missing = 42
 
     def test_derived_circle_with_explicit_args(self):
@@ -208,6 +210,7 @@ class TestDerivedStructTypes(TestCase):
     def test_derived_circle_with_property_bad_attr(self):
         c = _CircleWithProperties()
         with self.assertRaises(AttributeError):
+            # pylint: disable=attribute-defined-outside-init
             c.this_attr_is_also_missing = 42
 
     def test_derived_circle_with_property_bad_type(self):

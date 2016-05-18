@@ -9,7 +9,7 @@ from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
 from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
-    GetProcessId, pid_exists, TerminateProcess)
+    GetProcessId, pid_exists)
 from pywincffi.wintypes import HANDLE
 
 try:
@@ -23,7 +23,7 @@ class TestOpenProcess(TestCase):
     Tests for :func:`pywincffi.kernel32.OpenProcess`
     """
     def test_returns_handle(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
 
         handle = OpenProcess(
             library.PROCESS_QUERY_INFORMATION,
@@ -59,7 +59,6 @@ class TestGetCurrentProcess(TestCase):
     Tests for :func:`pywincffi.kernel32.GetCurrentProcess`
     """
     def test_returns_handle(self):
-        ffi, _ = dist.load()
         handle = GetCurrentProcess()
         self.assertIsInstance(handle, HANDLE)
 
