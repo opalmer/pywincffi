@@ -38,7 +38,7 @@ class Test_HANDLE(TestCase):
     def test_compare_wrong_type(self):
         h = wintypes.HANDLE()
         with self.assertRaises(TypeError):
-            if h == None:
+            if h == 0:
                 pass
 
 
