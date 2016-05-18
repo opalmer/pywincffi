@@ -1,4 +1,3 @@
-import string
 import cffi
 
 from pywincffi.core import typesbase
@@ -30,7 +29,7 @@ class TestCFFICDataWrapper(TestCase):
 
     def test_char_array_set_and_get(self):
         o = typesbase.CFFICDataWrapper("char [256]")
-        content = string.letters
+        content = b"abcdefghijklmnopqrstuvwxyz"
         content_len = len(content)
         for i in range(256):
             o[i] = content[i % content_len]
@@ -40,7 +39,7 @@ class TestCFFICDataWrapper(TestCase):
     def test_char_array_set_and_ffi_string(self):
         ffi = cffi.FFI()
         o = typesbase.CFFICDataWrapper("char [256]")
-        content = string.digits
+        content = b"0123456789"
         content_len = len(content)
         for i in range(content_len):
             o[i] = content[i]
@@ -84,19 +83,21 @@ class TestCFFICDataWrapper(TestCase):
                 } u;
             } *
         """)
-        o.uuid = '01234567-abcd-abcd-abcd-0123456789ab'
+        _uuid = b"01234567-abcd-abcd-abcd-0123456789ab"
+        o.uuid = _uuid
         o.fd = 0xfd
         o.type = 2
         o.u.file.inode = 12345
-        o.u.file.name = 'the-filename.test'
-        self.assertEqual(
-            ffi.string(o.uuid),
-            '01234567-abcd-abcd-abcd-0123456789ab',
-        )
+        _file_name = b"the-filename.test"
+        o.u.file.name = _file_name
+        self.assertEqual(ffi.unpack(o.uuid, len(_uuid)), _uuid)
         self.assertEqual(o.fd, 0xfd)
         self.assertEqual(o.type, 2)
         self.assertEqual(o.u.file.inode, 12345)
-        self.assertEqual(ffi.string(o.u.file.name), 'the-filename.test')
+        self.assertEqual(
+            ffi.unpack(o.u.file.name, len(_file_name)),
+            _file_name
+        )
 
     def test_externally_provided_ffi(self):
         ffi = cffi.FFI()
@@ -107,10 +108,10 @@ class TestCFFICDataWrapper(TestCase):
             } person_t;
         """)
         o = typesbase.CFFICDataWrapper("person_t *", ffi)
-        o.first_name = u'First Name'
-        o.last_name = u'Last Name'
-        self.assertEqual(ffi.string(o.first_name), u'First Name')
-        self.assertEqual(ffi.string(o.last_name), u'Last Name')
+        o.first_name = u"First Name"
+        o.last_name = u"Last Name"
+        self.assertEqual(ffi.string(o.first_name), u"First Name")
+        self.assertEqual(ffi.string(o.last_name), u"Last Name")
 
 
 _ffi_with_circle_t = cffi.FFI()
@@ -153,9 +154,9 @@ class _CircleWithProperties(_CircleWithArgs):
     @radius.setter
     def radius(self, value):
         if not isinstance(value, float):
-            raise TypeError('%r not a float' % value)
+            raise TypeError("%r not a float" % value)
         if value < 0.0:
-            raise ValueError('negative radius')
+            raise ValueError("negative radius")
         self._cdata.radius = value
 
 
@@ -208,7 +209,7 @@ class TestDerivedStructTypes(TestCase):
     def test_derived_circle_with_property_bad_type(self):
         c = _CircleWithProperties()
         with self.assertRaises(TypeError):
-            c.radius = u'fail please'
+            c.radius = u"fail please"
 
     def test_derived_circle_with_property_bad_value(self):
         c = _CircleWithProperties()

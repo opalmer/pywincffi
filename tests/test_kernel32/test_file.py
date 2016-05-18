@@ -34,7 +34,7 @@ class TestWriteFile(TestCase):
         handle, path = self.create_handle()
         WriteFile(handle, b"hello world")
         FlushFileBuffers(handle)
-        with open(path, "r") as file_:
+        with open(path, "rb") as file_:
             self.assertEqual(file_.read(), b"hello world")
 
 
@@ -45,7 +45,7 @@ class TestReadFile(TestCase):
     def _create_file(self, contents):
         fd, path = tempfile.mkstemp()
         self.addCleanup(os.remove, path)
-        with os.fdopen(fd, "w") as file_:
+        with os.fdopen(fd, "wb") as file_:
             file_.write(contents)
         return path if PY3 else unicode(path)
 
