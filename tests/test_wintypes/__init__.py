@@ -35,6 +35,12 @@ class Test_HANDLE(TestCase):
         self.assertIsNot(h1, h2)
         self.assertNotEqual(h1, h2)
 
+    def test_compare_wrong_type(self):
+        h = wintypes.HANDLE()
+        with self.assertRaises(TypeError):
+            if h == None:
+                pass
+
 
 class Test_SECURITY_ATTRIBUTES(TestCase):
     """
@@ -90,6 +96,11 @@ class Test_OVERLAPPED(TestCase):
         o.hEvent = h
         self.assertIsNot(o.hEvent, h)
         self.assertEqual(o.hEvent, h)
+
+    def test_attr_hEvent_assign_wrong_type(self):
+        o = wintypes.OVERLAPPED()
+        with self.assertRaises(TypeError):
+            o.hEvent = None
 
 
 class Test_FILETIME(TestCase):

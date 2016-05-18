@@ -37,6 +37,13 @@ class TestWriteFile(TestCase):
         with open(path, "rb") as file_:
             self.assertEqual(file_.read(), b"hello world")
 
+    def test_write_binary_num_bytes(self):
+        handle, path = self.create_handle()
+        WriteFile(handle, b"hello world", nNumberOfBytesToWrite=5)
+        FlushFileBuffers(handle)
+        with open(path, "rb") as file_:
+            self.assertEqual(file_.read(), b"hello")
+
 
 class TestReadFile(TestCase):
     """
