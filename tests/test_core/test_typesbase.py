@@ -32,7 +32,10 @@ class TestCFFICDataWrapper(TestCase):
         content = b"abcdefghijklmnopqrstuvwxyz"
         content_len = len(content)
         for i in range(256):
-            o[i] = content[i % content_len]
+            # Have Python 3 return a len()==1 bytes object
+            start = i % content_len
+            finish = start + 1
+            o[i] = content[start:finish]
         for i in range(256):
             self.assertEqual(o[i], content[i % content_len])
 
@@ -42,7 +45,8 @@ class TestCFFICDataWrapper(TestCase):
         content = b"0123456789"
         content_len = len(content)
         for i in range(content_len):
-            o[i] = content[i]
+            # Have Python 3 return a len()==1 bytes object
+            o[i] = content[i:i+1]
         # must use wrapped cdata to apply ffi.string in this case
         # won't be needed for struct members as other tests verify
         self.assertEqual(ffi.string(o._cdata), content)
