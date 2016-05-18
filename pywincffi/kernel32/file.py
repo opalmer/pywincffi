@@ -5,7 +5,7 @@ Files
 A module containing common Windows file functions for working with files.
 """
 
-from six import PY3, integer_types, text_type, binary_type
+from six import integer_types, text_type, binary_type
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
@@ -64,7 +64,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
     :return:
         Returns the file handle created by ``CreateFile``.
     """
-    ffi, library = dist.load()
+    _, library = dist.load()
 
     if dwShareMode is None:
         dwShareMode = library.FILE_SHARE_READ

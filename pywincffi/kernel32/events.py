@@ -5,7 +5,7 @@ Events
 A module containing Windows functions for working with events.
 """
 
-from six import string_types, integer_types, text_type
+from six import integer_types, text_type
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType

@@ -7,9 +7,7 @@ Provides functions that are responsible for internal type checks.
 
 import io
 import os
-import re
 import types
-from collections import namedtuple
 
 import enum
 from six import PY3, string_types

@@ -8,6 +8,7 @@ Provides the base types on top of which user visible types will be built.
 import cffi
 
 
+# pylint: disable=too-few-public-methods
 class CFFICDataWrapper(object):
 
     """
