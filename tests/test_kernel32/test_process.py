@@ -188,7 +188,7 @@ class TestPidExists(TestCase):
 
     def test_raises_unhandled_windows_api_error(self):
         def new_open_process(*args, **kwargs):
-            raise WindowsAPIError("", "", 42, 0)
+            raise WindowsAPIError("", "", 42)
 
         with patch.object(k32process, "OpenProcess", new_open_process):
             process = \
