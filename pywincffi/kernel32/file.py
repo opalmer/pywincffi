@@ -29,8 +29,8 @@ def CreateFile(  # pylint: disable=too-many-arguments
         https://msdn.microsoft.com/en-us/library/aa363858
         https://msdn.microsoft.com/en-us/library/gg258116
 
-    :param unicode/str lpFileName:
-        Type is unicode on Python 2, str on Python 3.
+    :param str lpFileName:
+        Type is ``unicode`` on Python 2, ``str`` on Python 3.
         The path to the file or device being created or opened.
 
     :param int dwDesiredAccess:
@@ -254,12 +254,12 @@ def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
 
         https://msdn.microsoft.com/en-us/library/aa365240
 
-    :param unicode/str lpExistingFileName:
-        Type is unicode on Python 2, str on Python 3.
+    :param str lpExistingFileName:
+        Type is ``unicode`` on Python 2, ``str`` on Python 3.
         Name of the file or directory to perform the operation on.
 
-    :param unicode/str lpNewFileName:
-        Type is unicode on Python 2, str on Python 3.
+    :param str lpNewFileName:
+        Type is ``unicode`` on Python 2, ``str`` on Python 3.
         Optional new name of the path or directory.  This value may be
         ``None``.
 

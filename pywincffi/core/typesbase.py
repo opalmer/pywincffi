@@ -5,25 +5,28 @@ Types Base
 Provides the base types on top of which user visible types will be built.
 """
 
-import cffi
-
 
 # pylint: disable=too-few-public-methods
 class CFFICDataWrapper(object):
-
     """
-    Base class for exposing Python types and interfaces to pywincffi users.
+    Base class for exposing Python types and interfaces to pywincffi users:
+
     * Wraps a CFFI cdata object in self._cdata.
     * Delegates attribute getting/setting to self._cdata, supporting structs.
     * Delegates item getting/setting to self._cdata, supporting arrays.
+
     Attribute access is not delegated to the wrapped object if the class
     itself contains such an attribute and that attribute is a descriptor; this
     is in place to support @property in sub-classes.
+
+    :param str cdecl:
+        C type specification as used in ff.new(cdecl)
+
+    :param cffi.api.FFI ffi:
+        FFI instance used to create wrapped cdata object.
     """
 
-    def __init__(self, cdecl, ffi=None):
-        if ffi is None:
-            ffi = cffi.FFI()
+    def __init__(self, cdecl, ffi):
         self._cdata = ffi.new(cdecl)
 
     def __getattr__(self, name):
@@ -31,7 +34,7 @@ class CFFICDataWrapper(object):
 
     def __setattr__(self, name, value):
         # avoid self-recursion setting own attribute: use parent's __setattr__
-        if name == '_cdata':
+        if name == "_cdata":
             super(CFFICDataWrapper, self).__setattr__(name, value)
             return
 

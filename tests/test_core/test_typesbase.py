@@ -4,12 +4,15 @@ from pywincffi.core import typesbase
 from pywincffi.dev.testutil import TestCase
 
 
+_ffi = cffi.FFI()
+
+
 class TestCFFICDataWrapper(TestCase):
     """
     Tests for :class:`pywincffi.core.typesbase.CFFICDataWrapper`
     """
     def test_instantiate(self):
-        o = typesbase.CFFICDataWrapper("char *")
+        o = typesbase.CFFICDataWrapper("char *", _ffi)
         self.assertIsNotNone(o)
 
     def test_simple_struct_set_and_get(self):
@@ -19,7 +22,7 @@ class TestCFFICDataWrapper(TestCase):
                 float y;
                 float z;
             } *
-        """)
+        """, _ffi)
         o.x = 123.0
         o.y = 456.0
         o.z = 789.0
@@ -28,7 +31,7 @@ class TestCFFICDataWrapper(TestCase):
         self.assertAlmostEqual(o.z, 789.0, places=2)
 
     def test_char_array_set_and_get(self):
-        o = typesbase.CFFICDataWrapper("char [256]")
+        o = typesbase.CFFICDataWrapper("char [256]", _ffi)
         content = b"abcdefghijklmnopqrstuvwxyz"
         content_len = len(content)
         for i in range(256):
@@ -43,8 +46,7 @@ class TestCFFICDataWrapper(TestCase):
             self.assertEqual(o[i], content[start:finish])
 
     def test_char_array_set_and_ffi_string(self):
-        ffi = cffi.FFI()
-        o = typesbase.CFFICDataWrapper("char [256]")
+        o = typesbase.CFFICDataWrapper("char [256]", _ffi)
         content = b"0123456789"
         content_len = len(content)
         for i in range(content_len):
@@ -52,7 +54,7 @@ class TestCFFICDataWrapper(TestCase):
             o[i] = content[i:i+1]
         # must use wrapped cdata to apply ffi.string in this case
         # won't be needed for struct members as other tests verify
-        self.assertEqual(ffi.string(o._cdata), content)
+        self.assertEqual(_ffi.string(o._cdata), content)
 
     def test_simple_struct_array_set_and_get(self):
         o = typesbase.CFFICDataWrapper("""
@@ -61,7 +63,7 @@ class TestCFFICDataWrapper(TestCase):
                 int minute;
                 int second;
             } [20]
-        """)
+        """, _ffi)
         for i in range(20):
             o[i].hour = i
             o[i].minute = (12 - i*2) % 60
@@ -72,7 +74,6 @@ class TestCFFICDataWrapper(TestCase):
             self.assertEqual(o[i].second, (i * 9871) % 60)
 
     def test_complex_struct_set_and_get(self):
-        ffi = cffi.FFI()
         o = typesbase.CFFICDataWrapper("""
             struct _complex {
                 char uuid[36];
@@ -89,7 +90,7 @@ class TestCFFICDataWrapper(TestCase):
                     } socket;
                 } u;
             } *
-        """)
+        """, _ffi)
         _uuid = b"01234567-abcd-abcd-abcd-0123456789ab"
         o.uuid = _uuid
         o.fd = 0xfd
@@ -97,28 +98,27 @@ class TestCFFICDataWrapper(TestCase):
         o.u.file.inode = 12345
         _file_name = b"the-filename.test"
         o.u.file.name = _file_name
-        self.assertEqual(ffi.unpack(o.uuid, len(_uuid)), _uuid)
+        self.assertEqual(_ffi.unpack(o.uuid, len(_uuid)), _uuid)
         self.assertEqual(o.fd, 0xfd)
         self.assertEqual(o.type, 2)
         self.assertEqual(o.u.file.inode, 12345)
         self.assertEqual(
-            ffi.unpack(o.u.file.name, len(_file_name)),
+            _ffi.unpack(o.u.file.name, len(_file_name)),
             _file_name
         )
 
     def test_externally_provided_ffi(self):
-        ffi = cffi.FFI()
-        ffi.cdef("""
+        _ffi.cdef("""
             typedef struct _person {
                 wchar_t first_name[32];
                 wchar_t last_name[32];
             } person_t;
-        """)
-        o = typesbase.CFFICDataWrapper("person_t *", ffi)
+        """, _ffi)
+        o = typesbase.CFFICDataWrapper("person_t *", _ffi)
         o.first_name = u"First Name"
         o.last_name = u"Last Name"
-        self.assertEqual(ffi.string(o.first_name), u"First Name")
-        self.assertEqual(ffi.string(o.last_name), u"Last Name")
+        self.assertEqual(_ffi.string(o.first_name), u"First Name")
+        self.assertEqual(_ffi.string(o.last_name), u"Last Name")
 
 
 _ffi_with_circle_t = cffi.FFI()

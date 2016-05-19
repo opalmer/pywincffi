@@ -34,8 +34,8 @@ def CreateEvent(
         A pointer to a ``SECURITY_ATTRIBUTES`` structure.  If not provided
         then by default the handle cannot be inherited by a subprocess.
 
-    :keyword unicode/str lpName:
-        Type is unicode on Python 2, str on Python 3.
+    :keyword str lpName:
+        Type is ``unicode`` on Python 2, ``str`` on Python 3.
         The optional case-sensitive name of the event.  If not provided then
         the event will be created without an explicit name.
 
@@ -86,8 +86,8 @@ def OpenEvent(dwDesiredAccess, bInheritHandle, lpName):
         The access desired for the event object.
 
     :param bool bInheritHandle:
-    :param unicode/str lpName:
-        Type is unicode on Python 2, str on Python 3.
+    :param str lpName:
+        Type is ``unicode`` on Python 2, ``str`` on Python 3.
 
     :return:
         Returns the
