@@ -75,16 +75,19 @@ class TestWheel(TestCase):
             self.assertTrue(check_wheel(path), path)
 
 
-class TestSession(TestCase):
+class TestDownloadBase(TestCase):
+    REQUIRES_INTERNET = True
+    COMMIT = "fff6dff13502f7431210cbd8b1f64e2e4eea6475"
+    DOWNLOAD_SHA1 = "b34ffce316e11eebc5b2ceb4398a9606630c72bf"
+    DOWNLOAD_URL = \
+        "https://raw.githubusercontent.com/opalmer/pywincffi/" \
+        "%s/.ci/appveyor/run_with_compiler.cmd" % COMMIT
+
+
+class TestSession(TestDownloadBase):
     """
     Tests for constants of :class:`pywincffi.dev.release.Session`
     """
-    REQUIRES_INTERNET = True
-    DOWNLOAD_SHA1 = "89ff14348b410051fff2eb206183993f659d85e0"
-    DOWNLOAD_URL = \
-        "https://raw.githubusercontent.com/opalmer/pywincffi/" \
-        "master/.ci/appveyor/run_with_compiler.cmd"
-
     def setUp(self):
         super(TestSession, self).setUp()
         self.session = Session.session
@@ -109,7 +112,13 @@ class TestSession(TestCase):
             Session.json(AppVeyor.API)
 
     def test_download_random_path(self):
-        path = Session.download(self.DOWNLOAD_URL)
+        try:
+            path = Session.download(self.DOWNLOAD_URL)
+        except RuntimeError as error:
+            if "Got 404 Not Found instead" in error.args[0]:
+                self.fail("Remote branch appears to be missing")
+            raise
+
         self.addCleanup(os.remove, path)
         with open(path, "rb") as file_:
             sha1 = hashlib.sha1(file_.read())
@@ -121,19 +130,23 @@ class TestSession(TestCase):
         os.close(fd)
         self.addCleanup(os.remove, path)
 
-        Session.download(self.DOWNLOAD_URL, path=path)
+        try:
+            Session.download(self.DOWNLOAD_URL, path=path)
+        except RuntimeError as error:
+            if "Got 404 Not Found instead" in error.args[0]:
+                self.fail("Remote branch appears to be missing")
+            raise
+
         with open(path, "rb") as file_:
             sha1 = hashlib.sha1(file_.read())
 
         self.assertEqual(sha1.hexdigest(), self.DOWNLOAD_SHA1)
 
 
-class TestAppVeyor(TestCase):
+class TestAppVeyor(TestDownloadBase):
     """
     Tests for constants of :class:`pywincffi.dev.release.AppVeyor`
     """
-    REQUIRES_INTERNET = True
-
     def setUp(self):
         super(TestAppVeyor, self).setUp()
         self.job_id = random_string()
@@ -172,7 +185,7 @@ class TestAppVeyor(TestCase):
 
     def test_downloads_artifacts(self):
         artifacts = [
-            {"type": "File", "fileName": basename(TestSession.DOWNLOAD_URL)}
+            {"type": "File", "fileName": basename(self.DOWNLOAD_URL)}
         ]
 
         _download = Session.download
@@ -188,7 +201,7 @@ class TestAppVeyor(TestCase):
             self.artifact_path = path
             self.artifact_url = expected_url
 
-            _download(TestSession.DOWNLOAD_URL, path=path)
+            _download(self.DOWNLOAD_URL, path=path)
 
         with patch.object(Session, "json", return_value=artifacts):
             with patch.object(Session, "download", download):
@@ -214,7 +227,7 @@ class TestAppVeyor(TestCase):
         self.artifact_url = None
 
         def download(_, url, path=None):
-            _download(TestSession.DOWNLOAD_URL, path=path)
+            _download(self.DOWNLOAD_URL, path=path)
 
         with patch.object(Session, "json", return_value=artifacts):
             with patch.object(Session, "download", download):
@@ -233,7 +246,7 @@ class TestAppVeyor(TestCase):
         self.addCleanup(shutil.rmtree, directory, ignore_errors=True)
 
         def download(_, url, path=None):
-            _download(TestSession.DOWNLOAD_URL, path=path)
+            _download(self.DOWNLOAD_URL, path=path)
 
         with patch.object(release, "check_wheel") as mocked:
             with patch.object(Session, "json", return_value=artifacts):
