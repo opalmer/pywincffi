@@ -30,8 +30,9 @@ def MsgWaitForMultipleObjects(
         https://msdn.microsoft.com/en-us/library/ms684242
 
     :param list pHandles:
-        A list of objects to wait on.  See Microsoft's documentation for
-        more information about the contents of this variable.
+        A list or tuple of :class:`pywincffi.wintypes.HANDLE` to wait on.
+        See Microsoft's documentation for more information about the contents
+        of this argument.
 
     :param bool bWaitAll:
         If True then this function will return when the states of all

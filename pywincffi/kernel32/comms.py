@@ -12,14 +12,14 @@ from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 def ClearCommError(hFile):
     """
-    REtrieves information about a communications error and reports the
+    Retrieves information about a communications error and reports the
     current status of a communications device.
 
     .. seealso::
 
         https://msdn.microsoft.com/en-us/aa363180
 
-    :param handle hFile:
+    :param :class:`pywincffi.wintypes.HANDLE` hFile:
         A handle to the communications device, typically created by
         :func:`CreateFile`
 

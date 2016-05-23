@@ -26,7 +26,8 @@ def handle_from_file(python_file):
         The Python file object to convert to a Windows handle.
 
     :return:
-        Returns a pywincffi.wintypes.HANDLE for the provided ``python_file``.
+        Returns a :class:`pywincffi.wintypes.HANDLE` for the provided
+        ``python_file``.
     """
     _, library = dist.load()
     input_check("python_file", python_file, Enums.PYFILE)
@@ -49,9 +50,9 @@ def GetStdHandle(nStdHandle):
         https://msdn.microsoft.com/en-us/library/ms683231
 
     :param int nStdHandle:
-        The standard device to retrieve
+        The standard device to retrieve.
 
-    :rtype: handle
+    :rtype: :class:`pywincffi.wintypes.HANDLE`
     :return:
         Returns a handle to the standard device retrieved.
     """
@@ -79,7 +80,7 @@ def CloseHandle(hObject):
 
         https://msdn.microsoft.com/en-us/library/ms724211
 
-    :param handle hObject:
+    :param :class:`pywincffi.wintypes.HANDLE` hObject:
         The handle object to close.
     """
     input_check("hObject", hObject, HANDLE)
@@ -97,7 +98,7 @@ def GetHandleInformation(hObject):
 
         https://msdn.microsoft.com/en-us/library/ms724329
 
-    :param handle hObject:
+    :param :class:`pywincffi.wintypes.HANDLE` hObject:
         A handle to an object whose information is to be retrieved.
 
     :rtype: int
@@ -122,7 +123,7 @@ def SetHandleInformation(hObject, dwMask, dwFlags):
 
         https://msdn.microsoft.com/en-us/ms724935
 
-    :param handle hObject:
+    :param :class:`pywincffi.wintypes.HANDLE` hObject:
         A handle to an object whose information is to be set.
 
     :param int dwMask:
@@ -154,13 +155,13 @@ def DuplicateHandle(  # pylint: disable=too-many-arguments
 
         https://msdn.microsoft.com/en-us/ms724251
 
-    :param handle hSourceProcessHandle:
+    :param :class:`pywincffi.wintypes.HANDLE` hSourceProcessHandle:
         A handle to the process which owns the handle to be duplicated.
 
-    :param handle hSourceHandle:
+    :param :class:`pywincffi.wintypes.HANDLE` hSourceHandle:
         The handle to be duplicated.
 
-    :param handle hTargetProcessHandle:
+    :param :class:`pywincffi.wintypes.HANDLE` hTargetProcessHandle:
         A handle to the process which should receive the duplicated handle.
 
     :param int dwDesiredAccess:
@@ -179,7 +180,7 @@ def DuplicateHandle(  # pylint: disable=too-many-arguments
                parameter duplicates with the same access as the original
                handle.
 
-    :rtype: handle
+    :rtype: :class:`pywincffi.wintypes.HANDLE`
     :return:
         Returns the duplicated handle.
     """

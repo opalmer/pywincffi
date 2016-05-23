@@ -40,16 +40,16 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
         The size of the buffer in bytes.  Passing in 0, which is the default
         will cause the system to use the default buffer size.
 
-    :keyword lpPipeAttributes:
+    :keyword :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES` lpPipeAttributes:
         The security attributes to apply to the handle. By default
-        ``NULL`` will be passed in meaning then handle we create
+        ``NULL`` will be passed in, meaning the handle we create
         cannot be inherited.  For more detailed information see the links
         below.
 
     :return:
-        Returns a tuple of handles containing the reader and writer
-        ends of the pipe that was created.  The user of this function
-        is responsible for calling CloseHandle at some point.
+        Returns a tuple of :class:`pywincffi.wintype.HANDLE` containing the
+        reader and writer ends of the pipe that was created.  The user of this
+        function is responsible for calling CloseHandle at some point.
     """
     input_check("nSize", nSize, integer_types)
     input_check(
@@ -79,7 +79,7 @@ def SetNamedPipeHandleState(
 
         https://msdn.microsoft.com/en-us/library/aa365787
 
-    :param handle hNamedPipe:
+    :param :class:`pywincffi.wintypes.HANDLE` hNamedPipe:
         A handle to the named pipe instance.
 
     :keyword int lpMode:
@@ -141,7 +141,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
 
         https://msdn.microsoft.com/en-us/library/aa365779
 
-    :param handle hNamedPipe:
+    :param :class:`pywincffi.wintypes.HANDLE` hNamedPipe:
         The handele to the pipe object we want to peek into.
 
     :param int nBufferSize:

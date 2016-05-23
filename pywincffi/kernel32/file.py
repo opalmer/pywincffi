@@ -42,8 +42,8 @@ def CreateFile(  # pylint: disable=too-many-arguments
         with an explicit value, ``FILE_SHARE_READ`` will be used which will
         other open operations or process to continue to read from the file.
 
-    :keyword struct lpSecurityAttributes:
-        :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES` or None.
+    :type lpSecurityAttributes: :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES`
+    :keyword lpSecurityAttributes:
         See Microsoft's documentation for more detailed information.
 
     :keyword int dwCreationDisposition:
@@ -56,13 +56,13 @@ def CreateFile(  # pylint: disable=too-many-arguments
         value, ``FILE_ATTRIBUTE_NORMAL`` will be used giving the handle
         essentially no special attributes.
 
-    :keyword handle hTemplateFile:
-        A value handle to a template file with the ``GENERIC_READ`` access
-        right.  See Microsoft's documentation for more information.  If not
+    :keyword :class:`pywincffi.wintypes.HANDLE` hTemplateFile:
+        A handle to a template file with the ``GENERIC_READ`` access right.
+        See Microsoft's documentation for more information.  If not
         provided an explicit value, ``NULL`` will be used instead.
 
     :return:
-        Returns the file handle created by ``CreateFile``.
+        The file :class:`pywincffi.wintypes.HANDLE` created by ``CreateFile``.
     """
     _, library = dist.load()
 
@@ -122,12 +122,12 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
 
         https://msdn.microsoft.com/en-us/library/aa365747
 
-    :param handle hFile:
-        The handle to write to
+    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+        The handle to write to.
 
     :type lpBuffer: str/bytes
     :param lpBuffer:
-        Type is str on Python 2, bytes on Python 3.
+        Type is ``str`` on Python 2, ``bytes`` on Python 3.
         The data to be written to the file or device.
 
     :keyword int nNumberOfBytesToWrite:
@@ -148,7 +148,7 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
         ...     hFile, "Hello world", lpOverlapped=lpOverlapped)
 
     :returns:
-        Returns the number of bytes written
+        Returns the number of bytes written.
     """
     ffi, library = dist.load()
 
@@ -185,7 +185,7 @@ def FlushFileBuffers(hFile):
 
         https://msdn.microsoft.com/en-us/library/aa364439
 
-    :param handle hFile:
+    :param :class:`pywincffi.wintypes.HANDLE` hFile:
         The handle to flush to disk.
     """
     input_check("hFile", hFile, HANDLE)
@@ -202,8 +202,8 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
 
         https://msdn.microsoft.com/en-us/library/aa365467
 
-    :param handle hFile:
-        The handle to read from
+    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+        The handle to read from.
 
     :param int nNumberOfBytesToRead:
         The number of bytes to read from ``hFile``
@@ -224,7 +224,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
 
     :returns:
         Returns the binary data read from ``hFile``
-        Type is str on Python 2, bytes on Python 3.
+        Type is ``str`` on Python 2, ``bytes`` on Python 3.
     """
     ffi, library = dist.load()
 
@@ -300,7 +300,7 @@ def LockFileEx(
 
         https://msdn.microsoft.com/en-us/library/aa365203
 
-    :param handle hFile:
+    :param :class:`pywincffi.wintypes.HANDLE` hFile:
         The handle to the file to lock.  This handle must have been
         created with either the ``GENERIC_READ`` or ``GENERIC_WRITE``
         right.
@@ -361,7 +361,7 @@ def UnlockFileEx(
 
         https://msdn.microsoft.com/en-us/library/aa365716
 
-    :param handle hFile:
+    :param :class:`pywincffi.wintypes.HANDLE` hFile:
         The handle to the file to unlock.  This handle must have been
         created with either the ``GENERIC_READ`` or ``GENERIC_WRITE``
         right.

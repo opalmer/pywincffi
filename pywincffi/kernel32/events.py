@@ -30,9 +30,9 @@ def CreateEvent(
     :param bool bInitialState:
         If True the initial state will be 'signaled'.
 
-    :keyword struct lpEventAttributes:
-        A pointer to a ``SECURITY_ATTRIBUTES`` structure.  If not provided
-        then by default the handle cannot be inherited by a subprocess.
+    :keyword :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES` lpEventAttributes:
+        If not provided then, by default, the handle cannot be inherited
+        by a subprocess.
 
     :keyword str lpName:
         Type is ``unicode`` on Python 2, ``str`` on Python 3.
@@ -40,8 +40,9 @@ def CreateEvent(
         the event will be created without an explicit name.
 
     :returns:
-        Returns a handle to the event.  If an event by the given name already
-        exists then it will be returned instead of creating a new event.
+        Returns a :class:`pywincffi.wintypes.HANDLE` to the event. If an event
+        by the given name already exists then it will be returned instead of
+        creating a new event.
     """
     input_check("bManualReset", bManualReset, bool)
     input_check("bInitialState", bInitialState, bool)
@@ -90,7 +91,7 @@ def OpenEvent(dwDesiredAccess, bInheritHandle, lpName):
         Type is ``unicode`` on Python 2, ``str`` on Python 3.
 
     :return:
-        Returns the
+        Returns a :class:`pywincffi.wintypes.HANDLE` to the event.
     """
     input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
     input_check("bInheritHandle", bInheritHandle, bool)
@@ -115,7 +116,7 @@ def ResetEvent(hEvent):
 
         https://msdn.microsoft.com/en-us/library/ms684305
 
-    :param handle hEvent:
+    :param :class:`pywincffi.wintypes.HANDLE` hEvent:
         A handle to the event object to be reset. The handle must
         have the ``EVENT_MODIFY_STATE`` access right.
     """

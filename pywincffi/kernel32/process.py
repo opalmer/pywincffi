@@ -123,8 +123,8 @@ def GetExitCodeProcess(hProcess):
 
         https://msdn.microsoft.com/en-us/library/ms683189
 
-    :param handle hProcess:
-        The handle of the process to retrieve the exit code for
+    :param :class:`pywincffi.wintypes.HANDLE` hProcess:
+        The handle of the process to retrieve the exit code for.
 
     :returns:
         Returns the exit code of the requested process if one
@@ -157,9 +157,9 @@ def OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId):
         The id of the local process to be opened.
 
     :returns:
-        Returns a handle to the opened process in the form of
-        a void pointer.  This value can be used by other functions
-        such as :func:`TerminateProcess`
+        Returns a :class:`pywincffi.wintypes.HANDLE` to the opened process.
+        This value can be used by other functions such as
+        :func:`TerminateProcess`.
     """
     input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
     input_check("bInheritHandle", bInheritHandle, bool)
@@ -189,7 +189,7 @@ def GetCurrentProcess():
         produced by this function will produce an exception.
 
     :returns:
-        The handle to the current process.
+        The :class:`pywincffi.wintypes.HANDLE` to the current process.
     """
     _, library = dist.load()
     return HANDLE(library.GetCurrentProcess())
@@ -203,8 +203,8 @@ def GetProcessId(Process):  # pylint: disable=invalid-name
 
         https://msdn.microsoft.com/en-us/library/ms683215
 
-    :param handle Process:
-        The handle of the process to re
+    :param :class:`pywincffi.wintypes.HANDLE` Process:
+        The handle of the process.
 
     :return:
         Returns an integer which represents the pid of the given
@@ -225,7 +225,7 @@ def TerminateProcess(hProcess, uExitCode):
 
         https://msdn.microsoft.com/en-us/library/ms686714
 
-    :param handle hProcess:
+    :param :class:`pywincffi.wintypes.HANDLE` hProcess:
         A handle to the process to be terminated.
 
     :param int uExitCode:

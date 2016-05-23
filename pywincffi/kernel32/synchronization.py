@@ -28,7 +28,7 @@ def WaitForSingleObject(hHandle, dwMilliseconds):
 
         https://msdn.microsoft.com/en-us/library/ms687032
 
-    :param handle hHandle:
+    :param :class:`pywincffi.wintypes.HANDLE` hHandle:
         The handle to wait on.
 
     :param int dwMilliseconds:
