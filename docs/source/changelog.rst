@@ -24,6 +24,9 @@ Notable enhancements and changes are:
         * :issue:`78` - :func:`pywincffi.kernel32.handle.DuplicateHandle`
         * :issue:`79` - :func:`pywincffi.kernel32.process.ClearCommError`
         * :issue:`80` - :func:`pywincffi.user32.synchronization.MsgWaitForMultipleObjects`
+    * All exposed APIs updated to use the new Windows equivalent Python types
+      in :mod:`pywincffi.wintypes`.
+    * All exposed APIs now explicitly require either text or binary data.
 
 0.2.0
 ~~~~~
