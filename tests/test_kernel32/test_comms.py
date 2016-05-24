@@ -15,7 +15,7 @@ class TestClearCommError(TestCase):
         for i in range(256):
             try:
                 handle = CreateFile(
-                    "\\\\.\\COM%d" % i,
+                    u"\\\\.\\COM%d" % i,
                     library.GENERIC_READ | library.GENERIC_WRITE,
                     dwCreationDisposition=library.OPEN_EXISTING,
                     dwShareMode=0

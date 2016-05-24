@@ -32,20 +32,6 @@ typedef struct _FILETIME {
   DWORD dwHighDateTime;
 } FILETIME, *PFILETIME;
 
-// https://msdn.microsoft.com/en-us/library/aa363788
-typedef struct _BY_HANDLE_FILE_INFORMATION {
-  DWORD    dwFileAttributes;
-  FILETIME ftCreationTime;
-  FILETIME ftLastAccessTime;
-  FILETIME ftLastWriteTime;
-  DWORD    dwVolumeSerialNumber;
-  DWORD    nFileSizeHigh;
-  DWORD    nFileSizeLow;
-  DWORD    nNumberOfLinks;
-  DWORD    nFileIndexHigh;
-  DWORD    nFileIndexLow;
-} BY_HANDLE_FILE_INFORMATION, *PBY_HANDLE_FILE_INFORMATION, *LPBY_HANDLE_FILE_INFORMATION;
-
 // https://msdn.microsoft.com/en-us/library/ms686331
 typedef struct _STARTUPINFO {
   DWORD  cb;

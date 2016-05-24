@@ -26,6 +26,9 @@ Notable enhancements and changes are:
         * :issue:`80` - :func:`pywincffi.user32.synchronization.MsgWaitForMultipleObjects`
     * Added Python 3.5 support to the build.  No bug fixes or code changes
       where required, just a minor test modification.
+    * All exposed APIs updated to use the new Windows equivalent Python types
+      in :mod:`pywincffi.wintypes`.
+    * All exposed APIs now explicitly require either text or binary data.
 
 0.2.0
 ~~~~~

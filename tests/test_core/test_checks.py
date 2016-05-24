@@ -5,10 +5,7 @@ import types
 
 from six import PY3, PY2
 
-from pywincffi.core import dist
-from pywincffi.core.checks import (
-    INPUT_CHECK_MAPPINGS, FileType, CheckMapping, Enums,
-    input_check)
+from pywincffi.core.checks import FileType, Enums, input_check
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
 
@@ -23,57 +20,7 @@ class TestTypeCheckFailure(TestCase):
 
     def test_handle_type_failure(self):
         with self.assertRaises(InputError):
-            input_check("", None, Enums.HANDLE)
-
-    def test_not_a_handle(self):
-        ffi, _ = dist.load()
-        with self.assertRaises(InputError):
-            input_check("", ffi.new("void *[2]"), Enums.HANDLE)
-
-    def test_ffi_error_raises_input_error(self):
-        with self.assertRaises(InputError):
-            input_check(
-                "lpEventAttributes", "",
-                allowed_types=Enums.SECURITY_ATTRIBUTES)
-
-
-class TestEnumMapping(TestCase):
-    def setUp(self):
-        self.original_mappings = INPUT_CHECK_MAPPINGS.copy()
-
-    def tearDown(self):
-        super(TestEnumMapping, self).tearDown()
-        INPUT_CHECK_MAPPINGS.clear()
-        INPUT_CHECK_MAPPINGS.update(self.original_mappings)
-
-    def test_nullable(self):
-        INPUT_CHECK_MAPPINGS.update(
-            mapping=CheckMapping(
-                kind="pointer",
-                cname="void *",
-                nullable=True
-            )
-        )
-
-        ffi, _ = dist.load()
-        input_check("", ffi.NULL, "mapping")
-
-    def test_overlapped(self):
-        ffi, _ = dist.load()
-        input_check("", ffi.new("OVERLAPPED[1]"), Enums.OVERLAPPED)
-
-    def test_overlapped_nullable(self):
-        ffi, _ = dist.load()
-        input_check("", ffi.NULL, Enums.OVERLAPPED)
-
-    def test_lp_security_attributes(self):
-        ffi, _ = dist.load()
-        input_check(
-            "", ffi.new("SECURITY_ATTRIBUTES[1]"), Enums.SECURITY_ATTRIBUTES)
-
-    def test_lp_security_attributes_nullable(self):
-        ffi, _ = dist.load()
-        input_check("", ffi.NULL, Enums.SECURITY_ATTRIBUTES)
+            input_check("", None, type(int))
 
 
 class TestEnumUTF8(TestCase):

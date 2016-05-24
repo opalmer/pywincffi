@@ -6,17 +6,16 @@ import sys
 from os.path import isfile
 
 from mock import patch
-from six import PY3
+from six import text_type
 
 from pywincffi.core import dist
-from pywincffi.dev.testutil import (
-    TestCase, skip_unless_python2, skip_unless_python3)
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 
 from pywincffi.kernel32 import file as _file  # used for mocks
 from pywincffi.kernel32 import (
     CreateFile, CloseHandle, MoveFileEx, WriteFile, FlushFileBuffers,
-    LockFileEx, UnlockFileEx, handle_from_file)
+    LockFileEx, UnlockFileEx, handle_from_file, ReadFile)
 
 
 class TestWriteFile(TestCase):
@@ -31,42 +30,60 @@ class TestWriteFile(TestCase):
         handle = handle_from_file(file_)
         return handle, path
 
-    @skip_unless_python2
-    def test_python2_write_string(self):
+    def test_write_binary(self):
         handle, path = self.create_handle()
-        WriteFile(
-            handle, "hello world", lpBufferType="char[]")
-        FlushFileBuffers(handle)
-        with open(path, "r") as file_:
-            self.assertEqual(file_.read(), "hello world\x00")
-
-    @skip_unless_python2
-    def test_python2_write_unicode(self):
-        handle, path = self.create_handle()
-        WriteFile(handle, u"hello world")
-        FlushFileBuffers(handle)
-        with open(path, "r") as file_:
-            self.assertEqual(
-                file_.read(),
-                "h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l"
-                "\x00d\x00\x00\x00")
-
-    @skip_unless_python3
-    def test_python3_write_string(self):
-        handle, path = self.create_handle()
-        WriteFile(handle, "hello world")
-        FlushFileBuffers(handle)
-        v = b"h\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l\x00d\x00\x00\x00"
-        with open(path, "rb") as file_:
-            self.assertEqual(file_.read(), v)
-
-    @skip_unless_python3
-    def test_python3_write_bytes(self):
-        handle, path = self.create_handle()
-        WriteFile(handle, b"hello world", lpBufferType="char[]")
+        WriteFile(handle, b"hello world")
         FlushFileBuffers(handle)
         with open(path, "rb") as file_:
-            self.assertEqual(file_.read(), b"hello world\x00")
+            self.assertEqual(file_.read(), b"hello world")
+
+    def test_write_binary_num_bytes(self):
+        handle, path = self.create_handle()
+        WriteFile(handle, b"hello world", nNumberOfBytesToWrite=5)
+        FlushFileBuffers(handle)
+        with open(path, "rb") as file_:
+            self.assertEqual(file_.read(), b"hello")
+
+
+class TestReadFile(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.ReadFile`
+    """
+    def _create_file(self, contents):
+        fd, path = tempfile.mkstemp()
+        self.addCleanup(os.remove, path)
+        with os.fdopen(fd, "wb") as file_:
+            file_.write(contents)
+        return text_type(path)
+
+    def _handle_to_read_file(self, path):
+        _, library = dist.load()
+        # OPEN_EXISTING prevents the file from being truncated.
+        hFile = CreateFile(
+            path,
+            dwDesiredAccess=library.GENERIC_READ,
+            dwCreationDisposition=library.OPEN_EXISTING,
+        )
+        self.addCleanup(CloseHandle, hFile)
+        return hFile
+
+    def test_write_then_read_bytes_ascii(self):
+        path = self._create_file(b"test_write_then_read_bytes_ascii")
+        hFile = self._handle_to_read_file(path)
+        contents = ReadFile(hFile, 1024)
+        self.assertEqual(contents, b"test_write_then_read_bytes_ascii")
+
+    def test_write_then_read_null_bytes(self):
+        path = self._create_file(b"hello\x00world")
+        hFile = self._handle_to_read_file(path)
+        contents = ReadFile(hFile, 1024)
+        self.assertEqual(contents, b"hello\x00world")
+
+    def test_write_then_read_partial(self):
+        path = self._create_file(b"test_write_then_read_partial")
+        hFile = self._handle_to_read_file(path)
+        contents = ReadFile(hFile, 4)
+        self.assertEqual(contents, b"test")
 
 
 class TestMoveFileEx(TestCase):
@@ -85,6 +102,8 @@ class TestMoveFileEx(TestCase):
         self.addCleanup(os.remove, path2)
         os.close(fd)
 
+        path1 = text_type(path1)  # pylint: disable=redefined-variable-type
+        path2 = text_type(path2)  # pylint: disable=redefined-variable-type
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -101,6 +120,8 @@ class TestMoveFileEx(TestCase):
         with os.fdopen(fd, "w") as file_:
             file_.write(file_contents)
 
+        path1 = text_type(path1)  # pylint: disable=redefined-variable-type
+        path2 = text_type(path2)  # pylint: disable=redefined-variable-type
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -111,6 +132,8 @@ class TestMoveFileEx(TestCase):
     def test_run_delete_after_reboot(self):
         fd, path = tempfile.mkstemp()
         os.close(fd)
+
+        path = text_type(path)  # pylint: disable=redefined-variable-type
 
         _, library = dist.load()
         try:
@@ -137,6 +160,7 @@ class TestCreateFile(TestCase):
         os.close(fd)
         os.remove(path)
 
+        path = text_type(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
         self.assertTrue(isfile(path))
@@ -150,6 +174,7 @@ class TestCreateFile(TestCase):
             file_.flush()
             os.fsync(file_.fileno())
 
+        path = text_type(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
         self.addCleanup(CloseHandle, handle)
 
@@ -166,6 +191,7 @@ class TestCreateFile(TestCase):
             raise WindowsAPIError("", "", library.ERROR_ALREADY_EXISTS)
 
         with patch.object(_file, "error_check", side_effect=raise_):
+            path = text_type(path)  # pylint: disable=redefined-variable-type
             handle = CreateFile(
                 path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
@@ -177,7 +203,7 @@ class TestCreateFile(TestCase):
 
         with self.assertRaises(WindowsAPIError) as error:
             handle = CreateFile(
-                "", 0, dwCreationDisposition=library.CREATE_ALWAYS)
+                u"", 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
 
         self.assertEqual(error.exception.errno, library.ERROR_PATH_NOT_FOUND)
@@ -191,15 +217,11 @@ class LockFileCase(TestCase):
         os.close(fd)
         self.addCleanup(os.remove, path)
         _, library = dist.load()
+        path = text_type(path)  # pylint: disable=redefined-variable-type
         self.handle = CreateFile(path, library.GENERIC_WRITE)
         self.addCleanup(CloseHandle, self.handle)
 
-        if PY3:
-            lpBufferType = "wchar_t[]"
-        else:
-            lpBufferType = "char[]"
-
-        WriteFile(self.handle, "hello", lpBufferType=lpBufferType)
+        WriteFile(self.handle, b"hello")
 
 
 class TestLockFileEx(LockFileCase):

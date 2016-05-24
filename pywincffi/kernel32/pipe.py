@@ -11,6 +11,7 @@ from six import integer_types
 
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check, NoneType
+from pywincffi.wintypes import SECURITY_ATTRIBUTES, HANDLE, wintype_to_cdata
 
 PeekNamedPipeResult = namedtuple(
     "PeekNamedPipeResult",
@@ -30,45 +31,42 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
 
     >>> from pywincffi.core import dist
     >>> from pywincffi.kernel32 import CreatePipe
-    >>> ffi, library = dist.load()
-    >>> lpPipeAttributes = ffi.new(
-    ...     "SECURITY_ATTRIBUTES[1]", [{
-    ...     "nLength": ffi.sizeof("SECURITY_ATTRIBUTES"),
-    ...     "bInheritHandle": True,
-    ...     "lpSecurityDescriptor": ffi.NULL
-    ...     }]
-    ... )
+    >>> from pywincffi.wintypes import SECURITY_ATTRIBUTES
+    >>> lpPipeAttributes = SECURITY_ATTRIBUTES()
+    >>> lpPipeAttributes.bInheritHandle = True
     >>> reader, writer = CreatePipe(lpPipeAttributes=lpPipeAttributes)
 
     :keyword int nSize:
         The size of the buffer in bytes.  Passing in 0, which is the default
         will cause the system to use the default buffer size.
 
-    :keyword lpPipeAttributes:
+    :keyword :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES` lpPipeAttributes:
         The security attributes to apply to the handle. By default
-        ``NULL`` will be passed in meaning then handle we create
+        ``NULL`` will be passed in, meaning the handle we create
         cannot be inherited.  For more detailed information see the links
         below.
 
     :return:
-        Returns a tuple of handles containing the reader and writer
-        ends of the pipe that was created.  The user of this function
-        is responsible for calling CloseHandle at some point.
+        Returns a tuple of :class:`pywincffi.wintype.HANDLE` containing the
+        reader and writer ends of the pipe that was created.  The user of this
+        function is responsible for calling CloseHandle at some point.
     """
     input_check("nSize", nSize, integer_types)
-    input_check("lpPipeAttributes", lpPipeAttributes, (NoneType, dict))
+    input_check(
+        "lpPipeAttributes", lpPipeAttributes,
+        allowed_types=(NoneType, SECURITY_ATTRIBUTES)
+    )
+    lpPipeAttributes = wintype_to_cdata(lpPipeAttributes)
+
     ffi, library = dist.load()
 
     hReadPipe = ffi.new("PHANDLE")
     hWritePipe = ffi.new("PHANDLE")
 
-    if lpPipeAttributes is None:
-        lpPipeAttributes = ffi.NULL
-
     code = library.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
     error_check("CreatePipe", code=code, expected=Enums.NON_ZERO)
 
-    return hReadPipe[0], hWritePipe[0]
+    return HANDLE(hReadPipe[0]), HANDLE(hWritePipe[0])
 
 
 def SetNamedPipeHandleState(
@@ -81,7 +79,7 @@ def SetNamedPipeHandleState(
 
         https://msdn.microsoft.com/en-us/library/aa365787
 
-    :param handle hNamedPipe:
+    :param :class:`pywincffi.wintypes.HANDLE` hNamedPipe:
         A handle to the named pipe instance.
 
     :keyword int lpMode:
@@ -102,7 +100,7 @@ def SetNamedPipeHandleState(
         The maximum time, in milliseconds, that can pass before a
         remote named pipe transfers information
     """
-    input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
+    input_check("hNamedPipe", hNamedPipe, HANDLE)
     ffi, library = dist.load()
 
     if lpMode is None:
@@ -126,7 +124,7 @@ def SetNamedPipeHandleState(
         lpCollectDataTimeout = ffi.new("LPDWORD", lpCollectDataTimeout)
 
     code = library.SetNamedPipeHandleState(
-        hNamedPipe,
+        wintype_to_cdata(hNamedPipe),
         lpMode,
         lpMaxCollectionCount,
         lpCollectDataTimeout
@@ -143,7 +141,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
 
         https://msdn.microsoft.com/en-us/library/aa365779
 
-    :param handle hNamedPipe:
+    :param :class:`pywincffi.wintypes.HANDLE` hNamedPipe:
         The handele to the pipe object we want to peek into.
 
     :param int nBufferSize:
@@ -154,7 +152,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
         Returns an instance of :class:`PeekNamedPipeResult` which
         contains the buffer read, number of bytes read and the result.
     """
-    input_check("hNamedPipe", hNamedPipe, Enums.HANDLE)
+    input_check("hNamedPipe", hNamedPipe, HANDLE)
     input_check("nBufferSize", nBufferSize, integer_types)
     ffi, library = dist.load()
 
@@ -165,7 +163,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
     lpBytesLeftThisMessage = ffi.new("LPDWORD")
 
     code = library.PeekNamedPipe(
-        hNamedPipe,
+        wintype_to_cdata(hNamedPipe),
         lpBuffer,
         nBufferSize,
         lpBytesRead,

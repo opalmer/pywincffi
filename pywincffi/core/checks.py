@@ -7,9 +7,7 @@ Provides functions that are responsible for internal type checks.
 
 import io
 import os
-import re
 import types
-from collections import namedtuple
 
 import enum
 from six import PY3, string_types
@@ -23,40 +21,14 @@ logger = get_logger("core.check")
 NoneType = type(None)
 Enums = enum.Enum("Enums", """
 NON_ZERO
-HANDLE
 UTF8
-OVERLAPPED
 PYFILE
-SECURITY_ATTRIBUTES
 """.strip())
 
 if PY3:
     FileType = io.IOBase
 else:
     FileType = types.FileType  # pylint: disable=no-member
-
-# A mapping of value we can expect to get from `ffi.typeof` against
-# some known input enums.
-# NOTE: These are rough checks intended to limit typos.  Functionally speaking
-# the real test will be when a structure is passed to a Windows API.
-CheckMapping = namedtuple("CheckMapping", ("kind", "cname", "nullable"))
-INPUT_CHECK_MAPPINGS = {
-    Enums.HANDLE: CheckMapping(
-        kind="pointer",
-        cname=re.compile(r"^void \*$"),
-        nullable=False
-    ),
-    Enums.OVERLAPPED: CheckMapping(
-        kind="array",
-        cname=re.compile(r"^(?:struct _|).*OVERLAPPED\[.*\]$"),
-        nullable=True
-    ),
-    Enums.SECURITY_ATTRIBUTES: CheckMapping(
-        kind="array",
-        cname=re.compile(r"^(?:struct _|).*SECURITY_ATTRIBUTES\[.*\]$"),
-        nullable=True
-    )
-}
 
 
 def error_check(function, code=None, expected=None):
@@ -141,22 +113,6 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             raise InputError(
                 name, value, allowed_types,
                 allowed_values=allowed_values, ffi=ffi)
-
-    elif allowed_types in INPUT_CHECK_MAPPINGS:
-        mapping = INPUT_CHECK_MAPPINGS[allowed_types]
-
-        try:
-            typeof = ffi.typeof(value)
-
-            if mapping.nullable and value is ffi.NULL:
-                return
-
-            if (typeof.kind != mapping.kind or not
-                    mapping.cname.match(typeof.cname)):
-                raise TypeError
-
-        except (ffi.error, TypeError):
-            raise InputError(name, value, allowed_types)
 
     elif allowed_types is Enums.UTF8:
         try:
