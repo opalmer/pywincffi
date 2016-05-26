@@ -50,9 +50,13 @@ extensions = [
 
 linkcheck_timeout = 60
 
-# Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "https://docs.python.org/": None
+    # Hard code the Python version into the intersphinx url to ensure that the
+    # version of Python being used to build the documentation is also used
+    # in the documentation urls.  This ensures that the documentation we're
+    # building will also link to the same major version of the standard
+    # library.
+    "python": ("https://docs.python.org/%s/" % sys.version_info[0], None)
 }
 
 # Add any paths that contain templates here, relative to this directory.
