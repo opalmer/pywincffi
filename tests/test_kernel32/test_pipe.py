@@ -143,12 +143,26 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
         _, lib = dist.load()
         self._set_mode(lib.PIPE_NOWAIT)
 
-    def test_max_collection_count_null(self):
-        # testing with anonymous pipe: only null allowed
+    def _set_max_collection_count(self, count):
         _, writer = self.create_anonymous_pipes()
-        SetNamedPipeHandleState(writer, lpMaxCollectionCount=None)
+        SetNamedPipeHandleState(writer, lpMaxCollectionCount=count)
+
+    def test_max_collection_count_null(self):
+        self._set_max_collection_count(None)
+
+    def test_max_collection_count_fail(self):
+        # should fail: only supported with named pipes
+        with self.assertRaises(WindowsAPIError):
+            self._set_max_collection_count(10)
+
+    def _set_collect_data_timeout_null(self, timeout):
+        reader, _ = self.create_anonymous_pipes()
+        SetNamedPipeHandleState(reader, lpCollectDataTimeout=timeout)
 
     def test_collect_data_timeout_null(self):
-        # testing with anonymous pipe: only null allowed
-        reader, _ = self.create_anonymous_pipes()
-        SetNamedPipeHandleState(reader, lpCollectDataTimeout=None)
+        self._set_collect_data_timeout_null(None)
+
+    def test_collect_data_timeout_fail(self):
+        # should fail: only supported with named pipes
+        with self.assertRaises(WindowsAPIError):
+            self._set_collect_data_timeout_null(500)
