@@ -11,6 +11,7 @@ from six import integer_types
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
+from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 
 INVALID_HANDLE_VALUE = -1
@@ -25,8 +26,8 @@ def handle_from_file(python_file):
         The Python file object to convert to a Windows handle.
 
     :return:
-        Returns a Windows handle object which is pointing at
-        the provided ``python_file`` object.
+        Returns a :class:`pywincffi.wintypes.HANDLE` for the provided
+        ``python_file``.
     """
     _, library = dist.load()
     input_check("python_file", python_file, Enums.PYFILE)
@@ -36,7 +37,7 @@ def handle_from_file(python_file):
     #   number can crash Python.  The input_check function
     #   above should handle this for us by checking to
     #   ensure the file descriptor is valid first.
-    return library.handle_from_fd(python_file.fileno())
+    return HANDLE(library.handle_from_fd(python_file.fileno()))
 
 
 def GetStdHandle(nStdHandle):
@@ -49,9 +50,9 @@ def GetStdHandle(nStdHandle):
         https://msdn.microsoft.com/en-us/library/ms683231
 
     :param int nStdHandle:
-        The standard device to retrieve
+        The standard device to retrieve.
 
-    :rtype: handle
+    :rtype: :class:`pywincffi.wintypes.HANDLE`
     :return:
         Returns a handle to the standard device retrieved.
     """
@@ -68,7 +69,7 @@ def GetStdHandle(nStdHandle):
             "GetStdHandle", "Invalid Handle", INVALID_HANDLE_VALUE,
             expected_return_code="not %r" % INVALID_HANDLE_VALUE)
 
-    return handle
+    return HANDLE(handle)
 
 
 def CloseHandle(hObject):
@@ -79,13 +80,13 @@ def CloseHandle(hObject):
 
         https://msdn.microsoft.com/en-us/library/ms724211
 
-    :param handle hObject:
+    :param :class:`pywincffi.wintypes.HANDLE` hObject:
         The handle object to close.
     """
-    input_check("hObject", hObject, Enums.HANDLE)
+    input_check("hObject", hObject, HANDLE)
     _, library = dist.load()
 
-    code = library.CloseHandle(hObject)
+    code = library.CloseHandle(wintype_to_cdata(hObject))
     error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
 
 
@@ -97,18 +98,18 @@ def GetHandleInformation(hObject):
 
         https://msdn.microsoft.com/en-us/library/ms724329
 
-    :param handle hObject:
+    :param :class:`pywincffi.wintypes.HANDLE` hObject:
         A handle to an object whose information is to be retrieved.
 
     :rtype: int
     :return:
         Returns the set of bit flags that specify properties of ``hObject``.
     """
-    input_check("hObject", hObject, Enums.HANDLE)
+    input_check("hObject", hObject, HANDLE)
     ffi, library = dist.load()
 
     lpdwFlags = ffi.new("LPDWORD")
-    code = library.GetHandleInformation(hObject, lpdwFlags)
+    code = library.GetHandleInformation(wintype_to_cdata(hObject), lpdwFlags)
     error_check("GetHandleInformation", code=code, expected=Enums.NON_ZERO)
 
     return lpdwFlags[0]
@@ -122,7 +123,7 @@ def SetHandleInformation(hObject, dwMask, dwFlags):
 
         https://msdn.microsoft.com/en-us/ms724935
 
-    :param handle hObject:
+    :param :class:`pywincffi.wintypes.HANDLE` hObject:
         A handle to an object whose information is to be set.
 
     :param int dwMask:
@@ -131,13 +132,13 @@ def SetHandleInformation(hObject, dwMask, dwFlags):
     :param int dwFlags:
         Set of bit flags that specifies properties of ``hObject``.
     """
-    input_check("hObject", hObject, Enums.HANDLE)
+    input_check("hObject", hObject, HANDLE)
     input_check("dwMask", dwMask, integer_types)
     input_check("dwFlags", dwFlags, integer_types)
     ffi, library = dist.load()
 
     code = library.SetHandleInformation(
-        hObject,
+        wintype_to_cdata(hObject),
         ffi.cast("DWORD", dwMask),
         ffi.cast("DWORD", dwFlags)
     )
@@ -154,13 +155,13 @@ def DuplicateHandle(  # pylint: disable=too-many-arguments
 
         https://msdn.microsoft.com/en-us/ms724251
 
-    :param handle hSourceProcessHandle:
+    :param :class:`pywincffi.wintypes.HANDLE` hSourceProcessHandle:
         A handle to the process which owns the handle to be duplicated.
 
-    :param handle hSourceHandle:
+    :param :class:`pywincffi.wintypes.HANDLE` hSourceHandle:
         The handle to be duplicated.
 
-    :param handle hTargetProcessHandle:
+    :param :class:`pywincffi.wintypes.HANDLE` hTargetProcessHandle:
         A handle to the process which should receive the duplicated handle.
 
     :param int dwDesiredAccess:
@@ -179,14 +180,14 @@ def DuplicateHandle(  # pylint: disable=too-many-arguments
                parameter duplicates with the same access as the original
                handle.
 
-    :rtype: handle
+    :rtype: :class:`pywincffi.wintypes.HANDLE`
     :return:
         Returns the duplicated handle.
     """
     ffi, library = dist.load()
-    input_check("hSourceProcessHandle", hSourceProcessHandle, Enums.HANDLE)
-    input_check("hSourceHandle", hSourceHandle, Enums.HANDLE)
-    input_check("hTargetProcessHandle", hTargetProcessHandle, Enums.HANDLE)
+    input_check("hSourceProcessHandle", hSourceProcessHandle, HANDLE)
+    input_check("hSourceHandle", hSourceHandle, HANDLE)
+    input_check("hTargetProcessHandle", hTargetProcessHandle, HANDLE)
     input_check("dwDesiredAccess", dwDesiredAccess, integer_types)
     input_check("bInheritHandle", bInheritHandle, bool)
     input_check("dwOptions", dwOptions, allowed_values=(
@@ -196,13 +197,13 @@ def DuplicateHandle(  # pylint: disable=too-many-arguments
 
     lpTargetHandle = ffi.new("LPHANDLE")
     code = library.DuplicateHandle(
-        hSourceProcessHandle,
-        hSourceHandle,
-        hTargetProcessHandle,
+        wintype_to_cdata(hSourceProcessHandle),
+        wintype_to_cdata(hSourceHandle),
+        wintype_to_cdata(hTargetProcessHandle),
         lpTargetHandle,
         ffi.cast("DWORD", dwDesiredAccess),
         ffi.cast("BOOL", bInheritHandle),
         ffi.cast("DWORD", dwOptions)
     )
     error_check("DuplicateHandle", code, expected=Enums.NON_ZERO)
-    return lpTargetHandle[0]
+    return HANDLE(lpTargetHandle[0])

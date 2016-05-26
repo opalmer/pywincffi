@@ -1,5 +1,4 @@
-from pywincffi.dev.testutil import (
-    TestCase, skip_unless_python3, skip_unless_python2)
+from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import (
     CreatePipe, PeekNamedPipe, PeekNamedPipeResult, ReadFile, WriteFile,
@@ -45,43 +44,14 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
     Basic tests for :func:`pywincffi.kernel32.WritePipe` and
     :func:`pywincffi.kernel32.ReadPipe`
     """
-    @skip_unless_python3
-    def test_python_3_bytes(self):
+    def test_python_bytes(self):
         reader, writer = self.create_anonymous_pipes()
 
         data = b"hello world"
-        bytes_written = WriteFile(writer, data, lpBufferType="char[]")
-        self.assertEqual(
-            ReadFile(reader, bytes_written).encode("utf-8"),
-            b"\xe6\x95\xa8\xe6\xb1\xac\xe2\x81\xaf\xe6\xbd\xb7\xe6\xb1\xb2d")
-
-    @skip_unless_python3
-    def test_python3_string(self):
-        reader, writer = self.create_anonymous_pipes()
-
-        data = "hello world"
         bytes_written = WriteFile(writer, data)
         self.assertEqual(
-            ReadFile(reader, bytes_written).encode("utf-8"),
+            ReadFile(reader, bytes_written),
             b"hello world")
-
-    @skip_unless_python2
-    def test_python2_unicode(self):
-        reader, writer = self.create_anonymous_pipes()
-
-        data = u"hello world"
-        bytes_written = WriteFile(writer, data, lpBufferType="wchar_t[]")
-        self.assertEqual(
-            ReadFile(reader, bytes_written).encode("utf-8"), data)
-
-    @skip_unless_python2
-    def test_python2_string(self):
-        reader, writer = self.create_anonymous_pipes()
-
-        data = "hello world".encode("utf-8")
-        bytes_written = WriteFile(writer, data, lpBufferType="char[]")
-        value = u"\u6568\u6c6c\u206f\u6f77\u6c72d"
-        self.assertEqual(ReadFile(reader, bytes_written), value)
 
 
 # TODO: tests for lpBuffer from the result
@@ -96,7 +66,7 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     def test_peek_does_not_remove_data(self):
         reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
+        data = b"hello world"
         data_written = WriteFile(writer, data)
 
         PeekNamedPipe(reader, 0)
@@ -105,7 +75,7 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     def test_bytes_read_less_than_bytes_written(self):
         reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
+        data = b"hello world"
         WriteFile(writer, data)
 
         result = PeekNamedPipe(reader, 1)
@@ -114,7 +84,7 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     def test_bytes_read_greater_than_bytes_written(self):
         reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
+        data = b"hello world"
         bytes_written = WriteFile(writer, data)
 
         result = PeekNamedPipe(reader, bytes_written * 2)
@@ -123,7 +93,7 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     def test_total_bytes_avail(self):
         reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
+        data = b"hello world"
         bytes_written = WriteFile(writer, data)
 
         result = PeekNamedPipe(reader, 0)
@@ -132,7 +102,7 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     def test_total_bytes_avail_after_read(self):
         reader, writer = self.create_anonymous_pipes()
 
-        data = b"hello world".decode("utf-8")
+        data = b"hello world"
         bytes_written = WriteFile(writer, data)
 
         read_bytes = 7
@@ -140,4 +110,4 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(
-            result.lpTotalBytesAvail, bytes_written - (read_bytes * 2))
+            result.lpTotalBytesAvail, bytes_written - read_bytes)

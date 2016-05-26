@@ -22,8 +22,11 @@ try:
     from httplib import responses, OK
     from StringIO import StringIO
 except ImportError:  # pragma: no cover
+    # NOTE: There's a bug in pylint for Python 3.5 which causes
+    # `no-name-in-module` to be raised.  The tests would be broken if this
+    # was in fact the case so we ignore this lint problem.
     # pylint: disable=import-error,wrong-import-order
-    from http.client import responses, OK
+    from http.client import responses, OK  # pylint: disable=no-name-in-module
     from io import StringIO
 
 

@@ -10,6 +10,7 @@ from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
     GetProcessId, pid_exists, TerminateProcess)
+from pywincffi.wintypes import HANDLE
 
 try:
     IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -22,7 +23,7 @@ class TestOpenProcess(TestCase):
     Tests for :func:`pywincffi.kernel32.OpenProcess`
     """
     def test_returns_handle(self):
-        ffi, library = dist.load()
+        _, library = dist.load()
 
         handle = OpenProcess(
             library.PROCESS_QUERY_INFORMATION,
@@ -30,9 +31,7 @@ class TestOpenProcess(TestCase):
             os.getpid()
         )
 
-        typeof = ffi.typeof(handle)
-        self.assertEqual(typeof.kind, "pointer")
-        self.assertEqual(typeof.cname, "void *")
+        self.assertIsInstance(handle, HANDLE)
         CloseHandle(handle)
 
     def test_access_denied_for_null_desired_access(self):
@@ -60,11 +59,8 @@ class TestGetCurrentProcess(TestCase):
     Tests for :func:`pywincffi.kernel32.GetCurrentProcess`
     """
     def test_returns_handle(self):
-        ffi, _ = dist.load()
         handle = GetCurrentProcess()
-        typeof = ffi.typeof(handle)
-        self.assertEqual(typeof.kind, "pointer")
-        self.assertEqual(typeof.cname, "void *")
+        self.assertIsInstance(handle, HANDLE)
 
     def test_returns_same_handle(self):
         # GetCurrentProcess is somewhat special in that it will
@@ -72,7 +68,10 @@ class TestGetCurrentProcess(TestCase):
         # opaque so the string representation of the two handles
         # should always match since it contains the address of the object
         # in memory.
-        self.assertEqual(repr(GetCurrentProcess()), repr(GetCurrentProcess()))
+        h1 = GetCurrentProcess()
+        h2 = GetCurrentProcess()
+        self.assertIsNot(h1, h2)
+        self.assertEqual(h1, h2)
 
     def test_handle_is_current_process(self):
         handle = GetCurrentProcess()
@@ -188,7 +187,7 @@ class TestPidExists(TestCase):
 
     def test_raises_unhandled_windows_api_error(self):
         def new_open_process(*args, **kwargs):
-            raise WindowsAPIError("", "", 42, 0)
+            raise WindowsAPIError("", "", 42)
 
         with patch.object(k32process, "OpenProcess", new_open_process):
             process = \

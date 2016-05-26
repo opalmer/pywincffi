@@ -14,8 +14,9 @@ library.
 from six import integer_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check
+from pywincffi.core.checks import input_check
 from pywincffi.exceptions import WindowsAPIError
+from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 
 def MsgWaitForMultipleObjects(
@@ -29,8 +30,9 @@ def MsgWaitForMultipleObjects(
         https://msdn.microsoft.com/en-us/library/ms684242
 
     :param list pHandles:
-        A list of objects to wait on.  See Microsoft's documentation for
-        more information about the contents of this variable.
+        A list or tuple of :class:`pywincffi.wintypes.HANDLE` to wait on.
+        See Microsoft's documentation for more information about the contents
+        of this argument.
 
     :param bool bWaitAll:
         If True then this function will return when the states of all
@@ -67,16 +69,18 @@ def MsgWaitForMultipleObjects(
     input_check("dwWakeMask", dwWakeMask, integer_types)
     input_check("nCount", nCount, integer_types)
 
-    # Iterate over all of the object in pHandles.  Each object
-    # should be a handle.
-    for i, item in enumerate(pHandles):
-        input_check("pHandles[%d]" % i, item, Enums.HANDLE)
-
     ffi, library = dist.load()
+
+    # Verify input types and build a <cdata HANDLE> array out of the
+    # input Python HANDLE list/tuple to be passed to the underlying API.
+    pHandles_cdata = ffi.new("HANDLE[]", nCount)
+    for i, handle in enumerate(pHandles):
+        input_check("pHandles[%d]" % i, handle, HANDLE)
+        pHandles_cdata[i] = wintype_to_cdata(handle)
 
     code = library.MsgWaitForMultipleObjects(
         nCount,
-        ffi.new("const PHANDLE[%d]" % nCount, pHandles),
+        pHandles_cdata,
         bWaitAll,
         dwMilliseconds,
         dwWakeMask
