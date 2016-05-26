@@ -155,14 +155,14 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
         with self.assertRaises(WindowsAPIError):
             self._set_max_collection_count(10)
 
-    def _set_collect_data_timeout_null(self, timeout):
+    def _set_collect_data_timeout(self, timeout):
         reader, _ = self.create_anonymous_pipes()
         SetNamedPipeHandleState(reader, lpCollectDataTimeout=timeout)
 
     def test_collect_data_timeout_null(self):
-        self._set_collect_data_timeout_null(None)
+        self._set_collect_data_timeout(None)
 
     def test_collect_data_timeout_fail(self):
         # should fail: only supported with named pipes
         with self.assertRaises(WindowsAPIError):
-            self._set_collect_data_timeout_null(500)
+            self._set_collect_data_timeout(500)
