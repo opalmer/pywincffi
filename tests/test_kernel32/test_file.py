@@ -111,11 +111,19 @@ class TestMoveFileEx(TestCase):
 
         self.assertFalse(isfile(path1))
 
+    def _remove_file(self, path):
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
     def test_renames_file(self):
         # Destination file does not exist, this should create it.
         file_contents = self.random_string(12)
         fd, path1 = tempfile.mkstemp()
         path2 = path1 + ".new"
+        self.addCleanup(self._remove_file, path1)
+        self.addCleanup(self._remove_file, path2)
 
         with os.fdopen(fd, "w") as file_:
             file_.write(file_contents)
@@ -130,7 +138,7 @@ class TestMoveFileEx(TestCase):
         self.assertFalse(isfile(path1))
 
     def test_run_delete_after_reboot(self):
-        fd, path = tempfile.mkstemp()
+        fd, path = tempfile.mkstemp('-removed-on-next-reboot')
         os.close(fd)
 
         path = text_type(path)  # pylint: disable=redefined-variable-type
@@ -143,6 +151,7 @@ class TestMoveFileEx(TestCase):
             # have the permissions to perform this kind of
             # action.
             if error.errno == library.ERROR_ACCESS_DENIED:
+                self.addCleanup(os.remove, path)
                 self.assertFalse(ctypes.windll.shell32.IsUserAnAdmin())
                 return
 
@@ -162,6 +171,7 @@ class TestCreateFile(TestCase):
 
         path = text_type(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
+        self.addCleanup(os.remove, path)
         self.addCleanup(CloseHandle, handle)
         self.assertTrue(isfile(path))
 
@@ -176,6 +186,7 @@ class TestCreateFile(TestCase):
 
         path = text_type(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
+        self.addCleanup(os.remove, path)
         self.addCleanup(CloseHandle, handle)
 
         with open(path, "r") as file_:
@@ -194,6 +205,7 @@ class TestCreateFile(TestCase):
             path = text_type(path)  # pylint: disable=redefined-variable-type
             handle = CreateFile(
                 path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
+            self.addCleanup(os.remove, path)
             self.addCleanup(CloseHandle, handle)
 
         # If we've made it this far, the exception was ignored by CreateFile
