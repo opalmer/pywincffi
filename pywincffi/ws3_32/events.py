@@ -46,8 +46,20 @@ def WSAEventSelect(sock, hEventObject, lNetworkEvents):
     )
 
     if code == library.SOCKET_ERROR:
-        errno = library.WSAGetLastError()
+        errno = WSAGetLastError()
         raise WindowsAPIError(
             "WSAEventSelect", "Socket error %d" % errno, errno)
 
     error_check("WSAEventSelect", code, expected=0)
+
+
+def WSAGetLastError():
+    """
+    Returns the last error status for a windows socket operation.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms741580
+    """
+    _, library = dist.load()
+    return library.WSAGetLastError()
