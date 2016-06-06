@@ -53,6 +53,28 @@ def WSAEventSelect(sock, hEventObject, lNetworkEvents):
     error_check("WSAEventSelect", code, expected=0)
 
 
+def WSACreateEvent():
+    """
+    Creates a new event object.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms741561
+
+    :returns:
+        Returns a handle to a new event object.
+    """
+    _, library = dist.load()
+    result = library.WSACreateEvent()
+
+    if result == library.WSA_INVALID_EVENT:
+        errno = WSAGetLastError()
+        raise WindowsAPIError(
+            "WSACreateEvent", "Socket error %d" % errno, errno)
+
+    return result
+
+
 def WSAGetLastError():
     """
     Returns the last error status for a windows socket operation.
