@@ -48,4 +48,4 @@ BOOL ResetEvent(HANDLE);
 BOOL ClearCommError(HANDLE, LPDWORD, LPCOMSTAT);
 int WSAEventSelect(int, HANDLE, long);
 int WSAGetLastError(void);
-WSAEVENT WSACreateEvent(void);
+HANDLE WSACreateEvent(void);
