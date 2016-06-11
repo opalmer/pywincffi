@@ -134,12 +134,6 @@ class TestFFI(TestCase):
         mocked_set_source.assert_called_once_with(
             self.module_name, _read(*SOURCE_FILES), libraries=LIBRARIES)
 
-    def test_default_cdefs(self):
-        with patch.object(FFI, "cdef") as mocked_cdef:
-            _ffi(module_name=self.module_name)
-
-        mocked_cdef.assert_called_with(_read(*HEADER_FILES))
-
     def test_alternate_source_files(self):
         _, path = tempfile.mkstemp(suffix=".h")
 

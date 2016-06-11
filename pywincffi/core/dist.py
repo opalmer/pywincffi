@@ -16,6 +16,7 @@ process to build and install pywincffi as well as a wheel
 for distribution.
 """
 
+import re
 import shutil
 import tempfile
 import warnings
@@ -58,6 +59,8 @@ SOURCE_FILES = (
     resource_filename(
         "pywincffi", join("core", "cdefs", "sources", "main.c")), )
 LIBRARIES = ("kernel32", "user32")
+REGEX_SAL_ANNOTATION = re.compile(
+    r"\b(_In_|_Inout_|_Out_|_Outptr_|_Reserved_)(opt_)?\b")
 
 
 class Module(object):  # pylint: disable=too-few-public-methods
@@ -172,7 +175,11 @@ def _ffi(
     ffi = FFI()
     ffi.set_unicode(True)
     ffi.set_source(module_name, source, libraries=libraries)
-    ffi.cdef(header)
+
+    # Windows uses SAL annotations which can provide some helpful information
+    # about the inputs and outputs to a function.  Rather than require these
+    # to be stripped out manually we should strip them out programmatically.
+    ffi.cdef(REGEX_SAL_ANNOTATION.sub(" ", header))
 
     return ffi
 
