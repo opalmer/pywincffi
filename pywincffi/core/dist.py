@@ -177,7 +177,7 @@ def _ffi(
     # Windows uses SAL annotations which can provide some helpful information
     # about the inputs and outputs to a function.  Rather than require these
     # to be stripped out manually we should strip them out programmatically.
-    ffi.cdef(re.sub(r"\b(_In_|_Inout_|_Out_|_Outptr_)(opt_)?\b", " ", header))
+    ffi.cdef(re.sub(r"\b(_In_|_Inout_|_Out_|_Outptr_|_Reserved_)(opt_)?\b", " ", header))
 
     return ffi
 
