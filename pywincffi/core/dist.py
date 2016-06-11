@@ -16,6 +16,7 @@ process to build and install pywincffi as well as a wheel
 for distribution.
 """
 
+import re
 import shutil
 import tempfile
 import warnings
@@ -172,7 +173,11 @@ def _ffi(
     ffi = FFI()
     ffi.set_unicode(True)
     ffi.set_source(module_name, source, libraries=libraries)
-    ffi.cdef(header)
+
+    # Windows uses SAL annotations which can provide some helpful information
+    # about the inputs and outputs to a function.  Rather than require these
+    # to be stripped out manually we should strip them out programmatically.
+    ffi.cdef(re.sub(r"\b(_In_|_Inout_|_Out_|_Outptr_)(opt_)?\b", " ", header))
 
     return ffi
 
