@@ -218,10 +218,10 @@ BOOL WINAPI ResetEvent(
 ///////////////////////
 // Communications
 ///////////////////////
+
 // https://msdn.microsoft.com/en-us/aa363180
 BOOL WINAPI ClearCommError(
   _In_      HANDLE    hFile,
   _Out_opt_ LPDWORD   lpErrors,
   _Out_opt_ LPCOMSTAT lpStat
 );
-
