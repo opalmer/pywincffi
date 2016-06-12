@@ -42,8 +42,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
         with an explicit value, ``FILE_SHARE_READ`` will be used which will
         other open operations or process to continue to read from the file.
 
-    :type lpSecurityAttributes: :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES`
-    :keyword lpSecurityAttributes:
+    :keyword pywincffi.wintypes.SECURITY_ATTRIBUTES lpSecurityAttributes:
         See Microsoft's documentation for more detailed information.
 
     :keyword int dwCreationDisposition:
@@ -56,7 +55,7 @@ def CreateFile(  # pylint: disable=too-many-arguments
         value, ``FILE_ATTRIBUTE_NORMAL`` will be used giving the handle
         essentially no special attributes.
 
-    :keyword :class:`pywincffi.wintypes.HANDLE` hTemplateFile:
+    :keyword pywincffi.wintypes.HANDLE hTemplateFile:
         A handle to a template file with the ``GENERIC_READ`` access right.
         See Microsoft's documentation for more information.  If not
         provided an explicit value, ``NULL`` will be used instead.
@@ -122,7 +121,7 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
 
         https://msdn.microsoft.com/en-us/library/aa365747
 
-    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+    :param pywincffi.wintypes.HANDLE hFile:
         The handle to write to.
 
     :type lpBuffer: str/bytes
@@ -133,8 +132,7 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
     :keyword int nNumberOfBytesToWrite:
         The number of bytes to be written.  Defaults to len(lpBuffer).
 
-    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
-    :keyword lpOverlapped:
+    :keyword pywincffi.wintypes.OVERLAPPED lpOverlapped:
         See Microsoft's documentation for intended usage and below for
         an example.
 
@@ -185,7 +183,7 @@ def FlushFileBuffers(hFile):
 
         https://msdn.microsoft.com/en-us/library/aa364439
 
-    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+    :param pywincffi.wintypes.HANDLE hFile:
         The handle to flush to disk.
     """
     input_check("hFile", hFile, HANDLE)
@@ -202,14 +200,13 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
 
         https://msdn.microsoft.com/en-us/library/aa365467
 
-    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+    :param pywincffi.wintypes.HANDLE hFile:
         The handle to read from.
 
     :param int nNumberOfBytesToRead:
         The number of bytes to read from ``hFile``
 
-    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
-    :keyword lpOverlapped:
+    :keyword pywincffi.wintypes.OVERLAPPED lpOverlapped:
         See Microsoft's documentation for intended usage and below for
         an example.
 
@@ -300,7 +297,7 @@ def LockFileEx(
 
         https://msdn.microsoft.com/en-us/library/aa365203
 
-    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+    :param pywincffi.wintypes.HANDLE hFile:
         The handle to the file to lock.  This handle must have been
         created with either the ``GENERIC_READ`` or ``GENERIC_WRITE``
         right.
@@ -318,8 +315,7 @@ def LockFileEx(
     :param int nNumberOfBytesToLockHigh:
         The end of the byte range to lock.
 
-    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
-    :keyword lpOverlapped:
+    :keyword pywincffi.wintypes.OVERLAPPED lpOverlapped:
         The underlying Windows API requires lpOverlapped, which acts both
         an input argument and may contain results after calling. If None is
         provided, a throw-away zero-filled instance will be created to
@@ -361,7 +357,7 @@ def UnlockFileEx(
 
         https://msdn.microsoft.com/en-us/library/aa365716
 
-    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+    :param pywincffi.wintypes.HANDLE hFile:
         The handle to the file to unlock.  This handle must have been
         created with either the ``GENERIC_READ`` or ``GENERIC_WRITE``
         right.
@@ -372,8 +368,7 @@ def UnlockFileEx(
     :param int nNumberOfBytesToUnlockHigh:
         The end of the byte range to unlock.
 
-    :type lpOverlapped: None or :class:`pywincffi.wintypes.OVERLAPPED`
-    :keyword lpOverlapped:
+    :keyword pywincffi.wintypes.OVERLAPPED lpOverlapped:
         The underlying Windows API requires lpOverlapped, which acts both
         an input argument and may contain results after calling. If None is
         provided, a throw-away zero-filled instance will be created to
