@@ -52,8 +52,8 @@ class InputError(PyWinCFFIError):
     :keyword str message:
         A custom error message.  This will override the default error messages
         which :class:`InputError` would normally generate.  This can be
-        helpful if there is a problem with a given input parameter to a function
-        but it's unrelated to the type of input.
+        helpful if there is a problem with a given input parameter to a
+        function but it's unrelated to the type of input.
     """
     def __init__(  # pylint: disable=too-many-arguments
             self, name, value, expected_types, allowed_values=None, ffi=None,
