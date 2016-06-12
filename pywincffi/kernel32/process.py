@@ -123,7 +123,7 @@ def GetExitCodeProcess(hProcess):
 
         https://msdn.microsoft.com/en-us/library/ms683189
 
-    :param :class:`pywincffi.wintypes.HANDLE` hProcess:
+    :param pywincffi.wintypes.HANDLE hProcess:
         The handle of the process to retrieve the exit code for.
 
     :returns:
@@ -203,7 +203,7 @@ def GetProcessId(Process):  # pylint: disable=invalid-name
 
         https://msdn.microsoft.com/en-us/library/ms683215
 
-    :param :class:`pywincffi.wintypes.HANDLE` Process:
+    :param pywincffi.wintypes.HANDLE Process:
         The handle of the process.
 
     :return:
@@ -225,7 +225,7 @@ def TerminateProcess(hProcess, uExitCode):
 
         https://msdn.microsoft.com/en-us/library/ms686714
 
-    :param :class:`pywincffi.wintypes.HANDLE` hProcess:
+    :param pywincffi.wintypes.HANDLE hProcess:
         A handle to the process to be terminated.
 
     :param int uExitCode:

@@ -116,7 +116,7 @@ def ResetEvent(hEvent):
 
         https://msdn.microsoft.com/en-us/library/ms684305
 
-    :param :class:`pywincffi.wintypes.HANDLE` hEvent:
+    :param pywincffi.wintypes.HANDLE hEvent:
         A handle to the event object to be reset. The handle must
         have the ``EVENT_MODIFY_STATE`` access right.
     """

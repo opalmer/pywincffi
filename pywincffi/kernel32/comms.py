@@ -19,7 +19,7 @@ def ClearCommError(hFile):
 
         https://msdn.microsoft.com/en-us/aa363180
 
-    :param :class:`pywincffi.wintypes.HANDLE` hFile:
+    :param pywincffi.wintypes.HANDLE hFile:
         A handle to the communications device, typically created by
         :func:`CreateFile`
 
