@@ -135,3 +135,15 @@ class FILETIME(typesbase.CFFICDataWrapper):
     def __init__(self):
         ffi, _ = dist.load()
         super(FILETIME, self).__init__("FILETIME*", ffi)
+
+
+# pylint: disable=too-few-public-methods
+class PROCESS_INFORMATION(typesbase.CFFICDataWrapper):
+    """
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms684873
+    """
+    def __init__(self):
+        ffi, _ = dist.load()
+        super(PROCESS_INFORMATION, self).__init__("PROCESS_INFORMATION*", ffi)
