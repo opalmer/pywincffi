@@ -30,6 +30,30 @@ class InputError(PyWinCFFIError):
     is provided to a function.  Because we're passing inputs to C we have
     to be sure that the input(s) being provided are what we're expecting so
     we fail early and provide better error messages.
+
+
+    :param str name:
+        The name of the parameter being checked
+
+    :param value:
+        The value of the parameter being checked
+
+    :param expected_types:
+        The expected type(s).  This may be either a single value or a
+        tuple/list of types.
+
+    :keyword allowed_values:
+        An explicit list of values which are allowed for ``value``.
+
+    :keyword ffi:
+        If ``value`` is a C object then you may pass in an instance of the
+        FFI instance to help understand the underlying type of ``value``
+
+    :keyword str message:
+        A custom error message.  This will override the default error messages
+        which :class:`InputError` would normally generate.  This can be
+        helpful if there is a problem with a given input parameter to a function
+        but it's unrelated to the type of input.
     """
     def __init__(  # pylint: disable=too-many-arguments
             self, name, value, expected_types, allowed_values=None, ffi=None,
