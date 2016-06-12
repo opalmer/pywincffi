@@ -225,3 +225,21 @@ BOOL WINAPI ClearCommError(
   _Out_opt_ LPDWORD   lpErrors,
   _Out_opt_ LPCOMSTAT lpStat
 );
+
+///////////////////////
+// Processes
+///////////////////////
+
+// https://msdn.microsoft.com/en-us/ms682425
+BOOL WINAPI CreateProcess(
+  _In_opt_    LPCTSTR               lpApplicationName,
+  _Inout_opt_ LPTSTR                lpCommandLine,
+  _In_opt_    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+  _In_opt_    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+  _In_        BOOL                  bInheritHandles,
+  _In_        DWORD                 dwCreationFlags,
+  _In_opt_    LPVOID                lpEnvironment,
+  _In_opt_    LPCTSTR               lpCurrentDirectory,
+  _In_        LPSTARTUPINFO         lpStartupInfo,
+  _Out_       LPPROCESS_INFORMATION lpProcessInformation
+);
