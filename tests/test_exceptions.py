@@ -41,6 +41,11 @@ class TestInputError(TestCase):
         error = InputError("name", "value", (str, int))
         self.assertEqual(str(error), error.message)
 
+    def test_custom_message(self):
+        error = InputError(
+            "name", "value", (str, int), message="Hello, world.")
+        self.assertEqual(str(error), "Hello, world.")
+
 
 class TestWindowsAPIError(TestCase):
     """

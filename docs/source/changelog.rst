@@ -29,6 +29,8 @@ Notable enhancements and changes are:
     * All exposed APIs updated to use the new Windows equivalent Python types
       in :mod:`pywincffi.wintypes`.
     * All exposed APIs now explicitly require either text or binary data.
+    * Improved documentation for :class:`pywincffi.exceptions.InputError` and
+      added the ability to generate custom error messages.
 
 0.2.0
 ~~~~~
