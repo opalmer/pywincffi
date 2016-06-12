@@ -15,14 +15,16 @@ documentation for the constant names and their purpose:
     Not all constants may be defined
 """
 
-from six import integer_types
+from six import integer_types, text_type
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
-from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
+from pywincffi.core.checks import NoneType, Enums, input_check, error_check
+from pywincffi.exceptions import (
+    WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
-from pywincffi.wintypes import HANDLE, wintype_to_cdata
+from pywincffi.wintypes import (
+    HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO, wintype_to_cdata)
 
 RESERVED_PIDS = set([0, 4])
 
@@ -240,3 +242,125 @@ def TerminateProcess(hProcess, uExitCode):
         ffi.cast("UINT", uExitCode)
     )
     error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)
+
+
+def CreateProcess(  # pylint: disable=too-many-arguments
+        lpCommandLine, lpApplicationName=None, lpProcessAttributes=None,
+        lpThreadAttributes=None, bInheritHandles=True, dwCreationFlags=None,
+        lpEnvironment=None, lpCurrentDirectory=None, lpStartupInfo=None):
+    """
+    Creates a new process and its primary thread.  The process will be
+    created in the same security context as the original process.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms682425
+
+    :param str lpCommandLine:
+        The command line to be executed.  The maximum length of this parameter
+        is 32768.
+
+    :param pywincffi.wintypes.STARTUPINFO lpStartupInfo:
+        A :class:`pywincffi.wintypes.STARTUPINFO` instance.  See Microsoft's
+        documentation for additional information.
+
+    :keyword str lpApplicationName:
+        The name of the module or application to be executed.  This can be
+        either the fully qualified path name or a partial name.  The system
+        path will not be searched.  If no value is provided for this keyword
+        then the input to ``lpCommandLine`` will be used by Windows instead.
+
+    :keyword pywincffi.wintypes.SECUREITY_ATTRIBUTES lpProcessAttributes:
+        Determines whether the returned handle to the new process object
+        can be inherited by child processes.  By default, the handle cannot be
+        inherited.
+
+    :keyword pywincffi.wintypes.SECUREITY_ATTRIBUTES lpThreadAttributes:
+        Determines if the returned handle to the new thread object can
+        be inherited by child processes.  By default, the thread cannot be
+        inherited.
+
+    :keyword bool bInheritHandles:
+        If True (the default) the handles inherited by the calling process
+        are inherited by the new process.
+
+    :keyword int dwCreationFlags:
+        Controls the priority class and creation of the process.  By default
+        the process will flag will default to ``NORMAL_PRIORITY_CLASS``
+
+    :keyword dict lpEnvironment:
+        The environment for the new process.  By default the the process
+        will be created with the same environment as the parent process.
+
+    :keyword str lpCurrentDirectory:
+        The full path to the current directory for the process.  If not
+         provided then the process will have the same working directory
+         as the parent process.
+
+    :raises InputError:
+        Raised if ``lpCommandLine`` is longer than 32768 characters or there
+        are other input issues.
+
+    """
+    ffi, library = dist.load()
+
+    # The command line length cannot exceed this value according
+    # to Microsoft's documentation.
+    if len(lpCommandLine) > 32768:
+        raise InputError(
+            "lpCommandLine", lpCommandLine, text_type,
+            message="lpCommandLine's length cannot exceed 32768")
+
+    input_check(
+        "lpApplicationName", lpApplicationName,
+        allowed_types=(NoneType, text_type))
+    input_check(
+        "lpStartupInfo", lpStartupInfo,
+        allowed_types=(NoneType, STARTUPINFO))
+    input_check(
+        "lpProcessAttributes", lpProcessAttributes,
+        allowed_types=(NoneType, SECURITY_ATTRIBUTES))
+    input_check(
+        "lpThreadAttributes", lpThreadAttributes,
+        allowed_types=(NoneType, SECURITY_ATTRIBUTES))
+    input_check(
+        "bInheritHandles", bInheritHandles,
+        allowed_values=(True, False))
+    input_check(
+        "dwCreationFlags", dwCreationFlags,
+        allowed_types=(NoneType, integer_types))
+    input_check(
+        "lpEnvironment", lpEnvironment,
+        allowed_types=(NoneType, dict))
+    input_check(
+        "lpCurrentDirectory", lpCurrentDirectory,
+        allowed_types=(NoneType, text_type))
+
+    if lpApplicationName is None:
+        lpApplicationName = ffi.NULL
+
+    if lpProcessAttributes is None:
+        lpProcessAttributes = ffi.NULL
+    else:
+        lpProcessAttributes = wintype_to_cdata(lpThreadAttributes)
+
+    if lpThreadAttributes is None:
+        lpThreadAttributes = ffi.NULL
+    else:
+        lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
+
+    if dwCreationFlags is None:
+        dwCreationFlags = library.NORMAL_PRIORITY_CLASS
+
+    if lpEnvironment is None:
+        lpEnvironment = ffi.NULL
+
+    # TODO: conversion to Microsoft's format
+    if isinstance(lpEnvironment, dict):
+        pass
+
+    if lpCurrentDirectory is None:
+        lpCurrentDirectory = ffi.NULL
+
+    # bInheritHandles = ffi.cast("BOOL", bInheritHandles)
+    # dwCreationFlags = ffi.cast("DWORD", dwCreationFlags)
