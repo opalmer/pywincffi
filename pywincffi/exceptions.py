@@ -32,7 +32,8 @@ class InputError(PyWinCFFIError):
     we fail early and provide better error messages.
     """
     def __init__(  # pylint: disable=too-many-arguments
-            self, name, value, expected_types, allowed_values=None, ffi=None):
+            self, name, value, expected_types, allowed_values=None, ffi=None,
+            message=None):
         self.name = name
         self.value = value
         self.value_repr = value
@@ -53,7 +54,10 @@ class InputError(PyWinCFFIError):
                 self.value_repr = "%s(kind=%r, cname=%r)" % (
                     value.__class__.__name__, typeof.kind, typeof.cname)
 
-        if self.allowed_values is None:
+        if message is not None:
+            self.message = message
+
+        elif self.allowed_values is None:
             self.message = "Expected type(s) %r for %s.  Got %s instead." % (
                 self.expected_types, self.name, self.value_repr
             )
