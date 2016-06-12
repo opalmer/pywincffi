@@ -67,3 +67,11 @@ typedef struct _COMSTAT {
   DWORD cbInQue;
   DWORD cbOutQue;
 } COMSTAT, *LPCOMSTAT;
+
+// https://msdn.microsoft.com/en-us/library/ms684873
+typedef struct _PROCESS_INFORMATION {
+  HANDLE hProcess;
+  HANDLE hThread;
+  DWORD  dwProcessId;
+  DWORD  dwThreadId;
+} PROCESS_INFORMATION, *LPPROCESS_INFORMATION;
