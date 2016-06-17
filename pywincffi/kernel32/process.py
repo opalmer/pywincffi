@@ -240,3 +240,17 @@ def TerminateProcess(hProcess, uExitCode):
         ffi.cast("UINT", uExitCode)
     )
     error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)
+
+
+def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
+    input_check("dwFlags", dwFlags, DWORD)
+    input_check("th32ProcessID", th32ProcessID, DWORD)
+    ffi, library = dist.load()
+    process_list = library.CreateToolhelp32Snapshot(
+		ffi.cast("DWORD", dwFlags),
+		ffi.cast("DWORD", th32ProcessID)
+	)
+    error_check("CreateToolhelp32Snapshot")
+    
+    return process_list
+	
