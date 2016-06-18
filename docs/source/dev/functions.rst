@@ -28,11 +28,17 @@ The C header for function definitions is located in
 :blob:`pywincffi/core/cdefs/headers/functions.h` and is sometimes referred to
 the 'cdef'. When creating a new function you should essentially match what the
 msdn documentation defines.  If you're implementing `WriteFile` for example
-you'd look at :msdn:`aa365747` and translate this to:
+you'd look at :msdn:`aa365747` and copy this into `functions.h` as:
 
 .. code-block:: c
 
-   BOOL WriteFile(HANDLE, LPCVOID, DWORD, LPDWORD, LPOVERLAPPED);
+   BOOL WINAPI WriteFile(
+      _In_        HANDLE       hFile,
+      _In_        LPCVOID      lpBuffer,
+      _In_        DWORD        nNumberOfBytesToWrite,
+      _Out_opt_   LPDWORD      lpNumberOfBytesWritten,
+      _Inout_opt_ LPOVERLAPPED lpOverlapped
+   );
 
 It's important to note here that all inputs, output, optional arguments, etc
 are included in the header definition even if you don't plan on exposing them

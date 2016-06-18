@@ -46,7 +46,7 @@ def wintype_to_cdata(wintype):
 # pylint: disable=too-few-public-methods
 class HANDLE(typesbase.CFFICDataWrapper):
     """
-    .. seealso:
+    .. seealso::
 
         https://msdn.microsoft.com/en-us/library/aa383751
     """
@@ -75,7 +75,7 @@ class HANDLE(typesbase.CFFICDataWrapper):
 # pylint: disable=invalid-name
 class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
     """
-    .. seealso:
+    .. seealso::
 
         https://msdn.microsoft.com/en-us/library/aa379560
     """
@@ -104,7 +104,7 @@ class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
 # pylint: disable=too-few-public-methods
 class OVERLAPPED(typesbase.CFFICDataWrapper):
     """
-    .. seealso:
+    .. seealso::
 
         https://msdn.microsoft.com/en-us/library/ms684342
     """
@@ -128,7 +128,7 @@ class OVERLAPPED(typesbase.CFFICDataWrapper):
 # pylint: disable=too-few-public-methods
 class FILETIME(typesbase.CFFICDataWrapper):
     """
-    .. seealso:
+    .. seealso::
 
         https://msdn.microsoft.com/en-us/library/ms724284
     """
