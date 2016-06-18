@@ -237,3 +237,10 @@ int WSAGetLastError(void);
 
 // https://msdn.microsoft.com/en-us/ms741561
 WSAEVENT WSACreateEvent(void);
+
+// https://msdn.microsoft.com/en-us/ms741572
+int WSAEnumNetworkEvents(
+  _In_  SOCKET             s,
+  _In_  WSAEVENT           hEventObject,
+  _Out_ LPWSANETWORKEVENTS lpNetworkEvents
+);
