@@ -50,6 +50,8 @@ logger = get_logger("core.dist")
 MODULE_NAME = "_pywincffi"
 HEADER_FILES = (
     resource_filename(
+        "pywincffi", join("core", "cdefs", "headers", "typedefs.h")),
+    resource_filename(
         "pywincffi", join("core", "cdefs", "headers", "constants.h")),
     resource_filename(
         "pywincffi", join("core", "cdefs", "headers", "structs.h")),
