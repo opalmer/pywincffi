@@ -1,13 +1,4 @@
 ///////////////////////
-// Misc functions
-///////////////////////
-
-// https://msdn.microsoft.com/en-us/ms680627
-void WINAPI SetLastError(
-  _In_ DWORD dwErrCode
-);
-
-///////////////////////
 // Processes
 ///////////////////////
 
@@ -234,11 +225,6 @@ int WSAEventSelect(
 
 // https://msdn.microsoft.com/en-us/ms741580
 int WSAGetLastError(void);
-
-// https://msdn.microsoft.com/en-us/ms742209
-void WSASetLastError(
-  _In_ int iError
-);
 
 // https://msdn.microsoft.com/en-us/ms741561
 WSAEVENT WSACreateEvent(void);
