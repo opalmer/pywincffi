@@ -11,17 +11,17 @@ import subprocess
 import sys
 from random import choice
 from string import ascii_lowercase, ascii_uppercase
+from textwrap import dedent
 
-from cffi import FFI, CDefError
-from six import PY2, PY3
+from cffi import FFI, CDefError, FFIError
 
 try:
     # The setup.py file installs unittest2 for Python 2
     # which backports newer test framework features.
-    from unittest2 import TestCase as _TestCase, skipUnless
+    from unittest2 import TestCase as _TestCase
 except ImportError:  # pragma: no cover
     # pylint: disable=wrong-import-order
-    from unittest import TestCase as _TestCase, skipUnless
+    from unittest import TestCase as _TestCase
 
 from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
@@ -34,22 +34,6 @@ try:
 except NameError:  # pragma: no cover
     WindowsError = OSError  # pylint: disable=redefined-builtin
 
-# Load in our own kernel32 with the function(s) we need
-# so we don't have to rely on pywincffi.core
-libtest = None  # pylint: disable=invalid-name
-ffi = FFI()
-
-# pylint: disable=invalid-name
-skip_unless_python2 = skipUnless(PY2, "Not Python 2")
-skip_unless_python3 = skipUnless(PY3, "Not Python 3")
-
-try:
-    ffi.cdef("void SetLastError(DWORD);")
-    libtest = ffi.dlopen("kernel32")  # pylint: disable=invalid-name
-except (AttributeError, OSError, CDefError):  # pragma: no cover
-    if os.name == "nt":
-        logger.warning("Failed to build SetLastError()")
-
 
 class TestCase(_TestCase):
     """
@@ -58,6 +42,9 @@ class TestCase(_TestCase):
     """
     REQUIRES_INTERNET = False
     _HAS_INTERNET = None
+    _ffi = None
+    _kernel32 = None
+    _ws2_32 = None
 
     def setUp(self):  # pragma: no cover
         if self.REQUIRES_INTERNET and not self.internet_connected():
@@ -68,11 +55,27 @@ class TestCase(_TestCase):
 
             self.skipTest("Internet unavailable")
 
-        if os.name == "nt":  # pragma: no cover
+        # Build the small FFI module we need for use in the tests
+        if os.name == "nt":
+            if self._ffi is None:  # pragma: no cover
+                self._ffi = FFI()
+                self._ffi.set_unicode(True)
+                self._ffi.cdef(dedent("""
+                void SetLastError(DWORD);
+                void WSASetLastError(int);
+                """))
+
+                try:
+                    self._kernel32 = self._ffi.dlopen("kernel32")
+                    self._ws2_32 = self._ffi.dlopen("ws2_32")
+                except (AttributeError, OSError, CDefError, FFIError):
+                    self.fail("Failed to build internal _ffi module")
+
             # Always reset the last error to 0 between tests.  This
             # ensures that any error we intentionally throw in one
             # test does not causes an error to be raised in another.
-            self.SetLastError(0)
+            self._kernel32.SetLastError(0)
+            self._ws2_32.WSASetLastError(0)
 
         config.load()
 
@@ -108,23 +111,6 @@ class TestCase(_TestCase):
 
         socket.setdefaulttimeout(original_timeout)
         return TestCase._HAS_INTERNET
-
-    # pylint: disable=invalid-name
-    def SetLastError(self, value=0, lib=None):  # pragma: no cover
-        """Calls the Windows API function SetLastError()"""
-        if os.name != "nt":
-            self.fail("Only an NT system should call this method")
-
-        if lib is None:
-            lib = libtest
-
-        if lib is None:
-            self.fail("`lib` was not defined")
-
-        if not isinstance(value, int):
-            self.fail("Expected int for `value`")
-
-        return lib.SetLastError(ffi.cast("DWORD", value))
 
     def _terminate_process(self, process):  # pylint: disable=no-self-use
         """
