@@ -8,11 +8,12 @@ A module containing Windows functions for working with events.
 from six import integer_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
+from pywincffi.wintypes import HANDLE, SOCKET, wintype_to_cdata
 
 
-def WSAEventSelect(sock, hEventObject, lNetworkEvents):
+def WSAEventSelect(socket, hEventObject, lNetworkEvents):
     """
     Specifies an event object to be associated with the specified set of
     FD_XXX network events.
@@ -21,10 +22,10 @@ def WSAEventSelect(sock, hEventObject, lNetworkEvents):
 
         https://msdn.microsoft.com/en-us/library/ms741576
 
-    :param int sock:
+    :param int socket:
         A descriptor identify the socket.
 
-    :param handle hEventObject:
+    :param :class:`pywincffi.wintypes.WSAEVENT` hEventObject:
         A handle which identifies the event object to be associated
         with the network events.
 
@@ -32,16 +33,20 @@ def WSAEventSelect(sock, hEventObject, lNetworkEvents):
         A bitmask which specifies the combination of ``FD_XXX`` network
         events which the application has interest in.
     """
-    input_check("sock", sock, integer_types)
-    input_check("hEventObject", hEventObject, Enums.HANDLE)
+    input_check(
+        "socket", socket, allowed_types=(SOCKET, ))
+    input_check(
+        "hEventObject", hEventObject,
+        allowed_types=(HANDLE, )
+    )
     input_check("lNetworkEvents", lNetworkEvents, integer_types)
 
     ffi, library = dist.load()
 
-    # TODO: `sock` needs conversion
+    # TODO: `socket` needs conversion
     code = library.WSAEventSelect(
-        sock,
-        ffi.cast("WSAEVENT", hEventObject),
+        wintype_to_cdata(socket),
+        wintype_to_cdata(hEventObject),
         ffi.cast("long", lNetworkEvents)
     )
 

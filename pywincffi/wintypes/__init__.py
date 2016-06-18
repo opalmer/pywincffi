@@ -72,6 +72,36 @@ class HANDLE(typesbase.CFFICDataWrapper):
         return self._cdata[0] == other._cdata[0]
 
 
+class SOCKET(typesbase.CFFICDataWrapper):
+    """
+    Wraps the ``SOCKET`` C data type.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms740516
+    """
+    def __init__(self, data=None):
+        ffi, _ = dist.load()
+        super(SOCKET, self).__init__("SOCKET[1]", ffi)
+        # Initialize from a <cdata handle> object as returned by some
+        # Windows API library calls: Python AND FFI types must be equal.
+        if isinstance(data, type(self._cdata[0])):
+            if ffi.typeof(data) == ffi.typeof(self._cdata[0]):
+                self._cdata[0] = data
+
+    def __repr__(self):
+        ffi, _ = dist.load()
+        return "<SOCKET 0x%x at 0x%x>" % (
+            int(ffi.cast("intptr_t", self._cdata[0])),
+            id(self)
+        )
+
+    def __eq__(self, other):
+        if not isinstance(other, SOCKET):
+            raise TypeError("%r must be a SOCKET" % other)
+        return self._cdata[0] == other._cdata[0]
+
+
 # pylint: disable=invalid-name
 class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
     """
