@@ -6,9 +6,8 @@ Provides user accessible types corresponding to the respective Windows types
 used across the exposed APIs.
 """
 
-
-from pywincffi.core import typesbase
 from pywincffi.core import dist
+from pywincffi.core.typesbase import CFFICDataWrapper
 
 
 # pylint: disable=protected-access
@@ -29,7 +28,7 @@ def wintype_to_cdata(wintype):
     >>> result = lib.ResetEvent(hEvent_cdata)
 
     :param wintype:
-        A type derived from :class:`pywincffi.core.typesbase.CFFICDataWrapper`
+        A type derived from :class:`pywincffi.core.CFFICDataWrapper`
 
     :return:
         The underlying CFFI <cdata> object, or ffi.NULL if wintype is None.
@@ -44,7 +43,7 @@ def wintype_to_cdata(wintype):
 
 
 # pylint: disable=too-few-public-methods
-class HANDLE(typesbase.CFFICDataWrapper):
+class HANDLE(CFFICDataWrapper):
     """
     .. seealso::
 
@@ -72,7 +71,7 @@ class HANDLE(typesbase.CFFICDataWrapper):
         return self._cdata[0] == other._cdata[0]
 
 
-class SOCKET(typesbase.CFFICDataWrapper):
+class SOCKET(CFFICDataWrapper):
     """
     Wraps the ``SOCKET`` C data type.
 
@@ -103,7 +102,7 @@ class SOCKET(typesbase.CFFICDataWrapper):
 
 
 # pylint: disable=invalid-name
-class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
+class SECURITY_ATTRIBUTES(CFFICDataWrapper):
     """
     .. seealso::
 
@@ -132,7 +131,7 @@ class SECURITY_ATTRIBUTES(typesbase.CFFICDataWrapper):
 
 
 # pylint: disable=too-few-public-methods
-class OVERLAPPED(typesbase.CFFICDataWrapper):
+class OVERLAPPED(CFFICDataWrapper):
     """
     .. seealso::
 
@@ -156,7 +155,7 @@ class OVERLAPPED(typesbase.CFFICDataWrapper):
 
 
 # pylint: disable=too-few-public-methods
-class FILETIME(typesbase.CFFICDataWrapper):
+class FILETIME(CFFICDataWrapper):
     """
     .. seealso::
 
