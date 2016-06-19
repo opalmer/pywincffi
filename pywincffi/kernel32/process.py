@@ -27,6 +27,7 @@ from pywincffi.wintypes import HANDLE, wintype_to_cdata
 RESERVED_PIDS = set([0, 4])
 INVALID_HANDLE_VALUE = -1
 
+
 def pid_exists(pid, wait=0):
     """
     Returns True if there's a process associated with ``pid``.
