@@ -25,7 +25,7 @@ from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 RESERVED_PIDS = set([0, 4])
-
+INVALID_HANDLE_VALUE = -1
 
 def pid_exists(pid, wait=0):
     """
@@ -257,6 +257,8 @@ def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
     :param int th32ProcessID:
         The process identifier of the process to be included in the snapshot.
 
+    :rtype: :class:`pywincffi.wintypes.HANDLE`
+
     :return:
         If the function succeeds,
         it returns an open handle to the specified snapshot.
@@ -268,6 +270,12 @@ def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
         ffi.cast("DWORD", dwFlags),
         ffi.cast("DWORD", th32ProcessID)
     )
+
+    if process_list == INVALID_HANDLE_VALUE:  # pragma: no cover
+        raise WindowsAPIError(
+            "CreateToolhelp32Snapshot", "Invalid Handle", INVALID_HANDLE_VALUE,
+            expected_return_code="not %r" % INVALID_HANDLE_VALUE)
+
     error_check("CreateToolhelp32Snapshot")
 
-    return process_list
+    return HANDLE(process_list)

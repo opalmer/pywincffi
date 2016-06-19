@@ -39,7 +39,7 @@ BOOL WINAPI TerminateProcess(
   _In_ UINT   uExitCode
 );
 
-//https://msdn.microsoft.com/en-us/ms682489
+// https://msdn.microsoft.com/en-us/ms682489
 HANDLE WINAPI CreateToolhelp32Snapshot(
   _In_ DWORD dwFlags,
   _In_ DWORD th32ProcessID
