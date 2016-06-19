@@ -256,6 +256,10 @@ def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
 
     :param int th32ProcessID:
         The process identifier of the process to be included in the snapshot.
+
+    :return:
+        If the function succeeds,
+        it returns an open handle to the specified snapshot.
     """
     input_check("dwFlags", dwFlags, integer_types)
     input_check("th32ProcessID", th32ProcessID, integer_types)
