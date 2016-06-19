@@ -243,14 +243,27 @@ def TerminateProcess(hProcess, uExitCode):
 
 
 def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
-    input_check("dwFlags", dwFlags, DWORD)
-    input_check("th32ProcessID", th32ProcessID, DWORD)
+    """
+    Takes a snapshot of the specified processes, as well as the heaps,
+    modules, and threads used by these processes.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/ms682489
+
+    :param int dwFlags:
+        The portions of the system to be included in the snapshot.
+
+    :param int th32ProcessID:
+        The process identifier of the process to be included in the snapshot.
+    """
+    input_check("dwFlags", dwFlags, integer_types)
+    input_check("th32ProcessID", th32ProcessID, integer_types)
     ffi, library = dist.load()
     process_list = library.CreateToolhelp32Snapshot(
-		ffi.cast("DWORD", dwFlags),
-		ffi.cast("DWORD", th32ProcessID)
-	)
+        ffi.cast("DWORD", dwFlags),
+        ffi.cast("DWORD", th32ProcessID)
+    )
     error_check("CreateToolhelp32Snapshot")
-    
+
     return process_list
-	
