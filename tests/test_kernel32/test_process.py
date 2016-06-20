@@ -9,7 +9,7 @@ from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
 from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
-    GetProcessId, pid_exists, TerminateProcess)
+    GetProcessId, pid_exists, TerminateProcess, CreateToolhelp32Snapshot)
 from pywincffi.wintypes import HANDLE
 
 try:
@@ -240,3 +240,14 @@ class TestTerminateProcess(TestCase):
         TerminateProcess(handle, 42)
         process.communicate()
         self.assertEqual(process.returncode, 42)
+
+
+class TestCreateToolhelp32Snapshot(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.CreateToolhelp32Snapshot`
+    """
+    def test_get_proces_list(self):
+        _, library = dist.load()
+
+        handle = CreateToolhelp32Snapshot(library.SNAPPROCESS, 0)
+        self.addCleanup(CloseHandle, handle)
