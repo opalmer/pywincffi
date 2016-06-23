@@ -249,5 +249,5 @@ class TestCreateToolhelp32Snapshot(TestCase):
     def test_get_proces_list(self):
         _, library = dist.load()
 
-        handle = CreateToolhelp32Snapshot(library.SNAPPROCESS, 0)
+        handle = CreateToolhelp32Snapshot(library.TH32CS_SNAPPROCESS, 0)
         self.addCleanup(CloseHandle, handle)
