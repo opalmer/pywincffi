@@ -2,6 +2,24 @@
 #include <winsock2.h>
 #include <winerror.h>
 #include <windows.h>
+#include <Python.h>
+
+// Copied from Python's socket module.  These are used to determine
+// how PyLong_FromSocket_t should be defined.
+#ifdef MS_WIN64
+#define SIZEOF_SOCKET_T 8
+#else
+#define SIZEOF_SOCKET_T 4
+#endif
+
+// Copied from Python's socket module.  These are considered private so we
+// wouldn't have been able to used them directly.  The resulting function,
+// PyLong_FromSocket_t, is used in socket_from_fd below.
+#if SIZEOF_SOCKET_T <= SIZEOF_LONG
+#define PyLong_FromSocket_t(fd) PyLong_FromLong((SOCKET)(fd))
+#else
+#define PyLong_FromSocket_t(fd) PyLong_FromLongLong((SOCKET)(fd))
+#endif
 
 // Extra constants which are not defined in all versions of the Windows
 // SDK.  If cffi fails to find the value, it ends up being picked up from
@@ -36,4 +54,9 @@ HANDLE handle_from_fd(int fd) {
 // WSA_INVALID_EVENT.
 BOOL wsa_invalid_event(WSAEVENT event) {
     return event == WSA_INVALID_EVENT;
+}
+
+// A function which converts
+SOCKET socket_from_fd(int fd) {
+    return (SOCKET)PyLong_FromSocket_t(fd);
 }
