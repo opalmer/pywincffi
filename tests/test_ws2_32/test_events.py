@@ -1,4 +1,4 @@
-from pywincffi.dev.testutil import TestCase
+from pywincffi.dev.testutil import TestCase, mock_library
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import CloseHandle
 from pywincffi.ws2_32 import WSAGetLastError, WSACreateEvent
@@ -22,6 +22,6 @@ class TestWSACreateEvent(TestCase):
         CloseHandle(event)
 
     def test_invalid_event(self):
-        with self.mock_library(wsa_invalid_event=lambda _: True):
+        with mock_library(wsa_invalid_event=lambda _: True):
             with self.assertRaises(WindowsAPIError):
                 WSACreateEvent()

@@ -37,7 +37,11 @@ except NameError:  # pragma: no cover
     WindowsError = OSError  # pylint: disable=redefined-builtin
 
 
-class LibraryWrapper(object):
+class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
+    """
+    Used by :meth:`TestCase.mock_library` to replace specific
+    attributes on a compiled library.
+    """
     def __init__(self, library, attributes):
         self.library = library
         self.attributes = {}
@@ -54,6 +58,17 @@ class LibraryWrapper(object):
             return self.attributes[item]
 
         return getattr(self.library, item)
+
+
+def mock_library(**attributes):
+    """
+    Used to replace an attribute the library that :func:`dist.load`
+    returns.  Useful for replacing part of the compiled library as part
+    of the test.
+    """
+    ffi, library = dist.load()
+    return patch.object(
+        dist, "load", lambda: [ffi, LibraryWrapper(library, attributes)])
 
 
 class TestCase(_TestCase):
@@ -169,13 +184,3 @@ class TestCase(_TestCase):
             output += choice(ascii_lowercase + ascii_uppercase + "0123456789")
 
         return output
-
-    def mock_library(self, **attributes):
-        """
-        Used to replace an attribute the library that :func:`dist.load`
-        returns.  Useful for replacing part of the compiled library as part
-        of the test.
-        """
-        ffi, library = dist.load()
-        return patch.object(
-            dist, "load", lambda: [ffi, LibraryWrapper(library, attributes)])
