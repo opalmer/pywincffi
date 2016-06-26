@@ -69,15 +69,15 @@ def WSACreateEvent():
     :returns:
         Returns a handle to a new event object.
     """
-    _, library = dist.load()
-    result = library.WSACreateEvent()
+    ffi, library = dist.load()
+    event = library.WSACreateEvent()
 
-    if result == library.WSA_INVALID_EVENT:
+    if library.wsa_invalid_event(event):
         errno = WSAGetLastError()
         raise WindowsAPIError(
             "WSACreateEvent", "Socket error %d" % errno, errno)
 
-    return result
+    return HANDLE(event)
 
 
 def WSAGetLastError():

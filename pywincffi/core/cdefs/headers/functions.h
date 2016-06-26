@@ -209,6 +209,8 @@ BOOL WINAPI ResetEvent(
 ///////////////////////
 // Communications
 ///////////////////////
+BOOL wsa_invalid_event(WSAEVENT);
+
 // https://msdn.microsoft.com/en-us/aa363180
 BOOL WINAPI ClearCommError(
   _In_      HANDLE    hFile,
