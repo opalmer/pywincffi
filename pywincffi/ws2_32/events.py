@@ -69,7 +69,7 @@ def WSACreateEvent():
     :returns:
         Returns a handle to a new event object.
     """
-    ffi, library = dist.load()
+    _, library = dist.load()
     event = library.WSACreateEvent()
 
     if library.wsa_invalid_event(event):
