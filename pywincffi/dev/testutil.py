@@ -14,6 +14,7 @@ from string import ascii_lowercase, ascii_uppercase
 from textwrap import dedent
 
 from cffi import FFI, CDefError, FFIError
+from mock import patch
 
 try:
     # The setup.py file installs unittest2 for Python 2
@@ -23,6 +24,7 @@ except ImportError:  # pragma: no cover
     # pylint: disable=wrong-import-order
     from unittest import TestCase as _TestCase
 
+from pywincffi.core import dist
 from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 
@@ -33,6 +35,25 @@ try:
     WindowsError
 except NameError:  # pragma: no cover
     WindowsError = OSError  # pylint: disable=redefined-builtin
+
+
+class LibraryWrapper(object):
+    def __init__(self, library, attributes):
+        self.library = library
+        self.attributes = {}
+
+        for attribute, value in attributes.items():
+            if not hasattr(library, attribute):
+                raise AttributeError(
+                    "No such attribute %r on library" % attribute)
+
+            self.attributes[attribute] = value
+
+    def __getattr__(self, item):
+        if item in self.attributes:
+            return self.attributes[item]
+
+        return getattr(self.library, item)
 
 
 class TestCase(_TestCase):
@@ -148,3 +169,13 @@ class TestCase(_TestCase):
             output += choice(ascii_lowercase + ascii_uppercase + "0123456789")
 
         return output
+
+    def mock_library(self, **attributes):
+        """
+        Used to replace an attribute the library that :func:`dist.load`
+        returns.  Useful for replacing part of the compiled library as part
+        of the test.
+        """
+        ffi, library = dist.load()
+        return patch.object(
+            dist, "load", lambda: [ffi, LibraryWrapper(library, attributes)])
