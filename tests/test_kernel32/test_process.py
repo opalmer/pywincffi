@@ -246,7 +246,7 @@ class TestCreateToolhelp32Snapshot(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.CreateToolhelp32Snapshot`
     """
-    def test_get_proces_list(self):
+    def test_get_process_list(self):
         _, library = dist.load()
 
         handle = CreateToolhelp32Snapshot(library.TH32CS_SNAPPROCESS, 0)
