@@ -37,8 +37,7 @@ def WSAEventSelect(socket, hEventObject, lNetworkEvents):
         "socket", socket, allowed_types=(SOCKET, ))
     input_check(
         "hEventObject", hEventObject,
-        allowed_types=(HANDLE, )
-    )
+        allowed_types=(HANDLE, ))
     input_check("lNetworkEvents", lNetworkEvents, integer_types)
 
     ffi, library = dist.load()

@@ -25,3 +25,14 @@ class TestWSACreateEvent(TestCase):
         with mock_library(wsa_invalid_event=lambda _: True):
             with self.assertRaises(WindowsAPIError):
                 WSACreateEvent()
+
+
+class TestWSAEventSelect(TestCase):
+    """
+    Tests for ``pywincffi.ws2_32.events.WSAEventSelect``
+    """
+    # def test_select_event_call(self):
+    #     ffi, library = dist.load()
+    #     event = CreateEvent(
+    #         False, False, lpEventAttributes=None, lpName=None)
+    #     self.addCleanup(CloseHandle, event)
