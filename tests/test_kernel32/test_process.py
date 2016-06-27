@@ -251,4 +251,3 @@ class TestCreateToolhelp32Snapshot(TestCase):
 
         handle = CreateToolhelp32Snapshot(library.TH32CS_SNAPPROCESS, 0)
         self.addCleanup(CloseHandle, handle)
-
