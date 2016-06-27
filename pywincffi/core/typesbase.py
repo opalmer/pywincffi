@@ -39,11 +39,10 @@ class CFFICDataWrapper(object):
             return
 
         # support descriptor attributes in child classes
-        self_class = type(self)
-        if hasattr(self_class, name):
+        if hasattr(self.__class__, name):
             try:
                 # getattr on class, otherwise descriptor's __get__ is called
-                attr = getattr(self_class, name)
+                attr = getattr(self.__class__, name)
                 # use descriptor protocol to set
                 attr.__set__(self, value)
                 return
