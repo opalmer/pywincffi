@@ -7,6 +7,7 @@ types.
 """
 
 from pywincffi.core import dist
+from pywincffi.exceptions import InputError
 from pywincffi.wintypes.objects import HANDLE
 
 
@@ -40,3 +41,30 @@ def wintype_to_cdata(wintype):
         return wintype._cdata[0]
     else:
         return wintype._cdata
+
+
+def handle_from_file(file_):
+    """
+    Converts a standard Python file object into a :class:`HANDLE` object.
+
+    .. warning::
+
+        This function is mainly intended for internal use.  Passing in a file
+        object with an invalid file descriptor may crash your interpreter.
+
+    :param file file_:
+        The Python file object to convert to a :class:`HANDLE` object.
+
+    :raises InputError:
+        Raised if ``file_`` does not appear to be a file object (ie, does not
+        have the ``fileno()`` function.
+
+    :rtype: :class:`HANDLE`
+    """
+    try:
+        fileno = file_.fileno()
+    except AttributeError:
+        raise InputError("file_", file_, expected_types="file object")
+
+    _, library = dist.load()
+    return HANDLE(library.handle_from_fd(fileno))
