@@ -13,6 +13,7 @@ from random import choice
 from string import ascii_lowercase, ascii_uppercase
 
 from cffi import FFI, CDefError
+from mock import patch
 from six import PY2, PY3
 
 try:
@@ -23,6 +24,7 @@ except ImportError:  # pragma: no cover
     # pylint: disable=wrong-import-order
     from unittest import TestCase as _TestCase, skipUnless
 
+from pywincffi.core import dist
 from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 
@@ -49,6 +51,40 @@ try:
 except (AttributeError, OSError, CDefError):  # pragma: no cover
     if os.name == "nt":
         logger.warning("Failed to build SetLastError()")
+
+
+class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
+    """
+    Used by :meth:`TestCase.mock_library` to replace specific
+    attributes on a compiled library.
+    """
+    def __init__(self, library, attributes):
+        self.library = library
+        self.attributes = {}
+
+        for attribute, value in attributes.items():
+            if not hasattr(library, attribute):
+                raise AttributeError(
+                    "No such attribute %r on library" % attribute)
+
+            self.attributes[attribute] = value
+
+    def __getattr__(self, item):
+        if item in self.attributes:
+            return self.attributes[item]
+
+        return getattr(self.library, item)
+
+
+def mock_library(**attributes):
+    """
+    Used to replace an attribute the library that :func:`dist.load`
+    returns.  Useful for replacing part of the compiled library as part
+    of the test.
+    """
+    ffi_, library = dist.load()
+    return patch.object(
+        dist, "load", return_value=[ffi_, LibraryWrapper(library, attributes)])
 
 
 class TestCase(_TestCase):
