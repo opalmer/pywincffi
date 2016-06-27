@@ -7,6 +7,11 @@ from pywincffi.exceptions import InputError
 from pywincffi.kernel32 import CloseHandle
 from pywincffi.wintypes import handle_from_file
 
+try:
+    WindowsError
+except NameError:  # pragma: no cover
+    WindowsError = OSError  # pylint: disable=redefined-builtin
+
 
 class TestGetHandleFromFile(TestCase):
     """

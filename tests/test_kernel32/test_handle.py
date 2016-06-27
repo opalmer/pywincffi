@@ -12,11 +12,6 @@ from pywincffi.kernel32 import (
     SetHandleInformation, DuplicateHandle, GetCurrentProcess, CreateEvent)
 from pywincffi.wintypes import HANDLE, handle_from_file
 
-try:
-    WindowsError
-except NameError:  # pragma: no cover
-    WindowsError = OSError  # pylint: disable=redefined-builtin
-
 
 class TestGetStdHandle(TestCase):
     """
