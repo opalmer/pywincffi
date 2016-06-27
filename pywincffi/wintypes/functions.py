@@ -56,15 +56,21 @@ def handle_from_file(file_):
         The Python file object to convert to a :class:`HANDLE` object.
 
     :raises InputError:
-        Raised if ``file_`` does not appear to be a file object (ie, does not
-        have the ``fileno()`` function.
+        Raised if ``file_`` does not appear to be a file object or is currently
+        closed.
 
     :rtype: :class:`HANDLE`
     """
     try:
         fileno = file_.fileno()
     except AttributeError:
-        raise InputError("file_", file_, expected_types="file object")
-
-    _, library = dist.load()
-    return HANDLE(library.handle_from_fd(fileno))
+        raise InputError(
+            "file_", file_, expected_types=None,
+            message="Expected a file like object for `file_`")
+    except ValueError:
+        raise InputError(
+            "file_", file_, expected_types=None,
+            message="Expected an open file like object for `file_`")
+    else:
+        _, library = dist.load()
+        return HANDLE(library.handle_from_fd(fileno))
