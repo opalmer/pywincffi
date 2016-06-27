@@ -1,5 +1,6 @@
 #include <io.h>
 #include <windows.h>
+#include <TlHelp32.h>
 
 // Extra constants which are not defined in all versions of the Windows
 // SDK.  If cffi fails to find the value, it ends up being picked up from
