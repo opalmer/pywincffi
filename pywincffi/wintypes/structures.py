@@ -60,7 +60,7 @@ class OVERLAPPED(CFFICDataWrapper):
     @hEvent.setter
     def hEvent(self, handle):
         if not isinstance(handle, HANDLE):
-            raise TypeError("%r must be a HANDLE" % handle)
+            raise TypeError("%r must be a HANDLE object" % handle)
         self._cdata.hEvent = handle._cdata[0]
 
 
