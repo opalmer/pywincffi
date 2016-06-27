@@ -4,15 +4,13 @@ import socket
 import subprocess
 import sys
 import tempfile
-from errno import EBADF
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
-from pywincffi.exceptions import InputError
 from pywincffi.kernel32 import (
     GetStdHandle, CloseHandle, GetHandleInformation,
     SetHandleInformation, DuplicateHandle, GetCurrentProcess, CreateEvent)
-from pywincffi.wintypes import HANDLE
+from pywincffi.wintypes import HANDLE, handle_from_file
 
 try:
     WindowsError
@@ -44,9 +42,6 @@ class TestGetStdHandle(TestCase):
             GetStdHandle(library.STD_ERROR_HANDLE),
             HANDLE(library.GetStdHandle(library.STD_ERROR_HANDLE))
         )
-
-
-
 
 
 class TestGetHandleInformation(TestCase):

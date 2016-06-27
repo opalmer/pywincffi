@@ -15,7 +15,8 @@ from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import file as _file  # used for mocks
 from pywincffi.kernel32 import (
     CreateFile, CloseHandle, MoveFileEx, WriteFile, FlushFileBuffers,
-    LockFileEx, UnlockFileEx, handle_from_file, ReadFile)
+    LockFileEx, UnlockFileEx, ReadFile)
+from pywincffi.wintypes import handle_from_file
 
 
 class TestWriteFile(TestCase):
