@@ -11,6 +11,9 @@ Versions
 latest
 ~~~~~~
 
+0.3.0
+~~~~~
+
 Notable enhancements and changes are:
 
     * Added the :func:`pywincffi.kernel32.CreateToolhelp32Snapshot` function in :issue:`101`.
