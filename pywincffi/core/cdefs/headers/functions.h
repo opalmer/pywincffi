@@ -30,6 +30,13 @@ BOOL WINAPI TerminateProcess(
   _In_ UINT   uExitCode
 );
 
+// https://msdn.microsoft.com/en-us/ms682489
+HANDLE WINAPI CreateToolhelp32Snapshot(
+  _In_ DWORD dwFlags,
+  _In_ DWORD th32ProcessID
+);
+
+
 ///////////////////////
 // Pipes
 ///////////////////////
@@ -129,8 +136,6 @@ BOOL WINAPI UnlockFileEx(
 // Files
 ///////////////////////
 
-HANDLE handle_from_fd(int);
-
 // https://msdn.microsoft.com/en-us/ms724211
 BOOL WINAPI CloseHandle(
   _In_ HANDLE hObject
@@ -209,8 +214,11 @@ BOOL WINAPI ResetEvent(
 ///////////////////////
 // Communications
 ///////////////////////
-BOOL wsa_invalid_event(WSAEVENT);
-SOCKET socket_from_fd(int...);
+
+// https://msdn.microsoft.com/en-us/ms737582
+int closesocket(
+  _In_ SOCKET s
+);
 
 // https://msdn.microsoft.com/en-us/aa363180
 BOOL WINAPI ClearCommError(
@@ -238,3 +246,9 @@ int WSAEnumNetworkEvents(
   _In_  WSAEVENT           hEventObject,
   _Out_ LPWSANETWORKEVENTS lpNetworkEvents
 );
+
+///////////////////////
+// Utility Functions
+///////////////////////
+HANDLE handle_from_fd(int);
+BOOL wsa_invalid_event(WSAEVENT);

@@ -11,8 +11,12 @@ Versions
 latest
 ~~~~~~
 
+0.3.0
+~~~~~
+
 Notable enhancements and changes are:
 
+    * Added the :func:`pywincffi.kernel32.CreateToolhelp32Snapshot` function in :issue:`101`.
     * Fixed a bug where :func:`pywincffi.checks.input_check` might raise
       ``ffi.error`` in :issue:`73`
     * Several enhancements bringing :issue:`69` closer to closure.
