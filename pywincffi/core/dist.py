@@ -50,6 +50,8 @@ logger = get_logger("core.dist")
 MODULE_NAME = "_pywincffi"
 HEADER_FILES = (
     resource_filename(
+        "pywincffi", join("core", "cdefs", "headers", "typedefs.h")),
+    resource_filename(
         "pywincffi", join("core", "cdefs", "headers", "constants.h")),
     resource_filename(
         "pywincffi", join("core", "cdefs", "headers", "structs.h")),
@@ -58,7 +60,7 @@ HEADER_FILES = (
 SOURCE_FILES = (
     resource_filename(
         "pywincffi", join("core", "cdefs", "sources", "main.c")), )
-LIBRARIES = ("kernel32", "user32")
+LIBRARIES = ("kernel32", "user32", "Ws2_32")
 REGEX_SAL_ANNOTATION = re.compile(
     r"\b(_In_|_Inout_|_Out_|_Outptr_|_Reserved_)(opt_)?\b")
 

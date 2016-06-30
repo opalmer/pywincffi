@@ -11,7 +11,7 @@ from six import integer_types
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.wintypes import HANDLE, wintype_to_cdata
+from pywincffi.wintypes import HANDLE, SOCKET, wintype_to_cdata
 
 
 INVALID_HANDLE_VALUE = -1
@@ -57,10 +57,11 @@ def CloseHandle(hObject):
 
         https://msdn.microsoft.com/en-us/library/ms724211
 
-    :param pywincffi.wintypes.HANDLE hObject:
+    :type hObject: pywincffi.wintypes.HANDLE or pywincffi.wintypes.SOCKET
+    :param hObject:
         The handle object to close.
     """
-    input_check("hObject", hObject, HANDLE)
+    input_check("hObject", hObject, (HANDLE, SOCKET))
     _, library = dist.load()
 
     code = library.CloseHandle(wintype_to_cdata(hObject))
