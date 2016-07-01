@@ -3,9 +3,10 @@
 from __future__ import with_statement
 
 import argparse
+import os
 import subprocess
 import sys
-from os.path import dirname, abspath
+from os.path import dirname, abspath, join, expanduser
 
 try:
     WindowsError
@@ -87,7 +88,25 @@ def parse_arguments():
         "--recreate", action="store_true", default=False,
         help="If provided, recreate the release"
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--github-token", default=None,
+        help="The token to use to connect to github"
+    )
+    args = parser.parse_args()
+
+    if not args.github_token:
+        try:
+            with open(join(expanduser("~"), ".github_token")) as file_:
+                args.github_token = file_.read().strip()
+        except (OSError, IOError, WindowsError):
+            args.github_token = os.environ.get("GITHUB_TOKEN")
+
+    if not args.github_token:
+        parser.error(
+            "No GitHub token located in --github-token, ~/.github_token or "
+            "$GITHUB_TOEKN")
+
+    return args
 
 
 def main():
@@ -101,7 +120,7 @@ def main():
     )
 
     if not args.skip_github:
-        github = GitHubAPI(version)
+        github = GitHubAPI(version, token=args.github_token)
 
         if github.milestone.state != "closed":
             should_continue(
