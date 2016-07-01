@@ -94,6 +94,76 @@ class Module(object):  # pylint: disable=too-few-public-methods
         yield self.lib
 
 
+class WrappedLibrary(object):  # pylint: disable=too-few-public-methods
+    """
+    Because of differences between Windows versions and some issues with cffi
+    we need to wrap the library that cffi produces.  Without this certain
+    constants can't be included in the lib, such as INVALID_HANDLE_VALUE which
+    has a negative value.  Other constants, such as FILE_FLAG_SESSION_AWARE,
+    are not available on all Windows versions so this class helps to provide
+    a uniform interface.
+
+    .. warning::
+
+        Please do not define constants here unless absolutely necessary.  By
+        default, constants should be defined in
+        :blob:`pywincffi/core/cdefs/headers/constants.h` unless some conditions
+        are met:
+            * cffi cannot compile the requested constant.
+            * The constant is only defined in a few Windows SDK versions and
+              it can't be conditionally defined in main.c.
+    """
+    _RUNTIME_CONSTANTS = dict(
+        # Defined here because cffi can't handle negative values
+        # in constants yet.
+        INVALID_HANDLE_VALUE=-1
+    )
+
+    def __init__(self, library, mode):
+        self._library = library
+        self._mode = mode
+
+    def __dir__(self):
+        return dir(self._library) + list(self._RUNTIME_CONSTANTS.keys())
+
+    def __getattribute__(self, item):
+        """
+        Overrides the default ``__getattribute__`` function so that we
+        can provide more useful results for certain attributes.
+        """
+        if item == "__dict__":
+            library_dict = self._library.__dict__.copy()
+            library_dict.update(self._RUNTIME_CONSTANTS)
+            return library_dict
+
+        return object.__getattribute__(self, item)
+
+    def __getattr__(self, item):
+        """
+        Attempts to retrieve the requested attribute.  This will first look
+        for the attribute on the library we're wrapping then try to look
+        for a runtime constant defined on this class.
+        """
+        # Most likely we're looking for an attribute on the
+        # compiled library.
+        try:
+            return getattr(self._library, item)
+        except AttributeError as original_error:
+            # Maybe it's a predefined constant?
+            try:
+                return self._RUNTIME_CONSTANTS[item]
+            except KeyError:
+                pass
+
+            # It's not an attribute in either the library or the
+            # runtime constants so it shouldn't exist.
+            raise original_error
+
+    def __repr__(self):
+        return "%s(library=%r, mode=%r)" % (
+            self.__class__.__name__, self._library, self._mode)
+
+
 def _import_path(path, module_name=MODULE_NAME):
     """
     Function which imports ``path`` and returns it as a module.  This is
