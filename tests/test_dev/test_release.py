@@ -416,10 +416,11 @@ class TestGitHubAPIIssues(GitHubAPICaseWithIssues):
         for issue in api.issues():
             self.assertEqual(issue.closed, issue.issue.state == "closed")
 
-    def issue_type(self):
+    def test_issue_type(self):
         api = self.api(issues=[
             FakeIssue(labels=["enhancement"]), FakeIssue(labels=["bug"]),
-            FakeIssue(labels=["refactor"])
+            FakeIssue(labels=["refactor"]), FakeIssue(labels=["unittest"]),
+            FakeIssue(labels=["other"])
         ])
 
         for issue in api.issues():
