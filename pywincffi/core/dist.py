@@ -133,7 +133,7 @@ class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
             # runtime constants so it shouldn't exist.
             raise initial_exception
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return "%s(%r)" % (self.__class__.__name__, self._library)
 
 
