@@ -17,7 +17,7 @@ from collections import namedtuple
 from errno import EEXIST, ENOENT
 from os.path import join, basename, dirname, abspath
 
-try:
+try:  # pragma: no cover
     # pylint: disable=import-error,wrong-import-order
     from httplib import responses, OK
     from StringIO import StringIO
@@ -257,9 +257,11 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
             # Determine the type of issue this is.  This is mostly used
             # when building the release message.
             labels = set(label.name for label in issue.labels)
+
             if "in progress" in labels or "in review" in labels:
-                logger.warning(
+                logger.warning(  # pragma: no cover
                     "Issue %s is still a work in progress", issue.number)
+                continue  # pragma: no cover
 
             if "refactor" in labels:
                 issue_type = "refactor"
@@ -275,9 +277,6 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
 
             elif "unittest" in labels:
                 issue_type = "unittests"
-
-            elif "refactor" in labels:
-                issue_type = "refactor"
 
             else:
                 issue_type = "other"
