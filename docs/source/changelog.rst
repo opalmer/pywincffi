@@ -11,12 +11,18 @@ Versions
 latest
 ~~~~~~
 
+Notable enhancements and changes are:
+
+    * :issue:`81` - :func:`pywincffi.user32.synchronization.WSAEventSelect` and
+      :func:`pywincffi.user32.synchronization.WSAEnumNetworkEvents`
+
 0.3.0
 ~~~~~
 
 Notable enhancements and changes are:
 
-    * Added the :func:`pywincffi.kernel32.CreateToolhelp32Snapshot` function in :issue:`101`.
+    * Added the :func:`pywincffi.kernel32.CreateToolhelp32Snapshot` function
+      in :issue:`101`.
     * Fixed a bug where :func:`pywincffi.checks.input_check` might raise
       ``ffi.error`` in :issue:`73`
     * Several enhancements bringing :issue:`69` closer to closure.
@@ -28,8 +34,6 @@ Notable enhancements and changes are:
         * :issue:`78` - :func:`pywincffi.kernel32.handle.DuplicateHandle`
         * :issue:`79` - :func:`pywincffi.kernel32.process.ClearCommError`
         * :issue:`80` - :func:`pywincffi.user32.synchronization.MsgWaitForMultipleObjects`
-        * :issue:`81` - :func:`pywincffi.user32.synchronization.WSAEventSelect` and
-          :func:`pywincffi.user32.synchronization.WSAEnumNetworkEvents`
     * Added Python 3.5 support to the build.  No bug fixes or code changes
       where required, just a minor test modification.
     * All exposed APIs updated to use the new Windows equivalent Python types
