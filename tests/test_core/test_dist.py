@@ -4,17 +4,17 @@ import os
 import shutil
 import sys
 import tempfile
-import warnings
 from os.path import isfile, dirname
 
 from cffi import FFI
-from mock import Mock, patch
+from mock import patch
 
+from pywincffi.core import dist
 from pywincffi.core.dist import (
-    MODULE_NAME, HEADER_FILES, SOURCE_FILES, LIBRARIES, LibraryWrapper,
+    MODULE_NAME, HEADER_FILES, SOURCE_FILES, LIBRARIES, LibraryWrapper, Loader,
     _import_path, _ffi, _compile, _read, load)
 from pywincffi.dev.testutil import TestCase
-from pywincffi.exceptions import ResourceNotFoundError
+from pywincffi.exceptions import ResourceNotFoundError, InternalError
 
 
 class TestDistConstants(TestCase):
@@ -72,34 +72,39 @@ class TestLibraryWrapper(TestCase):
             self.wrapper.FOOBAR  # pylint: disable=pointless-statement
 
 
-class TestModule(TestCase):
+class TestLoader(TestCase):
     """
-    Tests for :class:`pywincffi.core.dist.Module`
+    Tests for :class:`pywincffi.core.dist.Loader`
     """
-    def test_double_cache_produces_warning(self):
-        self.addCleanup(setattr, Module, "cache", None)
-        Module.cache = ""
+    def setUp(self):
+        super(TestLoader, self).setUp()
+        mock = patch.object(Loader, "cache", None)
+        mock.start()
+        self.addCleanup(mock.stop)
 
-        with warnings.catch_warnings(record=True) as caught:
-            Module(Mock(ffi=None, lib=None), None)
+    def test_set(self):
+        a, b = self.random_string(6), self.random_string(6)
+        Loader.set(a, b)
+        self.assertEqual(Loader.cache, (a, b))
 
-        warning = caught.pop(0)
-        self.assertIs(warning.category, RuntimeWarning)
-        self.assertEqual(
-            warning.message.args[0], "Module() was instanced multiple times")
+    def test_set_works_once(self):
+        a, b = self.random_string(6), self.random_string(6)
+        c, d = self.random_string(6), self.random_string(6)
+        Loader.set(a, b)
 
-    def test_attributes(self):
-        m = Module(Mock(ffi=1, lib=2), "foo")
-        self.assertEqual(m.ffi, 1)
-        self.assertEqual(m.lib, 2)
-        self.assertEqual(m.mode, "foo")
+        with self.assertRaises(InternalError):
+            Loader.set(c, d)
 
-    def test_tuple_unpacking(self):
-        m = Module(Mock(ffi=1, lib=2), "foo")
-        unpacked = tuple(m)
-        self.assertEqual(len(unpacked), 2)
-        self.assertEqual(unpacked[0], 1)
-        self.assertEqual(unpacked[1], 2)
+        self.assertEqual(Loader.cache, (a, b))
+
+    def test_get(self):
+        a, b = self.random_string(6), self.random_string(6)
+        Loader.set(a, b)
+        self.assertEqual(Loader.get(), (a, b))
+
+    def test_get_fails_if_called_before_set(self):
+        with self.assertRaises(InternalError):
+            Loader.get()
 
 
 class TestImportPath(TestCase):
@@ -192,7 +197,7 @@ class TestCompile(TestCase):
         super(TestCompile, self).setUp()
         self.module_name = self.random_string(16)
         self.addCleanup(sys.modules.pop, self.module_name, None)
-        self.addCleanup(setattr, Module, "cache", None)
+        # self.addCleanup(setattr, Module, "cache", None)
 
     def test_compile(self):
         # Create fake header
@@ -239,20 +244,23 @@ class TestLoad(TestCase):
     """Tests for :func:`pywincffi.core.dist.load`"""
     def setUp(self):
         super(TestLoad, self).setUp()
-        self.addCleanup(setattr, Module, "cache", None)
-        Module.cache = None
+        mock = patch.object(Loader, "cache", None)
+        mock.start()
         self.addCleanup(sys.modules.pop, MODULE_NAME, None)
-
-    def test_cache(self):
-        cached = object()
-        Module.cache = cached
-        self.assertIs(load(), cached)
+        self.addCleanup(mock.stop)
 
     def test_prebuilt(self):
-        fake_module = Mock(ffi=1, lib=2)
-        sys.modules[MODULE_NAME] = fake_module
-        loaded = load()
-        self.assertEqual(loaded.mode, "prebuilt")
+        class FakeModule(object):
+            ffi = None
+
+            class lib(object):
+                a, b = self.random_string(6), self.random_string(6)
+
+        sys.modules[MODULE_NAME] = FakeModule
+        _, library = load()
+
+        self.assertEqual(library.a, FakeModule.lib.a)
+        self.assertEqual(library.b, FakeModule.lib.b)
 
     def test_compiled(self):
         # Python 3.5 changes the behavior of None in sys.modules. So
@@ -265,5 +273,8 @@ class TestLoad(TestCase):
         # 'import _pywincffi' to fail forcing load() to
         # compile the module.
         sys.modules[MODULE_NAME] = None
-        loaded = load()
-        self.assertEqual(loaded.mode, "compiled")
+
+        with patch.object(dist, "_compile") as mocked:
+            load()
+
+        mocked.assert_called_once()
