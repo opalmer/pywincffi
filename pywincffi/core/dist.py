@@ -137,6 +137,41 @@ class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
         return "%s(%r)" % (self.__class__.__name__, self._library)
 
 
+class Loader(object):
+    """
+    A class which provides a cache for :func:`load`.
+    """
+    cache = None
+
+    @classmethod
+    def set(cls, ffi, library):
+        """
+        Establishes the cache.
+
+        :raises RuntimeError:
+            Raised if the cache was already setup once.
+        """
+        if cls.cache is not None:
+            # Setting up the cache multiple times is an indication of a
+            # possible bug.
+            raise RuntimeError("The cache has already been established")
+
+        cls.cache = (ffi, library)
+
+    @classmethod
+    def get(cls):
+        """
+        Retrieves the current cache.
+
+        :raises ValueError:
+            Raised if an attempt is made to retrieve the cache when it
+            has not been setup yet.
+        """
+        if cls.cache is None:
+            raise ValueError("The cache has not been established yet")
+        return cls.cache
+
+
 def _import_path(path, module_name=MODULE_NAME):
     """
     Function which imports ``path`` and returns it as a module.  This is
@@ -262,41 +297,6 @@ def _compile(ffi, tmpdir=None, module_name=MODULE_NAME):
     shutil.rmtree(tmpdir, ignore_errors=True)
 
     return module
-
-
-class Loader(object):
-    """
-    A class which provides a cache for :func:`load`.
-    """
-    cache = None
-
-    @classmethod
-    def set(cls, ffi, library):
-        """
-        Establishes the cache.
-
-        :raises RuntimeError:
-            Raised if the cache was already setup once.
-        """
-        if cls.cache is not None:
-            # Setting up the cache multiple times is an indication of a
-            # possible bug.
-            raise RuntimeError("The cache has already been established")
-
-        cls.cache = (ffi, library)
-
-    @classmethod
-    def get(cls):
-        """
-        Retrieves the current cache.
-
-        :raises ValueError:
-            Raised if an attempt is made to retrieve the cache when it
-            has not been setup yet.
-        """
-        if cls.cache is None:
-            raise ValueError("The cache has not been established yet")
-        return cls.cache
 
 
 def load():
