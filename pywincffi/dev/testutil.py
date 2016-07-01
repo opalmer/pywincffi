@@ -25,7 +25,6 @@ except ImportError:  # pragma: no cover
     from unittest import TestCase as _TestCase, skipUnless
 
 from pywincffi.core import dist
-from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 
 logger = get_logger("core.testutil")
@@ -109,8 +108,6 @@ class TestCase(_TestCase):
             # ensures that any error we intentionally throw in one
             # test does not causes an error to be raised in another.
             self.SetLastError(0)
-
-        config.load()
 
     @classmethod
     def internet_connected(cls):
