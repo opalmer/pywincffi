@@ -11,13 +11,13 @@ from cffi import FFI
 from mock import Mock, patch
 
 from pywincffi.core.dist import (
-    MODULE_NAME, HEADER_FILES, SOURCE_FILES, LIBRARIES, Module, _import_path,
-    _ffi, _compile, _read, load)
+    MODULE_NAME, HEADER_FILES, SOURCE_FILES, LIBRARIES, LibraryWrapper,
+    _import_path, _ffi, _compile, _read, load)
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import ResourceNotFoundError
 
 
-class TestConstants(TestCase):
+class TestDistConstants(TestCase):
     def test_module_name(self):
         self.assertEqual(MODULE_NAME, "_pywincffi")
 
@@ -28,6 +28,48 @@ class TestConstants(TestCase):
     def test_source_files_exist(self):
         for path in SOURCE_FILES:
             self.assertTrue(isfile(path))
+
+
+class TestLibraryWrapper(TestCase):
+    """
+    Tests for :class:`pywincffi.core.dist.LibraryWrapper`
+    """
+    def setUp(self):
+        super(TestLibraryWrapper, self).setUp()
+        _, library = load()
+        self.library = library._library
+        self.wrapper = LibraryWrapper(self.library)
+
+    def test_meta_dir(self):
+        self.assertEqual(
+            set(dir(self.wrapper)),
+            set(dir(self.library) +
+                list(self.wrapper._RUNTIME_CONSTANTS.keys()))
+        )
+
+    def test_meta_dict(self):
+        library_dict = self.library.__dict__.copy()
+        library_dict.update(self.wrapper._RUNTIME_CONSTANTS)
+        self.assertEqual(self.wrapper.__dict__, library_dict)
+
+    def test_meta_getattr_on_library(self):
+        for attribute in dir(self.wrapper):
+            if attribute in self.wrapper._RUNTIME_CONSTANTS:
+                continue
+
+            self.assertEqual(
+                getattr(self.wrapper, attribute),
+                getattr(self.library, attribute))
+
+    def test_meta_getattr_on_wrapper(self):
+        for attribute in self.wrapper._RUNTIME_CONSTANTS:
+            self.assertEqual(
+                getattr(self.wrapper, attribute),
+                self.wrapper._RUNTIME_CONSTANTS[attribute])
+
+    def test_meta_getattr_failure(self):
+        with self.assertRaises(AttributeError):
+            self.wrapper.FOOBAR  # pylint: disable=pointless-statement
 
 
 class TestModule(TestCase):
