@@ -25,7 +25,6 @@ from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 RESERVED_PIDS = set([0, 4])
-INVALID_HANDLE_VALUE = -1
 
 
 def pid_exists(pid, wait=0):
@@ -272,10 +271,11 @@ def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
         ffi.cast("DWORD", th32ProcessID)
     )
 
-    if process_list == INVALID_HANDLE_VALUE:  # pragma: no cover
+    if process_list == library.INVALID_HANDLE_VALUE:  # pragma: no cover
         raise WindowsAPIError(
-            "CreateToolhelp32Snapshot", "Invalid Handle", INVALID_HANDLE_VALUE,
-            expected_return_code="not %r" % INVALID_HANDLE_VALUE)
+            "CreateToolhelp32Snapshot", "Invalid Handle",
+            library.INVALID_HANDLE_VALUE,
+            expected_return_code="not %r" % library.INVALID_HANDLE_VALUE)
 
     error_check("CreateToolhelp32Snapshot")
 
