@@ -16,14 +16,6 @@ class PyWinCFFIError(Exception):
     """
 
 
-class PyWinCFFINotImplementedError(PyWinCFFIError):
-    """
-    Raised if we encounter a situation where we can't figure out what
-    to do.  The message for this error should contain all the information
-    necessary to implement a future work around.
-    """
-
-
 class InputError(PyWinCFFIError):
     """
     A subclass of :class:`PyWinCFFIError` that's raised when invalid input
@@ -161,9 +153,25 @@ class WindowsAPIError(PyWinCFFIError):
         )
 
 
-class ResourceNotFoundError(PyWinCFFIError):
+class InternalError(PyWinCFFIError):
+    """
+    Raised if we encounter an internal error.  Most likely this is an
+    indication of a bug in pywincffi but it could also be a problem caused by
+    an unexpected use case.
+    """
+
+
+class PyWinCFFINotImplementedError(InternalError):
+    """
+    Raised if we encounter a situation where we can't figure out what
+    to do.  The message for this error should contain all the information
+    necessary to implement a future work around.
+    """
+
+
+class ResourceNotFoundError(InternalError):
     """Raised when we fail to locate a specific resource"""
 
 
-class ConfigurationError(PyWinCFFIError):
+class ConfigurationError(InternalError):
     """Raised when there was a problem with the configuration file"""
