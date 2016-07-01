@@ -19,7 +19,6 @@ for distribution.
 import re
 import shutil
 import tempfile
-import warnings
 from errno import ENOENT
 from os.path import join, isfile
 from pkg_resources import resource_filename
@@ -65,36 +64,7 @@ REGEX_SAL_ANNOTATION = re.compile(
     r"\b(_In_|_Inout_|_Out_|_Outptr_|_Reserved_)(opt_)?\b")
 
 
-class Module(object):  # pylint: disable=too-few-public-methods
-    """
-    Used and returned by :func:`load`.  This class stores information
-    about a loaded module and is
-    """
-    cache = None
-
-    def __init__(self, module, mode):
-        if self.cache is not None:
-            warnings.warn(
-                "Module() was instanced multiple times", RuntimeWarning)
-
-        self.module = module
-        self.mode = mode
-        self.ffi = module.ffi
-        self.lib = module.lib
-
-    def __repr__(self):
-        return "%r (%s)" % (self.module, self.mode)
-
-    def __iter__(self):
-        """
-        Override the original __iter__ so tuple unpacking can be
-        used to pull out ffi and lib.  This will allow
-        """
-        yield self.ffi
-        yield self.lib
-
-
-class WrappedLibrary(object):  # pylint: disable=too-few-public-methods
+class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
     """
     Because of differences between Windows versions and some issues with cffi
     we need to wrap the library that cffi produces.  Without this certain
@@ -119,9 +89,8 @@ class WrappedLibrary(object):  # pylint: disable=too-few-public-methods
         INVALID_HANDLE_VALUE=-1
     )
 
-    def __init__(self, library, mode):
+    def __init__(self, library):
         self._library = library
-        self._mode = mode
 
     def __dir__(self):
         return dir(self._library) + list(self._RUNTIME_CONSTANTS.keys())
@@ -148,7 +117,7 @@ class WrappedLibrary(object):  # pylint: disable=too-few-public-methods
         # compiled library.
         try:
             return getattr(self._library, item)
-        except AttributeError as original_error:
+        except AttributeError as initial_exception:
             # Maybe it's a predefined constant?
             try:
                 return self._RUNTIME_CONSTANTS[item]
@@ -157,11 +126,10 @@ class WrappedLibrary(object):  # pylint: disable=too-few-public-methods
 
             # It's not an attribute in either the library or the
             # runtime constants so it shouldn't exist.
-            raise original_error
+            raise initial_exception
 
     def __repr__(self):
-        return "%s(library=%r, mode=%r)" % (
-            self.__class__.__name__, self._library, self._mode)
+        return "%s(%r)" % (self.__class__.__name__, self._library)
 
 
 def _import_path(path, module_name=MODULE_NAME):
@@ -291,20 +259,54 @@ def _compile(ffi, tmpdir=None, module_name=MODULE_NAME):
     return module
 
 
+class Loader(object):
+    """
+    A class which provides a cache for :func:`load`.
+    """
+    cache = None
+
+    @classmethod
+    def set(cls, ffi, library):
+        """
+        Establishes the cache.
+
+        :raises RuntimeError:
+            Raised if the cache was already setup once.
+        """
+        if cls.cache is not None:
+            # Setting up the cache multiple times is an indication of a
+            # possible bug.
+            raise RuntimeError("The cache has already been established")
+
+        cls.cache = (ffi, library)
+
+    @classmethod
+    def get(cls):
+        """
+        Retrieves the current cache.
+
+        :raises ValueError:
+            Raised if an attempt is made to retrieve the cache when it
+            has not been setup yet.
+        """
+        if cls.cache is None:
+            raise ValueError("The cache has not been established yet")
+        return cls.cache
+
+
 def load():
     """
     The main function used by pywincffi to load an instance of
-    :class:`FFI` and the underlying build library.
+    :class:`FFI` and the underlying library.
     """
-    if Module.cache is not None:
-        return Module.cache
-
-    logger.debug("load()")
     try:
-        import _pywincffi
-        Module.cache = Module(_pywincffi, "prebuilt")
+        return Loader.get()
+    except ValueError:
+        try:
+            import _pywincffi as pywincffi
+        except ImportError:
+            pywincffi = _compile(_ffi())
 
-    except ImportError:
-        Module.cache = Module(_compile(_ffi()), "compiled")
+        Loader.set(pywincffi.ffi, LibraryWrapper(pywincffi.lib))
 
-    return Module.cache
+    return Loader.get()
