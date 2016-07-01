@@ -26,7 +26,7 @@ from pkg_resources import resource_filename
 from cffi import FFI
 
 from pywincffi.core.logger import get_logger
-from pywincffi.exceptions import ResourceNotFoundError
+from pywincffi.exceptions import ResourceNotFoundError, InternalError
 
 imp = None  # pylint: disable=invalid-name
 ExtensionFileLoader = None  # pylint: disable=invalid-name
@@ -148,13 +148,13 @@ class Loader(object):
         """
         Establishes the cache.
 
-        :raises RuntimeError:
+        :raises pywincffi.exceptions.InternalError:
             Raised if the cache was already setup once.
         """
         if cls.cache is not None:
             # Setting up the cache multiple times is an indication of a
             # possible bug.
-            raise RuntimeError("The cache has already been established")
+            raise InternalError("The cache has already been established")
 
         cls.cache = (ffi, library)
 
@@ -163,12 +163,12 @@ class Loader(object):
         """
         Retrieves the current cache.
 
-        :raises ValueError:
+        :raises pywincffi.exceptions.InternalError:
             Raised if an attempt is made to retrieve the cache when it
             has not been setup yet.
         """
         if cls.cache is None:
-            raise ValueError("The cache has not been established yet")
+            raise InternalError("The cache has not been established yet")
         return cls.cache
 
 
@@ -306,7 +306,7 @@ def load():
     """
     try:
         return Loader.get()
-    except ValueError:
+    except InternalError:
         try:
             import _pywincffi as pywincffi
         except ImportError:
