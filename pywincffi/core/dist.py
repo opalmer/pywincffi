@@ -93,6 +93,11 @@ class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
         self._library = library
 
     def __dir__(self):
+        """
+        Overrides the default ``__dir__`` function so functions such as
+        :func:`dir` return the attributes of the underlying library plus
+        the runtime constants.
+        """
         return dir(self._library) + list(self._RUNTIME_CONSTANTS.keys())
 
     def __getattribute__(self, item):
