@@ -3,6 +3,7 @@
 from __future__ import with_statement
 
 import argparse
+import logging
 import os
 import subprocess
 import sys
@@ -22,7 +23,7 @@ ROOT = dirname(dirname(abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from pywincffi import __version__
-from pywincffi.core.logger import get_logger
+from pywincffi.core.logger import get_logger, STREAM_HANDLER
 from pywincffi.dev.release import GitHubAPI, AppVeyor, docs_built
 
 APPVEYOR_API = "https://ci.appveyor.com/api"
@@ -35,6 +36,10 @@ session.headers.update({
 })
 
 logger = get_logger("dev.release")
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[STREAM_HANDLER]
+)
 
 
 def should_continue(question, skip=False):
