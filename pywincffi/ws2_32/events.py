@@ -22,10 +22,10 @@ def WSAEventSelect(socket, hEventObject, lNetworkEvents):
 
         https://msdn.microsoft.com/en-us/library/ms741576
 
-    :param int socket:
+    :param pywincffi.wintypes.objects.SOCKET socket:
         A descriptor identify the socket.
 
-    :param :class:`pywincffi.wintypes.WSAEVENT` hEventObject:
+    :param pywincffi.wintypes.objects.WSAEVENT hEventObject:
         A handle which identifies the event object to be associated
         with the network events.
 
@@ -42,7 +42,6 @@ def WSAEventSelect(socket, hEventObject, lNetworkEvents):
 
     ffi, library = dist.load()
 
-    # TODO: `socket` needs conversion
     code = library.WSAEventSelect(
         wintype_to_cdata(socket),
         wintype_to_cdata(hEventObject),
