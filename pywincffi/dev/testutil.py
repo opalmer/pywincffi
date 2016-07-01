@@ -25,7 +25,6 @@ except ImportError:  # pragma: no cover
     from unittest import TestCase as _TestCase
 
 from pywincffi.core import dist
-from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 
 logger = get_logger("core.testutil")
@@ -113,8 +112,6 @@ class TestCase(_TestCase):
             self._kernel32.SetLastError(0)
             self._ws2_32.WSASetLastError(0)
 
-        config.load()
-
     @classmethod
     def internet_connected(cls):
         """
@@ -135,8 +132,8 @@ class TestCase(_TestCase):
                 TestCase._HAS_INTERNET = True
                 break
 
-            # pragma: no cover
-            except Exception:  # pylint: disable=broad-except
+            # pylint: disable=broad-except
+            except Exception:  # pragma: no cover
                 pass
 
             finally:
@@ -154,7 +151,9 @@ class TestCase(_TestCase):
         """
         try:
             process.terminate()
-        except Exception:  # pylint: disable=broad-except
+
+        # pylint: disable=broad-except
+        except Exception:  # pragma: no cover
             pass
 
     def create_python_process(self, command):

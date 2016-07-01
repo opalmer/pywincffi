@@ -14,9 +14,6 @@ from pywincffi.exceptions import WindowsAPIError
 from pywincffi.wintypes import HANDLE, SOCKET, wintype_to_cdata
 
 
-INVALID_HANDLE_VALUE = -1
-
-
 def GetStdHandle(nStdHandle):
     """
     Retrieves a handle to the specified standard
@@ -41,10 +38,10 @@ def GetStdHandle(nStdHandle):
 
     handle = library.GetStdHandle(nStdHandle)
 
-    if handle == INVALID_HANDLE_VALUE:  # pragma: no cover
+    if handle == library.INVALID_HANDLE_VALUE:  # pragma: no cover
         raise WindowsAPIError(
-            "GetStdHandle", "Invalid Handle", INVALID_HANDLE_VALUE,
-            expected_return_code="not %r" % INVALID_HANDLE_VALUE)
+            "GetStdHandle", "Invalid Handle", library.INVALID_HANDLE_VALUE,
+            expected_return_code="not %r" % library.INVALID_HANDLE_VALUE)
 
     return HANDLE(handle)
 

@@ -17,7 +17,7 @@ from collections import namedtuple
 from errno import EEXIST, ENOENT
 from os.path import join, basename, dirname, abspath
 
-try:
+try:  # pragma: no cover
     # pylint: disable=import-error,wrong-import-order
     from httplib import responses, OK
     from StringIO import StringIO
@@ -34,7 +34,6 @@ import requests
 from github import Github
 from requests.adapters import HTTPAdapter
 
-from pywincffi.core.config import config
 from pywincffi.core.logger import get_logger
 
 try:
@@ -210,7 +209,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
     REPO_NAME = "opalmer/%s" % PROJECT
 
     # NOTE: `repo` is for testing purposes.
-    def __init__(self, version, branch=None, repo_=None):
+    def __init__(self, version, branch=None, repo_=None, token=None):
         if branch is None:
             branch = "master"
 
@@ -225,12 +224,10 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
                 self.REPO_NAME, self.version
             )
 
-        github_token = config.get("pywincffi", "github_token")
-        if not github_token:
-            raise RuntimeError(
-                "pywincffi.github_token is not set in the config")
+        if not token:
+            raise RuntimeError("`token` has not been set")
 
-        self.hub = Github(login_or_token=github_token)
+        self.hub = Github(login_or_token=token)
         self.repo = repo_
 
         if repo_ is None:  # pragma: no cover
@@ -260,9 +257,11 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
             # Determine the type of issue this is.  This is mostly used
             # when building the release message.
             labels = set(label.name for label in issue.labels)
+
             if "in progress" in labels or "in review" in labels:
-                logger.warning(
+                logger.warning(  # pragma: no cover
                     "Issue %s is still a work in progress", issue.number)
+                continue  # pragma: no cover
 
             if "refactor" in labels:
                 issue_type = "refactor"
@@ -278,9 +277,6 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
 
             elif "unittest" in labels:
                 issue_type = "unittests"
-
-            elif "refactor" in labels:
-                issue_type = "refactor"
 
             else:
                 issue_type = "other"

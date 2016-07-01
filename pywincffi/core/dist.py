@@ -19,7 +19,6 @@ for distribution.
 import re
 import shutil
 import tempfile
-import warnings
 from errno import ENOENT
 from os.path import join, isfile
 from pkg_resources import resource_filename
@@ -27,7 +26,7 @@ from pkg_resources import resource_filename
 from cffi import FFI
 
 from pywincffi.core.logger import get_logger
-from pywincffi.exceptions import ResourceNotFoundError
+from pywincffi.exceptions import ResourceNotFoundError, InternalError
 
 imp = None  # pylint: disable=invalid-name
 ExtensionFileLoader = None  # pylint: disable=invalid-name
@@ -65,33 +64,112 @@ REGEX_SAL_ANNOTATION = re.compile(
     r"\b(_In_|_Inout_|_Out_|_Outptr_|_Reserved_)(opt_)?\b")
 
 
-class Module(object):  # pylint: disable=too-few-public-methods
+class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
     """
-    Used and returned by :func:`load`.  This class stores information
-    about a loaded module and is
+    Because of differences between Windows versions and some issues with cffi
+    we need to wrap the library that cffi produces.  Without this certain
+    constants can't be included in the lib, such as INVALID_HANDLE_VALUE which
+    has a negative value.  Other constants, such as FILE_FLAG_SESSION_AWARE,
+    are not available on all Windows versions so this class helps to provide
+    a uniform interface.
+
+    .. warning::
+
+        Please do not define constants here unless absolutely necessary.  By
+        default, constants should be defined in
+        :blob:`pywincffi/core/cdefs/headers/constants.h` unless some conditions
+        are met:
+            * cffi cannot compile the requested constant.
+            * The constant is only defined in a few Windows SDK versions and
+              it can't be conditionally defined in main.c.
+    """
+    _RUNTIME_CONSTANTS = dict(
+        # Defined here because cffi can't handle negative values
+        # in constants yet.
+        INVALID_HANDLE_VALUE=-1
+    )
+
+    def __init__(self, library):
+        self._library = library
+
+    def __dir__(self):
+        """
+        Overrides the default ``__dir__`` function so functions such as
+        :func:`dir` return the attributes of the underlying library plus
+        the runtime constants.
+        """
+        return dir(self._library) + list(self._RUNTIME_CONSTANTS.keys())
+
+    def __getattribute__(self, item):
+        """
+        Overrides the default ``__getattribute__`` function so that we
+        can provide more useful results for certain attributes.
+        """
+        if item == "__dict__":
+            library_dict = self._library.__dict__.copy()
+            library_dict.update(self._RUNTIME_CONSTANTS)
+            return library_dict
+
+        return object.__getattribute__(self, item)
+
+    def __getattr__(self, item):
+        """
+        Attempts to retrieve the requested attribute.  This will first look
+        for the attribute on the library we're wrapping then try to look
+        for a runtime constant defined on this class.
+        """
+        # Most likely we're looking for an attribute on the
+        # compiled library.
+        try:
+            return getattr(self._library, item)
+        except AttributeError as initial_exception:
+            # Maybe it's a predefined constant?
+            try:
+                return self._RUNTIME_CONSTANTS[item]
+            except KeyError:
+                pass
+
+            # It's not an attribute in either the library or the
+            # runtime constants so it shouldn't exist.
+            raise initial_exception
+
+    def __repr__(self):  # pragma: no cover
+        return "%s(%r)" % (self.__class__.__name__, self._library)
+
+
+class Loader(object):
+    """
+    A class which provides a cache for :func:`load`.
     """
     cache = None
 
-    def __init__(self, module, mode):
-        if self.cache is not None:
-            warnings.warn(
-                "Module() was instanced multiple times", RuntimeWarning)
-
-        self.module = module
-        self.mode = mode
-        self.ffi = module.ffi
-        self.lib = module.lib
-
-    def __repr__(self):
-        return "%r (%s)" % (self.module, self.mode)
-
-    def __iter__(self):
+    @classmethod
+    def set(cls, ffi, library):
         """
-        Override the original __iter__ so tuple unpacking can be
-        used to pull out ffi and lib.  This will allow
+        Establishes the cache.
+
+        :raises pywincffi.exceptions.InternalError:
+            Raised if the cache was already setup once.
         """
-        yield self.ffi
-        yield self.lib
+        if cls.cache is not None:
+            # Setting up the cache multiple times is an indication of a
+            # possible bug.
+            raise InternalError("The cache has already been established")
+
+        cls.cache = (ffi, library)
+
+    @classmethod
+    def get(cls):
+        """
+        Retrieves the current cache.
+
+        :raises pywincffi.exceptions.InternalError:
+            Raised if an attempt is made to retrieve the cache when it
+            has not been setup yet.
+        """
+        if cls.cache is None:
+            raise InternalError("The cache has not been established yet")
+        return cls.cache
 
 
 def _import_path(path, module_name=MODULE_NAME):
@@ -224,17 +302,16 @@ def _compile(ffi, tmpdir=None, module_name=MODULE_NAME):
 def load():
     """
     The main function used by pywincffi to load an instance of
-    :class:`FFI` and the underlying build library.
+    :class:`FFI` and the underlying library.
     """
-    if Module.cache is not None:
-        return Module.cache
-
-    logger.debug("load()")
     try:
-        import _pywincffi
-        Module.cache = Module(_pywincffi, "prebuilt")
+        return Loader.get()
+    except InternalError:
+        try:
+            import _pywincffi as pywincffi
+        except ImportError:
+            pywincffi = _compile(_ffi())
 
-    except ImportError:
-        Module.cache = Module(_compile(_ffi()), "compiled")
+        Loader.set(pywincffi.ffi, LibraryWrapper(pywincffi.lib))
 
-    return Module.cache
+    return Loader.get()
