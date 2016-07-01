@@ -129,8 +129,8 @@ class TestCase(_TestCase):
                 TestCase._HAS_INTERNET = True
                 break
 
-            # pragma: no cover
-            except Exception:  # pylint: disable=broad-except
+            # pylint: disable=broad-except
+            except Exception:  # pragma: no cover
                 pass
 
             finally:
@@ -165,7 +165,9 @@ class TestCase(_TestCase):
         """
         try:
             process.terminate()
-        except Exception:  # pylint: disable=broad-except
+
+        # pylint: disable=broad-except
+        except Exception:  # pragma: no cover
             pass
 
     def create_python_process(self, command):
