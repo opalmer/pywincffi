@@ -1,5 +1,3 @@
-import socket
-
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase, mock_library
 from pywincffi.exceptions import WindowsAPIError
@@ -35,17 +33,16 @@ class TestWSAEventSelect(TestCase):
     """
     Tests for ``pywincffi.ws2_32.events.WSAEventSelect``
     """
-    def create_socket(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.addCleanup(sock.close)
-        return socket_from_object(sock)
-
-    def test_select_event_call(self):
-        sock = self.create_socket()
+    def test_event_select_basic_call(self):
+        # Establish a simple socket server and client
         _, library = dist.load()
+        server, client = self.create_socket()
+
+        # Setup the event
         event = WSACreateEvent()
         self.addCleanup(CloseHandle, event)
         WSAEventSelect(
-            sock, event,
-            library.FD_READ | library.FD_WRITE
+            socket_from_object(server),
+            event,
+            library.FD_WRITE | library.FD_ACCEPT | library.FD_CONNECT
         )
