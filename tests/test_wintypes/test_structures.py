@@ -1,6 +1,7 @@
+from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.wintypes import (
-    HANDLE, SECURITY_ATTRIBUTES, OVERLAPPED, FILETIME)
+    HANDLE, SECURITY_ATTRIBUTES, OVERLAPPED, FILETIME, LPWSANETWORKEVENTS)
 
 
 class TestSECURITY_ATTRIBUTES(TestCase):
@@ -82,3 +83,13 @@ class TestFILETIME(TestCase):
         ft = FILETIME()
         with self.assertRaises(AttributeError):
             ft.no_such_attr = None
+
+
+class TestLPWSANETWORKEVENTS(TestCase):
+    """
+    Tests for :class:`pywincffi.wintypes.LPWSANETWORKEVENTS`
+    """
+    def test_iErrorCode(self):
+        _, library = dist.load()
+        events = LPWSANETWORKEVENTS()
+        self.assertEqual(events.iErrorCode, tuple([0] * library.FD_MAX_EVENTS))
