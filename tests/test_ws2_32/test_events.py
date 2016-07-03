@@ -36,7 +36,7 @@ class TestWSAEventSelect(TestCase):
     def test_event_select_basic_call(self):
         # Establish a simple socket server and client
         _, library = dist.load()
-        server, client = self.create_socket()
+        server, _ = self.create_socket()
 
         # Setup the event
         event = WSACreateEvent()

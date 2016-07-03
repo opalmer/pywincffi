@@ -184,19 +184,19 @@ class TestCase(_TestCase):
 
         return output
 
-    def create_socket(self, family=socket.AF_INET, type=socket.SOCK_STREAM):
+    def create_socket(self, family=socket.AF_INET, type_=socket.SOCK_STREAM):
         """
         Creates a local socket listening on a random port.
         """
         # Establish the server's socket
-        server = socket.socket(family=family, type=type)
+        server = socket.socket(family=family, type=type_)
         server.bind(("127.0.0.1", 0))
         server.setblocking(0)
         _, port = server.getsockname()
         server.listen(0)
 
         # Connect to the server's socket.
-        client = socket.socket(family=family, type=type)
+        client = socket.socket(family=family, type=type_)
         client.connect(("127.0.0.1", port))
 
         self.addCleanup(client.close)
