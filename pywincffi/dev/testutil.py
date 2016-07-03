@@ -183,3 +183,23 @@ class TestCase(_TestCase):
             output += choice(ascii_lowercase + ascii_uppercase + "0123456789")
 
         return output
+
+    def create_socket(self, family=socket.AF_INET, type=socket.SOCK_STREAM):
+        """
+        Creates a local socket listening on a random port.
+        """
+        # Establish the server's socket
+        server = socket.socket(family=family, type=type)
+        server.bind(("127.0.0.1", 0))
+        server.setblocking(0)
+        _, port = server.getsockname()
+        server.listen(0)
+
+        # Connect to the server's socket.
+        client = socket.socket(family=family, type=type)
+        client.connect(("127.0.0.1", port))
+
+        self.addCleanup(client.close)
+        self.addCleanup(server.close)
+
+        return server, client
