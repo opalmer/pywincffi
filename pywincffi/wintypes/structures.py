@@ -74,3 +74,14 @@ class FILETIME(CFFICDataWrapper):
     def __init__(self):
         ffi, _ = dist.load()
         super(FILETIME, self).__init__("FILETIME*", ffi)
+
+
+class WSANETWORKEVENTS(CFFICDataWrapper):
+    """
+    .. seealso::
+
+         https://msdn.microsoft.com/en-us/ms741653
+    """
+    def __init__(self):
+        ffi, _ = dist.load()
+        super(WSANETWORKEVENTS, self).__init__("WSANETWORKEVENTS*", ffi)
