@@ -39,7 +39,7 @@ def wintype_to_cdata(wintype):
     ffi, _ = dist.load()
     if wintype is None:
         return ffi.NULL
-    elif isinstance(wintype, HANDLE):
+    elif isinstance(wintype, (SOCKET, HANDLE)):
         return wintype._cdata[0]
     else:
         return wintype._cdata
