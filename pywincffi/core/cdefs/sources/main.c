@@ -1,9 +1,8 @@
 #include <io.h>
 #include <winsock2.h>
 #include <winerror.h>
-#include <windows.h>
 #include <TlHelp32.h>
-#include <Python.h>
+#include <windows.h>
 
 // Extra constants which are not defined in all versions of the Windows
 // SDK.  If cffi fails to find the value, it ends up being picked up from
