@@ -11,7 +11,7 @@ from pywincffi.core import dist
 from pywincffi.core.checks import input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.wintypes import (
-    HANDLE, SOCKET, WSAEVENT, WSANETWORKEVENTS, wintype_to_cdata)
+    HANDLE, SOCKET, WSAEVENT, LPWSANETWORKEVENTS, wintype_to_cdata)
 
 
 def WSAEventSelect(socket, hEventObject, lNetworkEvents):
@@ -103,7 +103,7 @@ def WSAEnumNetworkEvents(socket, hEventObject=None):
         An optional handle identify an associated event object
         to be reset.
 
-    :rtype: :class:`pywincffi.wintypes.structures.WSANETWORKEVENTS`
+    :rtype: :class:`pywincffi.wintypes.structures.LPWSANETWORKEVENTS`
     :return:
     """
     input_check("socket", socket, allowed_types=(SOCKET, ))
@@ -115,16 +115,12 @@ def WSAEnumNetworkEvents(socket, hEventObject=None):
     else:
         hEventObject = ffi.NULL
 
-    lpNetworkEvents = ffi.new("LPWSANETWORKEVENTS")
+    lpNetworkEvents = LPWSANETWORKEVENTS()
     code = library.WSAEnumNetworkEvents(
         wintype_to_cdata(socket),
         hEventObject,
-        lpNetworkEvents
+        wintype_to_cdata(lpNetworkEvents)
     )
     error_check("WSAEnumNetworkEvents", code=code, expected=0)
 
-    # TODO use something like WSANETWORKEVENTS.from_cdata here
-    # pylint: disable=protected-access
-    result = WSANETWORKEVENTS()
-    result._cdata[0] = lpNetworkEvents
-    return result
+    return lpNetworkEvents
