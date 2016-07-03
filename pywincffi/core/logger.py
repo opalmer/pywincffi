@@ -2,13 +2,11 @@
 Logger
 ------
 
-This module contains pywincffi's logger and provides functions to
-configure the logger at runtime.
+This module contains pywincffi's logger and functions to
+retrieve new child loggers.
 """
 
 import logging
-
-from pywincffi.core.config import config
 
 try:
     NullHandler = logging.NullHandler
@@ -36,8 +34,11 @@ STREAM_HANDLER = logging.StreamHandler()
 STREAM_HANDLER.setFormatter(FORMATTER)
 NULL_HANDLER = NullHandler()
 
+# By default, pywincffi's logger does nothing
 logger = logging.getLogger("pywincffi")
 logger.addHandler(NULL_HANDLER)
+
+__all__ = ("logger", "get_logger")
 
 
 def get_logger(name):
@@ -59,21 +60,8 @@ def get_logger(name):
         raise ValueError("`name` cannot start with '.'")
 
     try:
-        child_logger = logger.getChild(name)
+        return logger.getChild(name)
 
     # getChild was introduced in Python 2.6
-    except AttributeError:
-        child_logger = logging.getLogger(logger.name + "." + name)
-
-    configured_level = config.logging_level()
-
-    # Root logging configuration has changed, reconfigure.
-    if logger.level != configured_level:
-        if configured_level == logging.NOTSET:
-            logger.handlers[:] = [NULL_HANDLER]
-        else:
-            logger.handlers[:] = [STREAM_HANDLER]
-
-        logger.setLevel(configured_level)
-
-    return child_logger
+    except AttributeError:  # pragma: no cover
+        return logging.getLogger(logger.name + "." + name)

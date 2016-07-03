@@ -1,4 +1,7 @@
 #include <io.h>
+#include <winsock2.h>
+#include <winerror.h>
+#include <TlHelp32.h>
 #include <windows.h>
 
 // Extra constants which are not defined in all versions of the Windows
@@ -26,4 +29,11 @@
 
 HANDLE handle_from_fd(int fd) {
     return (HANDLE)_get_osfhandle(fd);
+}
+
+// Checks to see if a given event is considered invalid.  We perform this
+// check in C because cffi itself has trouble creating a usable value for
+// WSA_INVALID_EVENT.
+BOOL wsa_invalid_event(WSAEVENT event) {
+    return event == WSA_INVALID_EVENT;
 }

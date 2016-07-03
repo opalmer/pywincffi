@@ -1,13 +1,4 @@
 ///////////////////////
-// Misc functions
-///////////////////////
-
-// https://msdn.microsoft.com/en-us/ms680627
-void WINAPI SetLastError(
-  _In_ DWORD dwErrCode
-);
-
-///////////////////////
 // Processes
 ///////////////////////
 
@@ -38,6 +29,13 @@ BOOL WINAPI TerminateProcess(
   _In_ HANDLE hProcess,
   _In_ UINT   uExitCode
 );
+
+// https://msdn.microsoft.com/en-us/ms682489
+HANDLE WINAPI CreateToolhelp32Snapshot(
+  _In_ DWORD dwFlags,
+  _In_ DWORD th32ProcessID
+);
+
 
 ///////////////////////
 // Pipes
@@ -138,8 +136,6 @@ BOOL WINAPI UnlockFileEx(
 // Files
 ///////////////////////
 
-HANDLE handle_from_fd(int);
-
 // https://msdn.microsoft.com/en-us/ms724211
 BOOL WINAPI CloseHandle(
   _In_ HANDLE hObject
@@ -214,10 +210,14 @@ BOOL WINAPI ResetEvent(
   _In_ HANDLE hEvent
 );
 
-
 ///////////////////////
 // Communications
 ///////////////////////
+
+// https://msdn.microsoft.com/en-us/ms737582
+int closesocket(
+  _In_ SOCKET s
+);
 
 // https://msdn.microsoft.com/en-us/aa363180
 BOOL WINAPI ClearCommError(
@@ -225,6 +225,33 @@ BOOL WINAPI ClearCommError(
   _Out_opt_ LPDWORD   lpErrors,
   _Out_opt_ LPCOMSTAT lpStat
 );
+
+// https://msdn.microsoft.com/en-us/ms741576
+int WSAEventSelect(
+  _In_ SOCKET   s,
+  _In_ WSAEVENT hEventObject,
+  _In_ long     lNetworkEvents
+);
+
+// https://msdn.microsoft.com/en-us/ms741580
+int WSAGetLastError(void);
+
+// https://msdn.microsoft.com/en-us/ms741561
+WSAEVENT WSACreateEvent(void);
+
+// https://msdn.microsoft.com/en-us/ms741572
+int WSAEnumNetworkEvents(
+  _In_  SOCKET             s,
+  _In_  WSAEVENT           hEventObject,
+  _Out_ LPWSANETWORKEVENTS lpNetworkEvents
+);
+
+///////////////////////
+// Utility Functions
+///////////////////////
+HANDLE handle_from_fd(int);
+BOOL wsa_invalid_event(WSAEVENT);
+
 
 ///////////////////////
 // Processes

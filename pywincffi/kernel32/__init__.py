@@ -14,12 +14,12 @@ from pywincffi.kernel32.file import (
     UnlockFileEx)
 from pywincffi.kernel32.handle import (
     CloseHandle, GetStdHandle, GetHandleInformation, SetHandleInformation,
-    DuplicateHandle, handle_from_file)
+    DuplicateHandle)
 from pywincffi.kernel32.pipe import (
     CreatePipe, PeekNamedPipe, PeekNamedPipeResult, SetNamedPipeHandleState)
 from pywincffi.kernel32.process import (
     GetProcessId, GetCurrentProcess, OpenProcess, GetExitCodeProcess,
-    pid_exists, TerminateProcess)
+    pid_exists, TerminateProcess, CreateToolhelp32Snapshot)
 from pywincffi.kernel32.events import CreateEvent, OpenEvent, ResetEvent
 from pywincffi.kernel32.comms import ClearCommError
 from pywincffi.kernel32.synchronization import WaitForSingleObject

@@ -68,6 +68,13 @@ typedef struct _COMSTAT {
   DWORD cbOutQue;
 } COMSTAT, *LPCOMSTAT;
 
+// https://msdn.microsoft.com/en-us/ms741653
+typedef struct _WSANETWORKEVENTS {
+  long lNetworkEvents;
+  int  iErrorCode[...];
+} WSANETWORKEVENTS, *LPWSANETWORKEVENTS;
+
+
 // https://msdn.microsoft.com/en-us/library/ms684873
 typedef struct _PROCESS_INFORMATION {
   HANDLE hProcess;

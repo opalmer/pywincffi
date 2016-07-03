@@ -18,7 +18,6 @@ except ImportError:
 from mock import Mock, patch
 from requests.adapters import HTTPAdapter
 
-from pywincffi.core.config import config
 from pywincffi.dev import release  # used to mock top level functions
 from pywincffi.dev.release import (
     Session, AppVeyor, AppVeyorArtifact, GitHubAPI, Issue,
@@ -266,17 +265,9 @@ class GitHubAPICase(TestCase):
         super(GitHubAPICase, self).setUp()
         self.version = "0.0.0"
 
-        # The test token.  This ensures that we're never going to
-        # use a valid token which could cause problems on GitHub if
-        # used.
-        self.token = "fake_token"
-        github_token = config.get("pywincffi", "github_token")
-        config.set("pywincffi", "github_token", self.token)
-        self.addCleanup(config.set, "pywincffi", "github_token", github_token)
-
     # NOTE: `branch` should match the default
     def api(self, version=None, branch=None, repo=None, milestones=None,
-            releases=None):
+            releases=None, token="take_token"):
         if version is None:
             version = self.version
 
@@ -292,7 +283,7 @@ class GitHubAPICase(TestCase):
                 get_releases=Mock(return_value=releases)
             )
 
-        return GitHubAPI(version, branch=branch, repo_=repo)
+        return GitHubAPI(version, branch=branch, repo_=repo, token=token)
 
 
 class TestGitHubAPIInit(GitHubAPICase):
@@ -312,9 +303,8 @@ class TestGitHubAPIInit(GitHubAPICase):
         self.assertEqual(api.branch, "foobar")
 
     def test_token_not_set(self):
-        config.set("pywincffi", "github_token", "")
         with self.assertRaises(RuntimeError):
-            self.api()
+            self.api(token=None)
 
     def test_milestone_not_found(self):
         with self.assertRaises(ValueError):
@@ -426,10 +416,11 @@ class TestGitHubAPIIssues(GitHubAPICaseWithIssues):
         for issue in api.issues():
             self.assertEqual(issue.closed, issue.issue.state == "closed")
 
-    def issue_type(self):
+    def test_issue_type(self):
         api = self.api(issues=[
             FakeIssue(labels=["enhancement"]), FakeIssue(labels=["bug"]),
-            FakeIssue(labels=["refactor"])
+            FakeIssue(labels=["refactor"]), FakeIssue(labels=["unittest"]),
+            FakeIssue(labels=["other"])
         ])
 
         for issue in api.issues():

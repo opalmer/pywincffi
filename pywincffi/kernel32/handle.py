@@ -11,33 +11,7 @@ from six import integer_types
 from pywincffi.core import dist
 from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.wintypes import HANDLE, wintype_to_cdata
-
-
-INVALID_HANDLE_VALUE = -1
-
-
-def handle_from_file(python_file):
-    """
-    Given a standard Python file object produce a Windows
-    handle object that be be used in Windows function calls.
-
-    :param file python_file:
-        The Python file object to convert to a Windows handle.
-
-    :return:
-        Returns a :class:`pywincffi.wintypes.HANDLE` for the provided
-        ``python_file``.
-    """
-    _, library = dist.load()
-    input_check("python_file", python_file, Enums.PYFILE)
-
-    # WARNING:
-    #   Be aware that passing in an invalid file descriptor
-    #   number can crash Python.  The input_check function
-    #   above should handle this for us by checking to
-    #   ensure the file descriptor is valid first.
-    return HANDLE(library.handle_from_fd(python_file.fileno()))
+from pywincffi.wintypes import HANDLE, SOCKET, wintype_to_cdata
 
 
 def GetStdHandle(nStdHandle):
@@ -64,10 +38,10 @@ def GetStdHandle(nStdHandle):
 
     handle = library.GetStdHandle(nStdHandle)
 
-    if handle == INVALID_HANDLE_VALUE:  # pragma: no cover
+    if handle == library.INVALID_HANDLE_VALUE:  # pragma: no cover
         raise WindowsAPIError(
-            "GetStdHandle", "Invalid Handle", INVALID_HANDLE_VALUE,
-            expected_return_code="not %r" % INVALID_HANDLE_VALUE)
+            "GetStdHandle", "Invalid Handle", library.INVALID_HANDLE_VALUE,
+            expected_return_code="not %r" % library.INVALID_HANDLE_VALUE)
 
     return HANDLE(handle)
 
@@ -80,10 +54,11 @@ def CloseHandle(hObject):
 
         https://msdn.microsoft.com/en-us/library/ms724211
 
-    :param pywincffi.wintypes.HANDLE hObject:
+    :type hObject: pywincffi.wintypes.HANDLE or pywincffi.wintypes.SOCKET
+    :param hObject:
         The handle object to close.
     """
-    input_check("hObject", hObject, HANDLE)
+    input_check("hObject", hObject, (HANDLE, SOCKET))
     _, library = dist.load()
 
     code = library.CloseHandle(wintype_to_cdata(hObject))
