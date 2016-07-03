@@ -74,3 +74,19 @@ class FILETIME(CFFICDataWrapper):
     def __init__(self):
         ffi, _ = dist.load()
         super(FILETIME, self).__init__("FILETIME*", ffi)
+
+
+class LPWSANETWORKEVENTS(CFFICDataWrapper):
+    """
+    .. seealso::
+
+         https://msdn.microsoft.com/en-us/ms741653
+    """
+    def __init__(self):
+        ffi, _ = dist.load()
+        super(LPWSANETWORKEVENTS, self).__init__("LPWSANETWORKEVENTS", ffi)
+
+    @property
+    def iErrorCode(self):
+        """An array of integers containing any associated error codes"""
+        return tuple(self._cdata.iErrorCode)

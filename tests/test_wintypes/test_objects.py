@@ -1,6 +1,6 @@
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
-from pywincffi.wintypes import WrappedObject, HANDLE, SOCKET
+from pywincffi.wintypes import WrappedObject, HANDLE, SOCKET, WSAEVENT
 
 
 class TestWrappedObject(TestCase):
@@ -84,6 +84,19 @@ class TestHANDLE(ObjectBaseTestCase):
     Tests for :class:`pywincffi.wintypes.HANDLE`
     """
     OBJECT_CLASS = HANDLE
+
+    def cast_from_value(self, int_data):
+        ffi, _ = dist.load()
+        cdata = ffi.new(self.OBJECT_CLASS.C_TYPE)
+        cdata[0] = ffi.cast(self.OBJECT_CLASS.__name__, int_data)
+        return self.OBJECT_CLASS(cdata[0])
+
+
+class TestWSAEVENT(ObjectBaseTestCase):
+    """
+    Tests for :class:`pywincffi.wintypes.WSAEVENT`
+    """
+    OBJECT_CLASS = WSAEVENT
 
     def cast_from_value(self, int_data):
         ffi, _ = dist.load()

@@ -1,13 +1,4 @@
 ///////////////////////
-// Misc functions
-///////////////////////
-
-// https://msdn.microsoft.com/en-us/ms680627
-void WINAPI SetLastError(
-  _In_ DWORD dwErrCode
-);
-
-///////////////////////
 // Processes
 ///////////////////////
 
@@ -236,7 +227,28 @@ BOOL WINAPI ClearCommError(
   _Out_opt_ LPCOMSTAT lpStat
 );
 
+// https://msdn.microsoft.com/en-us/ms741576
+int WSAEventSelect(
+  _In_ SOCKET   s,
+  _In_ WSAEVENT hEventObject,
+  _In_ long     lNetworkEvents
+);
+
+// https://msdn.microsoft.com/en-us/ms741580
+int WSAGetLastError(void);
+
+// https://msdn.microsoft.com/en-us/ms741561
+WSAEVENT WSACreateEvent(void);
+
+// https://msdn.microsoft.com/en-us/ms741572
+int WSAEnumNetworkEvents(
+  _In_  SOCKET             s,
+  _In_  WSAEVENT           hEventObject,
+  _Out_ LPWSANETWORKEVENTS lpNetworkEvents
+);
+
 ///////////////////////
-// Conversion Functions
+// Utility Functions
 ///////////////////////
 HANDLE handle_from_fd(int);
+BOOL wsa_invalid_event(WSAEVENT);

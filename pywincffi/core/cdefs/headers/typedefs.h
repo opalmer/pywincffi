@@ -10,3 +10,4 @@
 //
 
 typedef int... SOCKET;
+typedef HANDLE WSAEVENT;  // according to winsock2.h
