@@ -60,6 +60,17 @@ class HANDLE(WrappedObject):
     C_TYPE = "HANDLE[1]"
 
 
+class WSAEVENT(HANDLE):
+    """
+    Handles interaction with a WSAEVENT object via its cdata.
+
+    .. note::
+
+        This is functionally equivalent to a :class:`HANDLE` object.
+    """
+    C_TYPE = "WSAEVENT[1]"
+
+
 class SOCKET(WrappedObject):
     """Handles interaction with a SOCKET object via its cdata"""
     C_TYPE = "SOCKET[1]"

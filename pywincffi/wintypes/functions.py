@@ -10,7 +10,7 @@ import socket
 
 from pywincffi.core import dist
 from pywincffi.exceptions import InputError
-from pywincffi.wintypes.objects import HANDLE, SOCKET
+from pywincffi.wintypes.objects import HANDLE, SOCKET, WSAEVENT
 
 
 # pylint: disable=protected-access
@@ -39,7 +39,7 @@ def wintype_to_cdata(wintype):
     ffi, _ = dist.load()
     if wintype is None:
         return ffi.NULL
-    elif isinstance(wintype, (SOCKET, HANDLE)):
+    elif isinstance(wintype, (SOCKET, HANDLE, WSAEVENT)):
         return wintype._cdata[0]
     else:
         return wintype._cdata
