@@ -76,7 +76,7 @@ class FILETIME(CFFICDataWrapper):
         super(FILETIME, self).__init__("FILETIME*", ffi)
 
 
-class WSANETWORKEVENTS(CFFICDataWrapper):
+class LPWSANETWORKEVENTS(CFFICDataWrapper):
     """
     .. seealso::
 
@@ -84,4 +84,9 @@ class WSANETWORKEVENTS(CFFICDataWrapper):
     """
     def __init__(self):
         ffi, _ = dist.load()
-        super(WSANETWORKEVENTS, self).__init__("WSANETWORKEVENTS*", ffi)
+        super(LPWSANETWORKEVENTS, self).__init__("LPWSANETWORKEVENTS", ffi)
+
+    @property
+    def iErrorCode(self):
+        """An array of integers containing any associated error codes"""
+        return tuple(self._cdata.iErrorCode)
