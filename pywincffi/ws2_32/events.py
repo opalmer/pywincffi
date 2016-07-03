@@ -10,7 +10,8 @@ from six import integer_types
 from pywincffi.core import dist
 from pywincffi.core.checks import input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
-from pywincffi.wintypes import HANDLE, SOCKET, wintype_to_cdata
+from pywincffi.wintypes import (
+    HANDLE, SOCKET, WSAEVENT, WSANETWORKEVENTS, wintype_to_cdata)
 
 
 def WSAEventSelect(socket, hEventObject, lNetworkEvents):
@@ -33,11 +34,8 @@ def WSAEventSelect(socket, hEventObject, lNetworkEvents):
         A bitmask which specifies the combination of ``FD_XXX`` network
         events which the application has interest in.
     """
-    input_check(
-        "socket", socket, allowed_types=(SOCKET, ))
-    input_check(
-        "hEventObject", hEventObject,
-        allowed_types=(HANDLE, ))
+    input_check("socket", socket, allowed_types=(SOCKET, ))
+    input_check("hEventObject", hEventObject, allowed_types=(HANDLE, ))
     input_check("lNetworkEvents", lNetworkEvents, integer_types)
 
     ffi, library = dist.load()
@@ -88,3 +86,45 @@ def WSAGetLastError():
     """
     _, library = dist.load()
     return library.WSAGetLastError()
+
+
+def WSAEnumNetworkEvents(socket, hEventObject=None):
+    """
+    Discovers occurrences of network events on the indicated ``socket``, clears
+    internal events and optionally resets event objects.
+
+    .. seealso::
+        https://msdn.microsoft.com/en-us/ms741572
+
+    :param pywincffi.wintypes.objects.SOCKET socket:
+        The socket object to enumerate events for.
+
+    :keyword pywincffi.wintypes.objects.WSAEVENT hEventObject:
+        An optional handle identify an associated event object
+        to be reset.
+
+    :rtype: :class:`pywincffi.wintypes.structures.WSANETWORKEVENTS`
+    :return:
+    """
+    input_check("socket", socket, allowed_types=(SOCKET, ))
+
+    ffi, library = dist.load()
+    if hEventObject is not None:
+        input_check("hEventObject", hEventObject, allowed_types=(WSAEVENT, ))
+        hEventObject = wintype_to_cdata(hEventObject)
+    else:
+        hEventObject = ffi.NULL
+
+    lpNetworkEvents = ffi.new("LPWSANETWORKEVENTS")
+    code = library.WSAEnumNetworkEvents(
+        wintype_to_cdata(socket),
+        hEventObject,
+        lpNetworkEvents
+    )
+    error_check("WSAEnumNetworkEvents", code=code, expected=0)
+
+    # TODO use something like WSANETWORKEVENTS.from_cdata here
+    # pylint: disable=protected-access
+    result = WSANETWORKEVENTS()
+    result._cdata[0] = lpNetworkEvents
+    return result

@@ -7,4 +7,4 @@ Provides functions, constants and utilities that wrap functions provided by
 """
 
 from pywincffi.ws2_32.events import (
-    WSAEventSelect, WSACreateEvent, WSAGetLastError)
+    WSAEventSelect, WSACreateEvent, WSAGetLastError, WSAEnumNetworkEvents)
