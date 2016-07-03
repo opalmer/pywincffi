@@ -46,3 +46,24 @@ class TestWSAEventSelect(TestCase):
             event,
             library.FD_WRITE | library.FD_ACCEPT | library.FD_CONNECT
         )
+
+    def test_socket_error(self):
+        def wrapped(*args):
+            _, library = dist.load()
+            return library.SOCKET_ERROR
+
+        with mock_library(WSAEventSelect=wrapped):
+            # Establish a simple socket server and client
+            _, library = dist.load()
+            server, _ = self.create_socket()
+
+            # Setup the event
+            event = WSACreateEvent()
+            self.addCleanup(CloseHandle, event)
+
+            with self.assertRaises(WindowsAPIError):
+                WSAEventSelect(
+                    socket_from_object(server),
+                    event,
+                    library.FD_WRITE | library.FD_ACCEPT | library.FD_CONNECT
+                )
