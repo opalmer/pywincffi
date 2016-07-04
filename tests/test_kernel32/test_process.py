@@ -10,8 +10,12 @@ from pywincffi.exceptions import (
 from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
-    GetProcessId, pid_exists, TerminateProcess, CreateToolhelp32Snapshot,
-    environment_to_string)
+    GetProcessId, TerminateProcess, CreateToolhelp32Snapshot,
+    pid_exists)
+
+# A couple of internal imports.  These are not considered part of the public
+# API but we still need to test them.
+from pywincffi.kernel32.process import environment_to_string, module_name
 from pywincffi.wintypes import HANDLE
 
 try:
@@ -257,7 +261,7 @@ class TestCreateToolhelp32Snapshot(TestCase):
 
 class TestEnvironmentToString(TestCase):
     """
-    Tests for :func:`pywincffi.kernel32.environment_to_string`
+    Tests for :func:`pywincffi.kernel32.process.environment_to_string`
     """
     def test_non_dict_iteritems(self):
         class NonDictIterItems(object):
@@ -292,3 +296,62 @@ class TestEnvironmentToString(TestCase):
     def test_key_cannot_contain_equals(self):
         with self.assertRaisesRegex(InputError, ".*cannot contain the `=`.*"):
             environment_to_string({u"3=4": u""})
+
+
+class TestModuleName(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.process.module_name`
+    """
+    def test_module_name_conversion(self):
+        # NOTE: Use \\ for all paths, the test itself will try the alternate
+        # path separator.
+        cases = {
+            u"C:\\foo.exe": u"C:\\foo.exe",
+            u"'C:\\foo.exe' -c 'hello world'": u"C:\\foo.exe",
+            u'"C:\\foo.exe" -c "hello world"': u"C:\\foo.exe",
+            u'"C:\\foo.exe" -c \'hello world\'': u"C:\\foo.exe",
+            u'"C:\\foo\'s.exe" -c \'hello world\'': u"C:\\foo\'s.exe",
+            u'"C:\\foo.exe -c \'hello world\'': u"C:\\foo.exe",
+            u'"C:\\Some Path\\foo.exe" -c \'hello world\'':
+                u"C:\\Some Path\\foo.exe",
+
+            # The below are what would probably be considered broken
+            # input.  A human should not have trouble picking out the
+            # module name but a computer would since it's just tokenizing
+            # the input.  module_name() itself though will just let it pass
+            # through which should result in the call to CreateProcess
+            # eventually failing (better to fail further down the chain then
+            # have to debug some internal conversion that pywincffi is doing).
+            u'"C:\\Some Path\\foo.exe -c \'hello world\'':
+                u"C:\\Some",
+            u'"C:\\Some Path\\foo.exe -c \"hello world\'':
+                u"C:\\Some Path\\foo.exe -c ",
+        }
+
+        for path, expected in cases.items():
+            # First try it with escaped paths
+            self.assertEqual(module_name(path), expected)
+
+            # Now with / instead of \\
+            self.assertEqual(
+                module_name(path.replace("\\", "/")),
+                expected.replace("\\", "/"))
+
+    def test_failed_to_determine_module_name(self):
+        with self.assertRaises(InputError):
+            module_name(u" ")
+
+
+# class TestCreateProcess(TestCase):
+#     """
+#     Tests for :func:`pywincffi.kernel32.CreateProcess`
+#     """
+#     @classmethod
+#     def NoOpCreateProcess(cls, *args):
+#         pass
+#
+#     def test_lpCommandLine_length_max_command_line(self):
+#         with mock_library(CreateProcess=self.NoOpCreateProcess):
+#             _, library = dist.load()
+#
+#             CreateProcess(u" " * (library.MAX_COMMAND_LINE + 1))

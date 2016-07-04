@@ -15,6 +15,10 @@ documentation for the constant names and their purpose:
     Not all constants may be defined
 """
 
+from io import StringIO
+from token import STRING
+from tokenize import generate_tokens
+
 from six import integer_types, text_type
 
 from pywincffi.core import dist
@@ -86,6 +90,51 @@ def environment_to_string(environment):
         converted.append("%s=%s" % (key, value))
 
     return "\0".join(converted)
+
+
+def module_name(path):
+    """
+    Returns the module name for the given ``path``
+
+        >>> module_name(u"C:\\Python27\\python.exe -c 'print True'")
+        'C:\\Python27\\python.exe'
+        >>> module_name(u"C:\\Program Files (x86)\\Foo\\program.exe -h")
+        'C:\\Program'
+        >>> module_name(u"'C:\\Program Files (x86)\\Foo\\program.exe' -h")
+        'C:\\Program Files (x86)\\Foo\\program.exe'
+
+    This function is used internally by :func:`CreateProcess` to assist in
+    validating input to the ``lpCommandLine`` argument.  When calling
+    :func:`CreateProcess` if ``lpApplicationName`` is not set then
+    ``lpCommandLine``'s module name cannot exceed ``MAX_PATH``.
+
+    :raises TypeError:
+        Raised if ``path`` is not a text type.
+    """
+    # Try to tokenize the input.  In the case of properly quoted strings
+    # the module name should be the first entry.
+    for type_, string, _, _, line in generate_tokens(StringIO(path).readline):
+        if type_ == STRING and line.startswith(string) and line != string:
+            module = string
+            break
+    else:
+        module = path.split(" ", 1)[0]
+
+    if not module:
+        raise InputError(
+            "", None, None,
+            message="Failed to determine module name in %r" % path)
+
+    # Make sure we're just getting the module name
+    # and not any of the original quote characters.
+    quote_characters = ("'", '"')
+    if module[0] in quote_characters:
+        module = module[1:]
+
+    if module[-1] in quote_characters:
+        module = module[:-1]
+
+    return module
 
 
 def pid_exists(pid, wait=0):
@@ -396,8 +445,8 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
          as the parent process.
 
     :raises InputError:
-        Raised if ``lpCommandLine`` is longer than 32768 characters
-        (``MAX_COMMAND_LINE``) or there are other input issues.
+        Raised if ``lpCommandLine`` is too long or there are other input
+        problems.
 
     :return:
         Returns a two part tuple.  The first index will be the resulting
@@ -406,22 +455,27 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
     """
     ffi, library = dist.load()
 
-    if lpApplicationName is not None:
-        input_check(
-            "lpApplicationName", lpApplicationName,
-            allowed_types=(text_type, ))
-        max_command_line_length = library.MAX_COMMAND_LINE
-    else:
-        lpApplicationName = ffi.NULL
-        max_command_line_length = library.MAX_PATH
-
-    # The command line length cannot exceed this value according
-    # to Microsoft's documentation.
-    if len(lpCommandLine) > max_command_line_length:
+    if len(lpCommandLine) > library.MAX_COMMAND_LINE:
         raise InputError(
             "lpCommandLine", lpCommandLine, text_type,
-            message="lpCommandLine's length cannot "
-                    "exceed %s" % max_command_line_length)
+            message="lpCommandLine's length "
+                    "cannot exceed %s" % library.MAX_COMMAND_LINE)
+
+    if lpApplicationName is None:
+        lpApplicationName = ffi.NULL
+        module = module_name(lpCommandLine)
+
+        if len(module) > library.MAX_PATH:
+            raise InputError(
+                "lpCommandLine", lpCommandLine, text_type,
+                message="lpCommandLine's module name length cannot "
+                        "exceed %s if `lpApplicationName` "
+                        "is not set. Module name was %r" % (
+                            library.MAX_PATH, module))
+
+    else:
+        input_check(
+            "lpApplicationName", lpApplicationName, allowed_types=(text_type,))
 
     if lpProcessAttributes is not None:
         input_check(
