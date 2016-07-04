@@ -8,6 +8,15 @@ versions are shown first.
 Versions
 --------
 
+latest
+~~~~~~
+
+Notable enhancements and changes are:
+
+    * Addition of the :func:`pywincffi.kernel32.process.CreateProcess` and
+      several structures.  Implemented for :issue:`69`.
+
+
 0.3.1
 ~~~~~
 
