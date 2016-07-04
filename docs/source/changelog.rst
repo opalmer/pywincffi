@@ -8,13 +8,21 @@ versions are shown first.
 Versions
 --------
 
-latest
-~~~~~~
+0.3.1
+~~~~~
 
 Notable enhancements and changes are:
 
     * :issue:`81` - :func:`pywincffi.user32.synchronization.WSAEventSelect` and
       :func:`pywincffi.user32.synchronization.WSAEnumNetworkEvents`
+    * Removal of the ``pywincffi.core.config`` module in :issue:`107`.  The
+      module was mostly unused internally and was not being used as part of
+      the public APIs either.
+    * Improvements to the :mod:`pywincffi.core.dist` module in :issue:`106`.
+      This change allows pywincffi to add constants, functions, etc to the
+      loaded library when :func:`pywincffi.core.dist.load` is called.  Before
+      certain constants, such as ``ERROR_INVALID_HANDLE``, had to be imported
+      from other modules rather than used directly from the library object.
 
 0.3.0
 ~~~~~
