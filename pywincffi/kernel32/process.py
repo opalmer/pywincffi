@@ -24,7 +24,7 @@ from pywincffi.exceptions import (
 from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.wintypes import (
-    HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO,
+    HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO, PROCESS_INFORMATION,
     wintype_to_cdata)
 
 RESERVED_PIDS = set([0, 4])
@@ -304,6 +304,46 @@ def TerminateProcess(hProcess, uExitCode):
     error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)
 
 
+def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
+    """
+    Takes a snapshot of the specified processes, as well as the heaps,
+    modules, and threads used by these processes.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/ms682489
+
+    :param int dwFlags:
+        The portions of the system to be included in the snapshot.
+
+    :param int th32ProcessID:
+        The process identifier of the process to be included in the snapshot.
+
+    :rtype: :class:`pywincffi.wintypes.HANDLE`
+
+    :return:
+        If the function succeeds,
+        it returns an open handle to the specified snapshot.
+    """
+    input_check("dwFlags", dwFlags, integer_types)
+    input_check("th32ProcessID", th32ProcessID, integer_types)
+    ffi, library = dist.load()
+    process_list = library.CreateToolhelp32Snapshot(
+        ffi.cast("DWORD", dwFlags),
+        ffi.cast("DWORD", th32ProcessID)
+    )
+
+    if process_list == library.INVALID_HANDLE_VALUE:  # pragma: no cover
+        raise WindowsAPIError(
+            "CreateToolhelp32Snapshot", "Invalid Handle",
+            library.INVALID_HANDLE_VALUE,
+            expected_return_code="not %r" % library.INVALID_HANDLE_VALUE)
+
+    error_check("CreateToolhelp32Snapshot")
+
+    return HANDLE(process_list)
+
+
 def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         lpCommandLine, lpApplicationName=None, lpProcessAttributes=None,
         lpThreadAttributes=None, bInheritHandles=True, dwCreationFlags=None,
@@ -359,6 +399,11 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
     :raises InputError:
         Raised if ``lpCommandLine`` is longer than 32768 characters
         (``MAX_COMMAND_LINE``) or there are other input issues.
+
+    :return:
+        Returns a two part tuple.  The first index will be the resulting
+        ``lpCommandLine``.  The second index will be an instance of
+        :class:`pywincffi.wintypes.structures.PROCESS_INFORMATION`
     """
     ffi, library = dist.load()
 
@@ -383,6 +428,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         input_check(
             "lpProcessAttributes", lpProcessAttributes,
             allowed_types=(SECURITY_ATTRIBUTES, ))
+        lpProcessAttributes = wintype_to_cdata(lpProcessAttributes)
     else:
         lpProcessAttributes = ffi.NULL
 
@@ -390,6 +436,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         input_check(
             "lpThreadAttributes", lpThreadAttributes,
             allowed_types=(SECURITY_ATTRIBUTES, ))
+        lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
     else:
         lpThreadAttributes = ffi.NULL
 
@@ -415,50 +462,27 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         lpCurrentDirectory = ffi.NULL
 
     if lpStartupInfo is not None:
-        # TODO add support for STARTUPINFOEX
+        # TODO need to add support for STARTUPINFOEX (undocumented)
         input_check(
             "lpStartupInfo", lpStartupInfo, allowed_types=(STARTUPINFO, ))
+        lpStartupInfo = wintype_to_cdata(lpStartupInfo)
     else:
         lpStartupInfo = ffi.NULL
 
-    # lpProcessInformation = PROCESS_INFORMATION()
-
-
-def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
-    """
-    Takes a snapshot of the specified processes, as well as the heaps,
-    modules, and threads used by these processes.
-
-    .. seealso::
-
-        https://msdn.microsoft.com/en-us/ms682489
-
-    :param int dwFlags:
-        The portions of the system to be included in the snapshot.
-
-    :param int th32ProcessID:
-        The process identifier of the process to be included in the snapshot.
-
-    :rtype: :class:`pywincffi.wintypes.HANDLE`
-
-    :return:
-        If the function succeeds,
-        it returns an open handle to the specified snapshot.
-    """
-    input_check("dwFlags", dwFlags, integer_types)
-    input_check("th32ProcessID", th32ProcessID, integer_types)
-    ffi, library = dist.load()
-    process_list = library.CreateToolhelp32Snapshot(
-        ffi.cast("DWORD", dwFlags),
-        ffi.cast("DWORD", th32ProcessID)
+    lpProcessInformation = PROCESS_INFORMATION()
+    code = library.CreateProcess(
+        lpApplicationName,
+        lpCommandLine,
+        lpProcessAttributes,
+        lpThreadAttributes,
+        bInheritHandles,
+        dwCreationFlags,
+        lpEnvironment,
+        lpCurrentDirectory,
+        lpStartupInfo,
+        wintype_to_cdata(lpProcessInformation)
     )
+    error_check("CreateProcess", code=code, expected=Enums.NON_ZERO)
 
-    if process_list == library.INVALID_HANDLE_VALUE:  # pragma: no cover
-        raise WindowsAPIError(
-            "CreateToolhelp32Snapshot", "Invalid Handle",
-            library.INVALID_HANDLE_VALUE,
-            expected_return_code="not %r" % library.INVALID_HANDLE_VALUE)
-
-    error_check("CreateToolhelp32Snapshot")
-
-    return HANDLE(process_list)
+    # TODO convert lpCommandLine to something more Pythonic
+    return lpCommandLine, lpProcessInformation
