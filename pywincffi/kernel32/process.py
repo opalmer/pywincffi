@@ -28,7 +28,6 @@ from pywincffi.wintypes import (
     wintype_to_cdata)
 
 RESERVED_PIDS = set([0, 4])
-DICTIONARY_TYPES = [dict, ]
 
 
 def environment_to_string(environment):
