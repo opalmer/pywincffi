@@ -261,8 +261,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments
         is 32768.
 
     :param pywincffi.wintypes.STARTUPINFO lpStartupInfo:
-        A :class:`pywincffi.wintypes.STARTUPINFO` instance.  See Microsoft's
-        documentation for additional information.
+        See Microsoft's documentation for additional information.
 
     :keyword str lpApplicationName:
         The name of the module or application to be executed.  This can be
@@ -298,15 +297,14 @@ def CreateProcess(  # pylint: disable=too-many-arguments
          as the parent process.
 
     :raises InputError:
-        Raised if ``lpCommandLine`` is longer than 32768 characters or there
-        are other input issues.
-
+        Raised if ``lpCommandLine`` is longer than 32768 characters
+        (``MAX_COMMAND_LINE``) or there are other input issues.
     """
     ffi, library = dist.load()
 
     # The command line length cannot exceed this value according
     # to Microsoft's documentation.
-    if len(lpCommandLine) > 32768:
+    if len(lpCommandLine) > library.MAX_COMMAND_LINE:
         raise InputError(
             "lpCommandLine", lpCommandLine, text_type,
             message="lpCommandLine's length cannot exceed 32768")

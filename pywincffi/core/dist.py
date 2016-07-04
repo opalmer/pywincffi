@@ -86,7 +86,15 @@ class LibraryWrapper(object):  # pylint: disable=too-few-public-methods
     _RUNTIME_CONSTANTS = dict(
         # Defined here because cffi can't handle negative values
         # in constants yet.
-        INVALID_HANDLE_VALUE=-1
+        INVALID_HANDLE_VALUE=-1,
+
+        # The maximum length of the lpCommandLine input to a CreateProcess
+        # call:
+        #  https://msdn.microsoft.com/en-us/library/ms682425
+        # Technically, this is not a Windows constant.  It's something that
+        # pywincffi defines for ease of use and to limit the possibility of
+        # typos.
+        MAX_COMMAND_LINE=32768
     )
 
     def __init__(self, library):
