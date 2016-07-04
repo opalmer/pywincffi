@@ -74,7 +74,6 @@ typedef struct _WSANETWORKEVENTS {
   int  iErrorCode[...];
 } WSANETWORKEVENTS, *LPWSANETWORKEVENTS;
 
-
 // https://msdn.microsoft.com/en-us/library/ms684873
 typedef struct _PROCESS_INFORMATION {
   HANDLE hProcess;
