@@ -18,15 +18,75 @@ documentation for the constant names and their purpose:
 from six import integer_types, text_type
 
 from pywincffi.core import dist
-from pywincffi.core.checks import NoneType, Enums, input_check, error_check
+from pywincffi.core.checks import Enums, input_check, error_check
 from pywincffi.exceptions import (
     WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.wintypes import (
-    HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO, wintype_to_cdata)
+    HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO,
+    wintype_to_cdata)
 
 RESERVED_PIDS = set([0, 4])
+DICTIONARY_TYPES = [dict, ]
+
+
+def environment_to_string(environment):
+    """
+    This function is used internally by :func:`CreateProcess` to convert
+    the input to ``lpEnvironment`` to a string which the underlying C API
+    call will understand.
+
+    >>> from pywincffi.kernel32 import environment_to_string
+    >>> environment_to_string({"A": "a", "B": "b"})
+    'A=a\x00B=b'
+
+    :param environment:
+        A dictionary or dictionary like object to convert to a string.
+
+    :raises InputError:
+        Raised if we cannot convert ``environment`` to a string.  This can
+        happen if:
+
+            * ``environment`` is not a dictionary like object.
+            * Not all keys and values in the environment are strings (
+              str in Python 3.x, unicode in Python 2.x)
+            * One or more of the keys contains the `=` symbol.
+    """
+    try:
+        items = environment.iteritems
+    except AttributeError:
+        try:
+            items = environment.items
+        except AttributeError:
+            raise InputError(
+                "environment", environment, None,
+                message="Expected a dictionary like object for `environment`")
+
+    converted = []
+    for key, value in items():
+        if not isinstance(key, text_type):
+            raise InputError(
+                "environment key %s" % key, type(key),
+                expected_types=(text_type, ))
+
+        if not isinstance(value, text_type):
+            raise InputError(
+                "environment value %s (key: %r)" % (value, key), type(value),
+                expected_types=(text_type,))
+
+        # From Microsoft's documentation on `lpEnvironment`:
+        #   Because the equal sign is used as a separator, it must not be used
+        #   in the name of an environment variable.
+        if "=" in key:
+            raise InputError(
+                key, key, None,
+                message="Environment keys cannot contain the `=` symbol.  "
+                        "Offending key: %r" % key)
+
+        converted.append("%s=%s" % (key, value))
+
+    return "\0".join(converted)
 
 
 def pid_exists(pid, wait=0):
@@ -244,7 +304,7 @@ def TerminateProcess(hProcess, uExitCode):
     error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)
 
 
-def CreateProcess(  # pylint: disable=too-many-arguments
+def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         lpCommandLine, lpApplicationName=None, lpProcessAttributes=None,
         lpThreadAttributes=None, bInheritHandles=True, dwCreationFlags=None,
         lpEnvironment=None, lpCurrentDirectory=None, lpStartupInfo=None):
@@ -302,66 +362,66 @@ def CreateProcess(  # pylint: disable=too-many-arguments
     """
     ffi, library = dist.load()
 
+    if lpApplicationName is not None:
+        input_check(
+            "lpApplicationName", lpApplicationName,
+            allowed_types=(text_type, ))
+        max_command_line_length = library.MAX_COMMAND_LINE
+    else:
+        lpApplicationName = ffi.NULL
+        max_command_line_length = library.MAX_PATH
+
     # The command line length cannot exceed this value according
     # to Microsoft's documentation.
-    if len(lpCommandLine) > library.MAX_COMMAND_LINE:
+    if len(lpCommandLine) > max_command_line_length:
         raise InputError(
             "lpCommandLine", lpCommandLine, text_type,
-            message="lpCommandLine's length cannot exceed 32768")
+            message="lpCommandLine's length cannot "
+                    "exceed %s" % max_command_line_length)
 
-    input_check(
-        "lpApplicationName", lpApplicationName,
-        allowed_types=(NoneType, text_type))
-    input_check(
-        "lpStartupInfo", lpStartupInfo,
-        allowed_types=(NoneType, STARTUPINFO))
-    input_check(
-        "lpProcessAttributes", lpProcessAttributes,
-        allowed_types=(NoneType, SECURITY_ATTRIBUTES))
-    input_check(
-        "lpThreadAttributes", lpThreadAttributes,
-        allowed_types=(NoneType, SECURITY_ATTRIBUTES))
-    input_check(
-        "bInheritHandles", bInheritHandles,
-        allowed_values=(True, False))
-    input_check(
-        "dwCreationFlags", dwCreationFlags,
-        allowed_types=(NoneType, integer_types))
-    input_check(
-        "lpEnvironment", lpEnvironment,
-        allowed_types=(NoneType, dict))
-    input_check(
-        "lpCurrentDirectory", lpCurrentDirectory,
-        allowed_types=(NoneType, text_type))
-
-    if lpApplicationName is None:
-        lpApplicationName = ffi.NULL
-
-    if lpProcessAttributes is None:
+    if lpProcessAttributes is not None:
+        input_check(
+            "lpProcessAttributes", lpProcessAttributes,
+            allowed_types=(SECURITY_ATTRIBUTES, ))
+    else:
         lpProcessAttributes = ffi.NULL
-    else:
-        lpProcessAttributes = wintype_to_cdata(lpThreadAttributes)
 
-    if lpThreadAttributes is None:
-        lpThreadAttributes = ffi.NULL
+    if lpThreadAttributes is not None:
+        input_check(
+            "lpThreadAttributes", lpThreadAttributes,
+            allowed_types=(SECURITY_ATTRIBUTES, ))
     else:
-        lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
+        lpThreadAttributes = ffi.NULL
+
+    input_check(
+        "bInheritHandles", bInheritHandles, allowed_values=(True, False))
 
     if dwCreationFlags is None:
         dwCreationFlags = library.NORMAL_PRIORITY_CLASS
 
-    if lpEnvironment is None:
+    input_check(
+        "dwCreationFlags", dwCreationFlags, allowed_types=(integer_types, ))
+
+    if lpEnvironment is not None:
+        lpEnvironment = environment_to_string(lpEnvironment)
+    else:
         lpEnvironment = ffi.NULL
 
-    # TODO: conversion to Microsoft's format
-    if isinstance(lpEnvironment, dict):
-        pass
-
-    if lpCurrentDirectory is None:
+    if lpCurrentDirectory is not None:
+        input_check(
+            "lpCurrentDirectory", lpCurrentDirectory,
+            allowed_types=(text_type, ))
+    else:
         lpCurrentDirectory = ffi.NULL
 
-    # bInheritHandles = ffi.cast("BOOL", bInheritHandles)
-    # dwCreationFlags = ffi.cast("DWORD", dwCreationFlags)
+    if lpStartupInfo is not None:
+        # TODO add support for STARTUPINFOEX
+        input_check(
+            "lpStartupInfo", lpStartupInfo, allowed_types=(STARTUPINFO, ))
+    else:
+        lpStartupInfo = ffi.NULL
+
+    # lpProcessInformation = PROCESS_INFORMATION()
 
 
 def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
