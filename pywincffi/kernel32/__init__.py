@@ -19,7 +19,8 @@ from pywincffi.kernel32.pipe import (
     CreatePipe, PeekNamedPipe, PeekNamedPipeResult, SetNamedPipeHandleState)
 from pywincffi.kernel32.process import (
     GetProcessId, GetCurrentProcess, OpenProcess, GetExitCodeProcess,
-    pid_exists, TerminateProcess, CreateToolhelp32Snapshot)
+    pid_exists, TerminateProcess, CreateToolhelp32Snapshot,
+    CreateProcess, environment_to_string)
 from pywincffi.kernel32.events import CreateEvent, OpenEvent, ResetEvent
 from pywincffi.kernel32.comms import ClearCommError
 from pywincffi.kernel32.synchronization import WaitForSingleObject
