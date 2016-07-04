@@ -5,11 +5,13 @@ from mock import patch
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
-from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
+from pywincffi.exceptions import (
+    WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
-    GetProcessId, pid_exists, TerminateProcess, CreateToolhelp32Snapshot)
+    GetProcessId, pid_exists, TerminateProcess, CreateToolhelp32Snapshot,
+    environment_to_string)
 from pywincffi.wintypes import HANDLE
 
 try:
@@ -251,3 +253,42 @@ class TestCreateToolhelp32Snapshot(TestCase):
 
         handle = CreateToolhelp32Snapshot(library.TH32CS_SNAPPROCESS, 0)
         self.addCleanup(CloseHandle, handle)
+
+
+class TestEnvironmentToString(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.environment_to_string`
+    """
+    def test_non_dict_iteritems(self):
+        class NonDictIterItems(object):
+            def iteritems(self):
+                yield (u"a", u"b")
+                yield (u"c", u"d")
+
+        self.assertEqual(
+            environment_to_string(NonDictIterItems()),
+            u"a=b\0c=d"
+        )
+
+    def test_non_dict_items(self):
+        class NonDictItems(object):
+            def items(self):
+                yield (u"e", u"f")
+                yield (u"g", u"h")
+
+        self.assertEqual(
+            environment_to_string(NonDictItems()),
+            u"e=f\0g=h"
+        )
+
+    def test_type_check_for_environment_key(self):
+        with self.assertRaisesRegex(InputError, ".*for environment key 1.*"):
+            environment_to_string({1: 1})
+
+    def test_type_check_for_environment_value(self):
+        with self.assertRaisesRegex(InputError, ".*environment value 2.*"):
+            environment_to_string({u"2": 2})
+
+    def test_key_cannot_contain_equals(self):
+        with self.assertRaisesRegex(InputError, ".*cannot contain the `=`.*"):
+            environment_to_string({u"3=4": u""})
