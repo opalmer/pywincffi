@@ -128,7 +128,7 @@ class TestCase(_TestCase):
         errno, message = ffi.getwinerror()
         self.assertEqual(
             errno, 0,
-            msg="Unhandled error: %r.  Message: %r" % (errno, message))
+            msg="Unhandled error.  Errno: %r.  Message: %r" % (errno, message))
 
     @classmethod
     def internet_connected(cls):
