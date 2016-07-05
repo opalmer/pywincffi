@@ -1,16 +1,18 @@
 import ctypes
 import os
+import sys
 
 from mock import patch
+from six import text_type
 
 from pywincffi.core import dist
-from pywincffi.dev.testutil import TestCase
+from pywincffi.dev.testutil import TestCase, mock_library
 from pywincffi.exceptions import (
     WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32 import process as k32process
 from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
-    GetProcessId, TerminateProcess, CreateToolhelp32Snapshot,
+    GetProcessId, TerminateProcess, CreateToolhelp32Snapshot, CreateProcess,
     pid_exists)
 
 # A couple of internal imports.  These are not considered part of the public
@@ -342,16 +344,43 @@ class TestModuleName(TestCase):
             module_name(u" ")
 
 
-# class TestCreateProcess(TestCase):
-#     """
-#     Tests for :func:`pywincffi.kernel32.CreateProcess`
-#     """
-#     @classmethod
-#     def NoOpCreateProcess(cls, *args):
-#         pass
-#
-#     def test_lpCommandLine_length_max_command_line(self):
-#         with mock_library(CreateProcess=self.NoOpCreateProcess):
-#             _, library = dist.load()
-#
-#             CreateProcess(u" " * (library.MAX_COMMAND_LINE + 1))
+class TestCreateProcess(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.CreateProcess`
+    """
+    @classmethod
+    def NoOpCreateProcess(cls, *args):
+        pass
+
+    def test_lpCommandLine_length_max_command_line(self):
+        with mock_library(CreateProcess=self.NoOpCreateProcess):
+            _, library = dist.load()
+
+            match = ".*cannot exceed %s.*" % library.MAX_COMMAND_LINE
+            with self.assertRaisesRegex(InputError, match):
+                CreateProcess(u" " * (library.MAX_COMMAND_LINE + 1))
+
+    def test_lpCommandLine_length_max_path(self):
+        with mock_library(CreateProcess=self.NoOpCreateProcess):
+            _, library = dist.load()
+
+            match = ".*cannot exceed %s.*" % library.MAX_PATH
+            with self.assertRaisesRegex(InputError, match):
+                CreateProcess(
+                    u"'%s' arg1" % self.random_string(library.MAX_PATH + 1))
+
+    def test_basic_call(self):
+        value = text_type(self.random_string(6))
+        environment = {u"KEY": value}
+        command = text_type("'%s' -c 'import os'" % sys.executable)
+
+        try:
+            result = CreateProcess(
+                command, lpApplicationName=text_type(sys.executable),
+                # lpEnvironment=environment
+            )
+        except WindowsAPIError:
+            pass
+            # ffi, _ = dist.load()
+            # errno, error_message = ffi.getwinerror()
+            # self.fail()

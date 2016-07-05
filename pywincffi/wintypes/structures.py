@@ -100,7 +100,7 @@ class PROCESS_INFORMATION(CFFICDataWrapper):
     """
     def __init__(self):
         ffi, _ = dist.load()
-        super(PROCESS_INFORMATION, self).__init__("PROCESS_INFORMATION*", ffi)
+        super(PROCESS_INFORMATION, self).__init__("PROCESS_INFORMATION *", ffi)
 
 
 # pylint: disable=too-few-public-methods
@@ -111,4 +111,4 @@ class STARTUPINFO(CFFICDataWrapper):
     """
     def __init__(self):
         ffi, _ = dist.load()
-        super(STARTUPINFO, self).__init__("STARTUPINFO*", ffi)
+        super(STARTUPINFO, self).__init__("STARTUPINFO *", ffi)

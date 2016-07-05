@@ -112,6 +112,18 @@ class TestCase(_TestCase):
             self._kernel32.SetLastError(0)
             self._ws2_32.WSASetLastError(0)
 
+        self.addCleanup(self.check_error)
+
+    def check_error(self):
+        """Causes"""
+        if os.name != "nt":
+            return
+
+        ffi, _ = dist.load()
+        errno, message = ffi.getwinerror()
+        if errno != 0:
+            self.fail("Error %r.  Message: %r" % (errno, message))
+
     @classmethod
     def internet_connected(cls):
         """
