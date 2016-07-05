@@ -8,6 +8,12 @@ versions are shown first.
 Versions
 --------
 
+latest
+~~~~~~
+
+Notable enhancements and changes are:
+    * Flaky test fixes in :issue:`109`
+
 0.3.1
 ~~~~~
 
