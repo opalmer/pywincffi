@@ -82,6 +82,8 @@ class TestCase(_TestCase):
     _ws2_32 = None
 
     def setUp(self):  # pragma: no cover
+        self.addCleanup(self.unhandled_error_check)
+
         if self.REQUIRES_INTERNET and not self.internet_connected():
             if os.environ.get("CI"):
                 self.fail(
@@ -111,6 +113,22 @@ class TestCase(_TestCase):
             # test does not causes an error to be raised in another.
             self._kernel32.SetLastError(0)
             self._ws2_32.WSASetLastError(0)
+
+    def unhandled_error_check(self):
+        """
+        A cleanup step which ensures that there are not any uncaught API
+        errors left over.  Unhandled errors could be a sign of an unhandled
+        testing artifact, improper API usage or other problem.  In any case,
+        unhandled errors are often a source of test flake.
+        """
+        if os.name != "nt":
+            return
+
+        ffi, _ = dist.load()
+        errno, message = ffi.getwinerror()
+        self.assertEqual(
+            errno, 0,
+            msg="Unhandled error: %r.  Message: %r" % (errno, message))
 
     @classmethod
     def internet_connected(cls):
