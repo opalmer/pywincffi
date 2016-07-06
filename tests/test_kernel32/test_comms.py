@@ -28,6 +28,7 @@ class TestClearCommError(TestCase):
                 code, _ = ffi.getwinerror()
                 if code != library.ERROR_FILE_NOT_FOUND:
                     self.fail("Unexpected Windows API error: %s" % code)
+                self.SetLastError(0)  # cleanup after the failure
 
         if not found_com_device:
             self.skipTest("No COM devices present.")
