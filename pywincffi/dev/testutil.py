@@ -182,7 +182,7 @@ class TestCase(_TestCase):
         self.assertIsNotNone(
             self.ws2_32, "setUp() failed: missing ws2_32")
 
-        # self.addCleanup(self.unhandled_error_check)
+        self.addCleanup(self.unhandled_error_check)
 
         # Always reset the last error to 0 between tests.  This ensures
         # that if an unhandled API error occurs it won't impact the
