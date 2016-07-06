@@ -39,6 +39,7 @@ class TestOpenProcess(TestCase):
             OpenProcess(0, False, os.getpid())
 
         self.assertEqual(error.exception.errno, 5)
+        self.SetLastError(0)
 
     def test_get_process_id_current_process(self):
         # We should be able to access the pid of the process
