@@ -39,8 +39,8 @@ class TestWSAGetLastError(TestCase):
     Tests for ``pywincffi.ws2_32.events.WSAGetLastError``
     """
     def test_get_last_error(self):
-        self._ws2_32.WSASetLastError(4242)
-        self.addCleanup(self._ws2_32.WSASetLastError, 0)
+        self.addCleanup(self.WSASetLastError, 0)
+        self.WSASetLastError(4242)
         self.assertEqual(WSAGetLastError(), 4242)
 
 
