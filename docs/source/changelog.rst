@@ -12,7 +12,14 @@ latest
 ~~~~~~
 
 Notable enhancements and changes are:
-    * Flaky test fixes in :issue:`109`
+    * Reworked the test setup steps so they're more consistent.
+    * Added a cleanup step to the tests to track down cases that were not
+      resetting or testing the Windows API error code.
+    * Cleaned up the setUp step in the base test case.
+    * Added error constant ``ERROR_INVALID_HANDLE``.
+    * :func:`pywincffi.kernel32.pid_exists` will no longer result in the
+      Windows API error code being set to a non-zero value after exiting the
+      function.
 
 0.3.1
 ~~~~~
