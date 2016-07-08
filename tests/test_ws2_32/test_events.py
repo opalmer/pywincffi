@@ -103,23 +103,6 @@ class TestWSAEnumNetworkEvents(EventsCase):
         self.assertIsInstance(events, LPWSANETWORKEVENTS)
         self.assertEqual(events.iErrorCode, tuple([0] * library.FD_MAX_EVENTS))
 
-    def test_triggers_accept_event(self):
-        _, library = dist.load()
-        sock_server, sock_client = self.create_socket_pair()
-        sock_server_wintype = socket_from_object(sock_server)
-
-        # Listen on one socket and then connect with another.  This should
-        # cause an FD_ACCEPT network event to occur.
-        sock_server.bind(("127.0.0.1", 0))
-        sock_server.listen(0)
-        _, port = sock_server.getsockname()
-        sock_client.connect(("127.0.0.1", port))
-
-        event = self.create_wsaevent()
-        WSAEventSelect(sock_server_wintype, event, library.FD_ACCEPT)
-        events = WSAEnumNetworkEvents(sock_server_wintype)
-        self.assertEqual(events.lNetworkEvents, library.FD_ACCEPT)
-
     def test_triggers_write_event(self):
         _, library = dist.load()
         sock_server, sock_client = self.create_socket_pair()
