@@ -1,9 +1,9 @@
 import ctypes
 import os
-import sys
+# import sys
 
 from mock import patch
-from six import text_type
+# from six import text_type
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase, mock_library
@@ -370,18 +370,18 @@ class TestCreateProcess(TestCase):
                 CreateProcess(
                     u"'%s' arg1" % self.random_string(library.MAX_PATH + 1))
 
-    def test_basic_call(self):
-        value = text_type(self.random_string(6))
-        environment = {u"KEY": value}
-        command = text_type("'%s' -c 'import os'" % sys.executable)
-
-        try:
-            result = CreateProcess(
-                command, lpApplicationName=text_type(sys.executable),
-                # lpEnvironment=environment
-            )
-        except WindowsAPIError:
-            pass
-            # ffi, _ = dist.load()
-            # errno, error_message = ffi.getwinerror()
-            # self.fail()
+    # def test_basic_call(self):
+    #     value = text_type(self.random_string(6))
+    #     environment = {u"KEY": value}
+    #     command = text_type("'%s' -c 'import os'" % sys.executable)
+    #
+    #     try:
+    #         result = CreateProcess(
+    #             command, lpApplicationName=text_type(sys.executable),
+    #             # lpEnvironment=environment
+    #         )
+    #     except WindowsAPIError:
+    #         pass
+    #         # ffi, _ = dist.load()
+    #         # errno, error_message = ffi.getwinerror()
+    #         # self.fail()
