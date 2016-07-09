@@ -120,3 +120,22 @@ class TestWSAEnumNetworkEvents(EventsCase):
         WSAEventSelect(sock_client_wintype, event, library.FD_WRITE)
         events = WSAEnumNetworkEvents(sock_client_wintype)
         self.assertEqual(events.lNetworkEvents, library.FD_WRITE)
+
+    def test_resets_event(self):
+        _, library = dist.load()
+        sock_server, sock_client = self.create_socket_pair()
+        sock_client_wintype = socket_from_object(sock_client)
+
+        # Listen on one socket and then connect with another.  This should
+        # cause an FD_ACCEPT network event to occur.
+        sock_server.bind(("127.0.0.1", 0))
+        sock_server.listen(0)
+        _, port = sock_server.getsockname()
+        sock_client.connect(("127.0.0.1", port))
+        sock_client.send(b"Hello world")
+
+        waiter = self.create_wsaevent()
+        event = self.create_wsaevent()
+        WSAEventSelect(sock_client_wintype, event, library.FD_WRITE)
+        events = WSAEnumNetworkEvents(sock_client_wintype, hEventObject=waiter)
+        self.assertEqual(events.lNetworkEvents, library.FD_WRITE)
