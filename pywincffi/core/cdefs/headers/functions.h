@@ -268,6 +268,7 @@ BOOL WINAPI CreateProcess(
   _In_opt_    LPCTSTR               lpCurrentDirectory,
   _In_        LPSTARTUPINFO         lpStartupInfo,
   _Out_       LPPROCESS_INFORMATION lpProcessInformation
+);
 
 // Used internally to reset the last error to 0
 // in cases where pywincffi is the cause of the
