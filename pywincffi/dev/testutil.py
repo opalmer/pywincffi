@@ -131,7 +131,7 @@ class TestCase(_TestCase):
 
                     finally:
                         sock.close()
-                else:
+                else:  # pragma: no cover
                     SharedState.HAS_INTERNET = False
             finally:
                 socket.setdefaulttimeout(original_timeout)
@@ -152,7 +152,9 @@ class TestCase(_TestCase):
                 SharedState.ffi = ffi
                 SharedState.kernel32 = ffi.dlopen("kernel32")
                 SharedState.ws2_32 = ffi.dlopen("ws2_32")
-            except Exception as error:  # pylint: disable=broad-except
+
+            # pylint: disable=broad-except
+            except Exception as error:  # pragma: no cover
                 if os.name == "nt":
                     # pylint: disable=redefined-variable-type
                     SharedState.ffi = error
