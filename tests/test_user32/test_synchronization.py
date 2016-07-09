@@ -63,3 +63,4 @@ class TestMsgWaitForMultipleObjects(TestCase):
         # ERROR_INVALID_PARAMETER to be raised via WindowsAPIError.
         self.assertEqual(
             error.exception.errno, library.ERROR_INVALID_PARAMETER)
+        self.SetLastError(0)

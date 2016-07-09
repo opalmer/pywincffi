@@ -63,12 +63,14 @@ def pid_exists(pid, wait=0):
         # the process running this code does not have the
         # rights to query the other process's information.
         if error.errno == library.ERROR_ACCESS_DENIED:
+            library.SetLastError(0)
             return True
 
         # Sometimes the PID we're asking about no longer exists
         # in the stack anywhere so we'll get ERROR_INVALID_PARAMETER
         # so there's not any reason to continue further.
         if error.errno == library.ERROR_INVALID_PARAMETER:
+            library.SetLastError(0)
             return False
 
         raise

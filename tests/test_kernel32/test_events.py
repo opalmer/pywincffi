@@ -65,6 +65,10 @@ class TestCreateEvent(TestCase):
         handle2 = CreateEvent(False, False, lpName=name)
         self.addCleanup(CloseHandle, handle2)
 
+        _, library = dist.load()
+        self.assertEqual(self.GetLastError()[0], library.ERROR_ALREADY_EXISTS)
+        self.SetLastError(0)
+
     def test_raises_non_error_already_exists(self):
         def raise_(*_):
             raise WindowsAPIError("CreateEvent", "", -1)
