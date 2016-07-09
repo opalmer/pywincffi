@@ -62,6 +62,7 @@ def WSACreateEvent():
 
         https://msdn.microsoft.com/en-us/library/ms741561
 
+    :rtype: :class:`pywincffi.wintypes.objects.WSAEVENT`
     :returns:
         Returns a handle to a new event object.
     """
@@ -73,7 +74,7 @@ def WSACreateEvent():
         raise WindowsAPIError(
             "WSACreateEvent", "Socket error %d" % errno, errno)
 
-    return HANDLE(event)
+    return WSAEVENT(event)
 
 
 def WSAGetLastError():
