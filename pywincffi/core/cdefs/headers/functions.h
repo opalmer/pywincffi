@@ -252,7 +252,6 @@ int WSAEnumNetworkEvents(
 HANDLE handle_from_fd(int);
 BOOL wsa_invalid_event(WSAEVENT);
 
-
 ///////////////////////
 // Processes
 ///////////////////////
@@ -269,4 +268,11 @@ BOOL WINAPI CreateProcess(
   _In_opt_    LPCTSTR               lpCurrentDirectory,
   _In_        LPSTARTUPINFO         lpStartupInfo,
   _Out_       LPPROCESS_INFORMATION lpProcessInformation
+
+// Used internally to reset the last error to 0
+// in cases where pywincffi is the cause of the
+// error and we choose to ignore the error.
+// https://msdn.microsoft.com/en-us/ms680627
+void WINAPI SetLastError(
+  _In_ DWORD dwErrCode
 );

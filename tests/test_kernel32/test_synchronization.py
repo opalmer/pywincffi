@@ -23,6 +23,9 @@ class TestWaitForSingleObject(TestCase):
             WaitForSingleObject(hProcess, 3)
             self.assertEqual(exec_.code, library.WAIT_FAILED)
 
+        self.assertEqual(self.GetLastError()[0], library.ERROR_ACCESS_DENIED)
+        self.SetLastError(0)
+
     def test_wait_on_running_process(self):
         process = self.create_python_process("import time; time.sleep(1)")
         _, library = dist.load()

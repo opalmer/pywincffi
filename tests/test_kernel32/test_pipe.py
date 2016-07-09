@@ -34,10 +34,17 @@ class CreatePipeTest(TestCase):
         with self.assertRaises(WindowsAPIError):
             CloseHandle(writer)
 
+        _, library = dist.load()
+        self.assertEqual(self.GetLastError()[0], library.ERROR_INVALID_HANDLE)
+        self.SetLastError(0)
+
         # Second attempt should fail
         CloseHandle(reader)
         with self.assertRaises(WindowsAPIError):
             CloseHandle(reader)
+
+        self.assertEqual(self.GetLastError()[0], library.ERROR_INVALID_HANDLE)
+        self.SetLastError(0)
 
 
 class AnonymousPipeReadWriteTest(PipeBaseTestCase):
@@ -135,6 +142,10 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
         with self.assertRaises(WindowsAPIError):
             self._set_mode(lib.PIPE_READMODE_MESSAGE)
 
+        self.assertEqual(
+            self.GetLastError()[0], lib.ERROR_INVALID_PARAMETER)
+        self.SetLastError(0)
+
     def test_mode_wait(self):
         _, lib = dist.load()
         self._set_mode(lib.PIPE_WAIT)
@@ -155,6 +166,11 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
         with self.assertRaises(WindowsAPIError):
             self._set_max_collection_count(10)
 
+        _, library = dist.load()
+        self.assertEqual(
+            self.GetLastError()[0], library.ERROR_INVALID_PARAMETER)
+        self.SetLastError(0)
+
     def _set_collect_data_timeout(self, timeout):
         reader, _ = self.create_anonymous_pipes()
         SetNamedPipeHandleState(reader, lpCollectDataTimeout=timeout)
@@ -166,3 +182,8 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
         # should fail: only supported with named pipes
         with self.assertRaises(WindowsAPIError):
             self._set_collect_data_timeout(500)
+
+        _, library = dist.load()
+        self.assertEqual(
+            self.GetLastError()[0], library.ERROR_INVALID_PARAMETER)
+        self.SetLastError(0)
