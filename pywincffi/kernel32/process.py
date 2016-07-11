@@ -29,7 +29,7 @@ from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.wintypes import (
     HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO, PROCESS_INFORMATION,
-    wintype_to_cdata)
+    wintype_to_cdata, text_to_wchar)
 
 RESERVED_PIDS = set([0, 4])
 
@@ -408,10 +408,17 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
 
     :param str lpCommandLine:
         The command line to be executed.  The maximum length of this parameter
-        is 32768.
+        is 32768.  If no value is provided for ``lpApplicationName`` then
+        the module name portion of ``lpCommandLine`` cannot exceed
+        ``MAX_PATH``.
 
-    :param pywincffi.wintypes.STARTUPINFO lpStartupInfo:
+    :keyword pywincffi.wintypes.STARTUPINFO lpStartupInfo:
         See Microsoft's documentation for additional information.
+
+        .. warning::
+
+            The STARTUPINFOEX structure is not currently supported
+            for this input.
 
     :keyword str lpApplicationName:
         The name of the module or application to be executed.  This can be
@@ -442,6 +449,11 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         The environment for the new process.  By default the the process
         will be created with the same environment as the parent process.
 
+        .. note::
+
+            All keys and values in the environment must be either unicode
+            (Python 2) or strings (Python 3).
+
     :keyword str lpCurrentDirectory:
         The full path to the current directory for the process.  If not
          provided then the process will have the same working directory
@@ -466,8 +478,12 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
 
     if lpApplicationName is None:
         lpApplicationName = ffi.NULL
-        module = module_name(lpCommandLine)
 
+        # If lpApplication name is not set then lpCommandLine's
+        # module name cannot exceed MAX_PATH.  Rather than letting
+        # this hit the Windows API and possibly fail we're check
+        # before hand so we can provide a better exception.
+        module = module_name(text_type(lpCommandLine))
         if len(module) > library.MAX_PATH:
             raise InputError(
                 "lpCommandLine", lpCommandLine, text_type,
@@ -475,7 +491,6 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
                         "exceed %s if `lpApplicationName` "
                         "is not set. Module name was %r" % (
                             library.MAX_PATH, module))
-
     else:
         input_check(
             "lpApplicationName", lpApplicationName, allowed_types=(text_type,))
@@ -507,7 +522,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         "dwCreationFlags", dwCreationFlags, allowed_types=(integer_types, ))
 
     if lpEnvironment is not None:
-        lpEnvironment = environment_to_string(lpEnvironment)
+        lpEnvironment = text_to_wchar(environment_to_string(lpEnvironment))
     else:
         lpEnvironment = ffi.NULL
 
@@ -542,4 +557,5 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
     error_check("CreateProcess", code=code, expected=Enums.NON_ZERO)
 
     # TODO convert lpCommandLine to something more Pythonic
+    # TODO return namedtuple
     return lpCommandLine, lpProcessInformation
