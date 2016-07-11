@@ -1,9 +1,9 @@
 import ctypes
 import os
-# import sys
+import sys
 
 from mock import patch
-# from six import text_type
+from six import text_type
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase, mock_library
@@ -18,7 +18,7 @@ from pywincffi.kernel32 import (
 # A couple of internal imports.  These are not considered part of the public
 # API but we still need to test them.
 from pywincffi.kernel32.process import environment_to_string, module_name
-from pywincffi.wintypes import HANDLE
+from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO
 
 try:
     IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -370,18 +370,35 @@ class TestCreateProcess(TestCase):
                 CreateProcess(
                     u"'%s' arg1" % self.random_string(library.MAX_PATH + 1))
 
-    # def test_basic_call(self):
-    #     value = text_type(self.random_string(6))
-    #     environment = {u"KEY": value}
-    #     command = text_type("'%s' -c 'import os'" % sys.executable)
-    #
-    #     try:
-    #         result = CreateProcess(
-    #             command, lpApplicationName=text_type(sys.executable),
-    #             # lpEnvironment=environment
-    #         )
-    #     except WindowsAPIError:
-    #         pass
-    #         # ffi, _ = dist.load()
-    #         # errno, error_message = ffi.getwinerror()
-    #         # self.fail()
+    # TODO needs to test output of process
+    def test_basic_call(self):
+        _, library = dist.load()
+        lpApplicationName = None
+        lpCommandLine = text_type(
+            '%s -c "\'*\' * 10000; import time;"' % sys.executable)
+        lpProcessAttributes = SECURITY_ATTRIBUTES()
+        lpThreadAttributes = SECURITY_ATTRIBUTES()
+        bInheritHandles = True
+        dwCreationFlags = \
+            library.NORMAL_PRIORITY_CLASS | library.CREATE_UNICODE_ENVIRONMENT
+
+        # TODO: test a non-system env
+        # environ = dict(
+        #     (text_type(key), text_type(value))
+        #     for key, value in os.environ.items())
+
+        lpEnvironment = None
+        lpCurrentDirectory = text_type(os.getcwd())
+        lpStartupInfo = STARTUPINFO()
+
+        CreateProcess(
+            lpCommandLine,
+            lpApplicationName=lpApplicationName,
+            lpProcessAttributes=lpProcessAttributes,
+            lpThreadAttributes=lpThreadAttributes,
+            bInheritHandles=bInheritHandles,
+            dwCreationFlags=dwCreationFlags,
+            lpEnvironment=lpEnvironment,
+            lpCurrentDirectory=lpCurrentDirectory,
+            lpStartupInfo=lpStartupInfo
+        )
