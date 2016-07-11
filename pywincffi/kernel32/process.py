@@ -40,7 +40,7 @@ def environment_to_string(environment):
     the input to ``lpEnvironment`` to a string which the underlying C API
     call will understand.
 
-    >>> from pywincffi.kernel32 import environment_to_string
+    >>> from pywincffi.kernel32.process import environment_to_string
     >>> environment_to_string({"A": "a", "B": "b"})
     'A=a\x00B=b'
 
@@ -89,7 +89,7 @@ def environment_to_string(environment):
 
         converted.append("%s=%s" % (key, value))
 
-    return "\0".join(converted)
+    return text_type("\0".join(converted))
 
 
 def module_name(path):
@@ -435,7 +435,8 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
 
     :keyword int dwCreationFlags:
         Controls the priority class and creation of the process.  By default
-        the process will flag will default to ``NORMAL_PRIORITY_CLASS``
+        the process will flag will default to
+        ``NORMAL_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT``
 
     :keyword dict lpEnvironment:
         The environment for the new process.  By default the the process
@@ -499,7 +500,8 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         "bInheritHandles", bInheritHandles, allowed_values=(True, False))
 
     if dwCreationFlags is None:
-        dwCreationFlags = library.NORMAL_PRIORITY_CLASS
+        dwCreationFlags = \
+            library.NORMAL_PRIORITY_CLASS | library.CREATE_UNICODE_ENVIRONMENT
 
     input_check(
         "dwCreationFlags", dwCreationFlags, allowed_types=(integer_types, ))
