@@ -33,6 +33,12 @@ pylint tests --reports no ^
 IF %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 ECHO ========================================================================================
+ECHO setup.py bdist_wheel
+ECHO ========================================================================================
+python setup.py bdist_wheel > NUL
+IF %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+ECHO ========================================================================================
 ECHO sphinx-build -q -b html -W -E -a -d docs/build/doctrees docs/source docs/build/html
 ECHO ========================================================================================
 sphinx-build -q -b html -W -E -a -d docs/build/doctrees docs/source docs/build/html
@@ -44,11 +50,6 @@ ECHO ===========================================================================
 sphinx-build -q -b linkcheck -W -E -a -d docs/build/doctrees docs/source docs/build/html
 IF %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
-ECHO ========================================================================================
-ECHO setup.py bdist_wheel
-ECHO ========================================================================================
-python setup.py bdist_wheel > NUL
-IF %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 ECHO ========================================================================================
 ECHO nosetests -sv tests
