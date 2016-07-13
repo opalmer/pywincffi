@@ -1,6 +1,7 @@
 import ctypes
 import os
 import sys
+import tempfile
 
 from mock import patch
 from six import text_type
@@ -17,8 +18,9 @@ from pywincffi.kernel32 import (
 
 # A couple of internal imports.  These are not considered part of the public
 # API but we still need to test them.
-from pywincffi.kernel32.process import environment_to_string, module_name
-from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO
+from pywincffi.kernel32.process import (
+    CreateProcessResult, environment_to_string, module_name)
+from pywincffi.wintypes import HANDLE
 
 try:
     IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -353,6 +355,29 @@ class TestCreateProcess(TestCase):
     def NoOpCreateProcess(cls, *args):
         pass
 
+    def cleanup_process(self, create_process_result):
+        """
+        Ensures that we properly cleanup a launched process
+        after the test.
+        """
+        try:
+            TerminateProcess(
+                create_process_result.lpProcessInformation.hProcess, 0)
+
+        # Process may already be dead.
+        except WindowsAPIError:
+            self.SetLastError(0)
+
+        CloseHandle(create_process_result.lpProcessInformation.hProcess)
+        CloseHandle(create_process_result.lpProcessInformation.hThread)
+
+    def write_script(self, script):
+        fd, path = tempfile.mkstemp(suffix=".py")
+        with os.fdopen(fd, "w") as file_:
+            file_.wrte(script)
+        self.addCleanup(os.remove, path)
+        return path
+
     def test_lpCommandLine_length_max_command_line(self):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             _, library = dist.load()
@@ -371,34 +396,17 @@ class TestCreateProcess(TestCase):
                     u"'%s' arg1" % self.random_string(library.MAX_PATH + 1))
 
     # TODO needs to test output of process
-    def test_basic_call(self):
-        _, library = dist.load()
-        lpApplicationName = None
-        lpCommandLine = text_type(
-            '%s -c "\'*\' * 10000; import time;"' % sys.executable)
-        lpProcessAttributes = SECURITY_ATTRIBUTES()
-        lpThreadAttributes = SECURITY_ATTRIBUTES()
-        bInheritHandles = True
-        dwCreationFlags = \
-            library.NORMAL_PRIORITY_CLASS | library.CREATE_UNICODE_ENVIRONMENT
-
-        # TODO: test a non-system env
-        # environ = dict(
-        #     (text_type(key), text_type(value))
-        #     for key, value in os.environ.items())
-
-        lpEnvironment = None
-        lpCurrentDirectory = text_type(os.getcwd())
-        lpStartupInfo = STARTUPINFO()
-
-        CreateProcess(
-            lpCommandLine,
-            lpApplicationName=lpApplicationName,
-            lpProcessAttributes=lpProcessAttributes,
-            lpThreadAttributes=lpThreadAttributes,
-            bInheritHandles=bInheritHandles,
-            dwCreationFlags=dwCreationFlags,
-            lpEnvironment=lpEnvironment,
-            lpCurrentDirectory=lpCurrentDirectory,
-            lpStartupInfo=lpStartupInfo
+    def test_return_type(self):
+        process = CreateProcess(
+            text_type("%s -c \"\"" % sys.executable),
+            lpApplicationName=None,
+            lpProcessAttributes=None,
+            lpThreadAttributes=None,
+            bInheritHandles=True,
+            dwCreationFlags=None,
+            lpEnvironment=None,
+            lpCurrentDirectory=None,
+            lpStartupInfo=None
         )
+        self.assertIsInstance(process, CreateProcessResult)
+        self.addCleanup(self.cleanup_process, process)
