@@ -102,6 +102,22 @@ class PROCESS_INFORMATION(CFFICDataWrapper):
         ffi, _ = dist.load()
         super(PROCESS_INFORMATION, self).__init__("PROCESS_INFORMATION *", ffi)
 
+    @property
+    def hProcess(self):
+        """
+        Returns a :class:`pywincffi.wintypes.objects.HANDLE` instance
+        for the ``hProcess`` attribute.
+        """
+        return HANDLE(self._cdata.hProcess)
+
+    @property
+    def hThread(self):
+        """
+        Returns a :class:`pywincffi.wintypes.objects.HANDLE` instance
+        for the ``hThread`` attribute.
+        """
+        return HANDLE(self._cdata.hThread)
+
 
 # pylint: disable=too-few-public-methods
 class STARTUPINFO(CFFICDataWrapper):

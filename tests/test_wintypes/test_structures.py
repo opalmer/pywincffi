@@ -1,7 +1,8 @@
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.wintypes import (
-    HANDLE, SECURITY_ATTRIBUTES, OVERLAPPED, FILETIME, LPWSANETWORKEVENTS)
+    HANDLE, SECURITY_ATTRIBUTES, OVERLAPPED, FILETIME, LPWSANETWORKEVENTS,
+    PROCESS_INFORMATION)
 
 
 class TestSECURITY_ATTRIBUTES(TestCase):
@@ -93,3 +94,16 @@ class TestLPWSANETWORKEVENTS(TestCase):
         _, library = dist.load()
         events = LPWSANETWORKEVENTS()
         self.assertEqual(events.iErrorCode, tuple([0] * library.FD_MAX_EVENTS))
+
+
+class TestPROCESS_INFORMATION(TestCase):
+    """
+    Tests for :class:`pywincffi.wintypes.PROCESS_INFORMATION`
+    """
+    def test_hProcess(self):
+        events = PROCESS_INFORMATION()
+        self.assertIsInstance(events.hProcess, HANDLE)
+
+    def test_hThread(self):
+        events = PROCESS_INFORMATION()
+        self.assertIsInstance(events.hThread, HANDLE)
