@@ -17,6 +17,7 @@ documentation for the constant names and their purpose:
 
 from io import StringIO
 from token import STRING
+from collections import namedtuple
 from tokenize import generate_tokens
 
 from six import integer_types, text_type
@@ -394,6 +395,12 @@ def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
     return HANDLE(process_list)
 
 
+CreateProcessResult = namedtuple(
+    "CreateProcessResult",
+    ("lpCommandLine", "lpProcessInformation")
+)
+
+
 def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         lpCommandLine, lpApplicationName=None, lpProcessAttributes=None,
         lpThreadAttributes=None, bInheritHandles=True, dwCreationFlags=None,
@@ -463,9 +470,11 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         Raised if ``lpCommandLine`` is too long or there are other input
         problems.
 
+    :rtype: :class:`pywincffi.kernel32.process.CreateProcessResult`
     :return:
-        Returns a two part tuple.  The first index will be the resulting
-        ``lpCommandLine``.  The second index will be an instance of
+        Returns a named tuple containing ``lpCommandLine`` and
+        ``lpProcessInformation``.  The ``lpProcessInformation`` will
+        be an instance of
         :class:`pywincffi.wintypes.structures.PROCESS_INFORMATION`
     """
     ffi, library = dist.load()
@@ -537,9 +546,8 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         # TODO need to add support for STARTUPINFOEX (undocumented)
         input_check(
             "lpStartupInfo", lpStartupInfo, allowed_types=(STARTUPINFO, ))
-        lpStartupInfo = wintype_to_cdata(lpStartupInfo)
     else:
-        lpStartupInfo = ffi.NULL
+        lpStartupInfo = STARTUPINFO()
 
     lpProcessInformation = PROCESS_INFORMATION()
     code = library.CreateProcess(
@@ -551,11 +559,11 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         dwCreationFlags,
         lpEnvironment,
         lpCurrentDirectory,
-        lpStartupInfo,
+        wintype_to_cdata(lpStartupInfo),
         wintype_to_cdata(lpProcessInformation)
     )
     error_check("CreateProcess", code=code, expected=Enums.NON_ZERO)
 
-    # TODO convert lpCommandLine to something more Pythonic
-    # TODO return namedtuple
-    return lpCommandLine, lpProcessInformation
+    return CreateProcessResult(
+        lpCommandLine=lpCommandLine,
+        lpProcessInformation=lpProcessInformation)
