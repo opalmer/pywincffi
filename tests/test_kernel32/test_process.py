@@ -1,7 +1,10 @@
 import ctypes
 import os
 import sys
+import time
 import tempfile
+from textwrap import dedent
+from os.path import isfile
 
 from mock import patch
 from six import text_type
@@ -276,7 +279,7 @@ class TestEnvironmentToString(TestCase):
 
         self.assertEqual(
             environment_to_string(NonDictIterItems()),
-            u"a=b\0c=d"
+            u"a=b\0c=d\0\0"
         )
 
     def test_non_dict_items(self):
@@ -287,7 +290,7 @@ class TestEnvironmentToString(TestCase):
 
         self.assertEqual(
             environment_to_string(NonDictItems()),
-            u"e=f\0g=h"
+            u"e=f\0g=h\0\0"
         )
 
     def test_type_check_for_environment_key(self):
@@ -395,7 +398,6 @@ class TestCreateProcess(TestCase):
                 CreateProcess(
                     u"'%s' arg1" % self.random_string(library.MAX_PATH + 1))
 
-    # TODO needs to test output of process
     def test_return_type(self):
         process = CreateProcess(
             text_type("%s -c \"\"" % sys.executable),
@@ -410,3 +412,41 @@ class TestCreateProcess(TestCase):
         )
         self.assertIsInstance(process, CreateProcessResult)
         self.addCleanup(self.cleanup_process, process)
+
+    def test_environment_ascii(self):
+        fd, remove_file = tempfile.mkstemp(suffix=".txt")
+        os.close(fd)
+
+        script = dedent("""
+        import os
+        os.remove(os.environ["REMOVE_FILE"])
+        """).strip()
+
+        fd, script_path = tempfile.mkstemp(suffix=".py")
+        with os.fdopen(fd, "w") as file_:
+            file_.write(script)
+
+        self.addCleanup(os.remove, script_path)
+        environ = {
+            text_type("REMOVE_FILE"): text_type(remove_file),
+            text_type("PATH"): text_type("")
+        }
+
+        process = CreateProcess(
+            text_type("%s \"%s\"" % (sys.executable, script_path)),
+            lpApplicationName=None,
+            lpProcessAttributes=None,
+            lpThreadAttributes=None,
+            bInheritHandles=True,
+            dwCreationFlags=None,
+            lpEnvironment=environ,
+            lpCurrentDirectory=None,
+            lpStartupInfo=None
+        )
+
+        self.addCleanup(self.cleanup_process, process)
+
+        while pid_exists(process.lpProcessInformation.dwProcessId):
+            time.sleep(.1)
+
+        self.assertFalse(isfile(remove_file))
