@@ -77,7 +77,7 @@ def environment_to_string(environment):
         if not isinstance(value, text_type):
             raise InputError(
                 "environment value %s (key: %r)" % (value, key), type(value),
-                expected_types=(text_type,))
+                expected_types=(text_type, ))
 
         # From Microsoft's documentation on `lpEnvironment`:
         #   Because the equal sign is used as a separator, it must not be used
@@ -88,9 +88,9 @@ def environment_to_string(environment):
                 message="Environment keys cannot contain the `=` symbol.  "
                         "Offending key: %r" % key)
 
-        converted.append("%s=%s" % (key, value))
+        converted.append("%s=%s\0" % (key, value))
 
-    return text_type("\0".join(converted))
+    return text_type("".join(converted)) + text_type("\0")
 
 
 def module_name(path):
