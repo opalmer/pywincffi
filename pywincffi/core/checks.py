@@ -5,12 +5,8 @@ Checks
 Provides functions that are responsible for internal type checks.
 """
 
-import io
-import os
-import types
-
 import enum
-from six import PY3, string_types
+from six import string_types
 
 from pywincffi.core import dist
 from pywincffi.exceptions import WindowsAPIError, InputError
@@ -18,14 +14,7 @@ from pywincffi.exceptions import WindowsAPIError, InputError
 NoneType = type(None)
 Enums = enum.Enum("Enums", """
 NON_ZERO
-UTF8
-PYFILE
 """.strip())
-
-if PY3:
-    FileType = io.IOBase
-else:
-    FileType = types.FileType  # pylint: disable=no-member
 
 
 def error_check(function, code=None, expected=None):
@@ -102,27 +91,6 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
             raise InputError(
                 name, value, allowed_types,
                 allowed_values=allowed_values, ffi=ffi)
-
-    elif allowed_types is Enums.UTF8:
-        try:
-            value.encode("utf-8")
-        except (ValueError, AttributeError):
-            raise InputError(name, value, allowed_types, ffi=ffi)
-
-    elif allowed_types is Enums.PYFILE:
-        if not isinstance(value, FileType):
-            raise InputError(name, value, "file type", ffi=ffi)
-
-        # Make sure the file descriptor itself is valid.  If it's
-        # not then we may have trouble working with the file
-        # object. Certain operations, such as library.handle_from_fd
-        # may also cause some bad side effects like crashing the
-        # interpreter without this check.
-        try:
-            os.fstat(value.fileno())
-        except (OSError, ValueError):
-            raise InputError(
-                name, value, "file type (with valid file descriptor)", ffi=ffi)
 
     else:
         if not isinstance(value, allowed_types):
