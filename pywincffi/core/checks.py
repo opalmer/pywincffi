@@ -13,10 +13,7 @@ import enum
 from six import PY3, string_types
 
 from pywincffi.core import dist
-from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import WindowsAPIError, InputError
-
-logger = get_logger("core.check")
 
 NoneType = type(None)
 Enums = enum.Enum("Enums", """
@@ -53,9 +50,6 @@ def error_check(function, code=None, expected=None):
     """
     ffi, _ = dist.load()
     errno, error_message = ffi.getwinerror()
-
-    logger.debug(
-        "error_check(%r, code=%r, expected=%r)", function, code, expected)
 
     if code is not None:
         if expected == Enums.NON_ZERO and code == 0:
@@ -102,11 +96,6 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
     assert isinstance(name, string_types)
     assert allowed_values is None or isinstance(allowed_values, tuple)
     ffi, _ = dist.load()
-
-    logger.debug(
-        "input_check(name=%r, value=%r, allowed_types=%r, allowed_values=%r",
-        name, value, allowed_types, allowed_values
-    )
 
     if allowed_types is None and isinstance(allowed_values, tuple):
         if value not in allowed_values:

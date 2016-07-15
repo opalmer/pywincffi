@@ -25,7 +25,6 @@ from pkg_resources import resource_filename
 
 from cffi import FFI
 
-from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import ResourceNotFoundError, InternalError
 
 imp = None  # pylint: disable=invalid-name
@@ -43,8 +42,6 @@ except NameError:  # pragma: no cover
     WindowsError = OSError  # pylint: disable=redefined-builtin
 
 __all__ = ("load", )
-
-logger = get_logger("core.dist")
 
 MODULE_NAME = "_pywincffi"
 HEADER_FILES = (
@@ -188,8 +185,6 @@ def _import_path(path, module_name=MODULE_NAME):
     :raises ResourceNotFoundError:
         Raised if ``path`` does not exist.
     """
-    logger.debug("_import_path(%r, module_name=%r)", path, module_name)
-
     if not isfile(path):
         raise ResourceNotFoundError("Module path %r does not exist" % path)
 
@@ -213,8 +208,6 @@ def _read(*paths):
     :raises ResourceNotFoundError:
         Raised if one of the files in ``files`` is missing.
     """
-    logger.debug("_read(%r)", paths)
-
     output = ""
     for path in paths:
         try:
@@ -245,10 +238,6 @@ def _ffi(
     :keyword tuple sources:
         Optional path(s) to the source files.
     """
-    logger.debug(
-        "_ffi(module_name=%r, headers=%r, sources=%r)",
-        module_name, headers, sources)
-
     header = _read(*headers)
     source = _read(*sources)
 
@@ -286,8 +275,6 @@ def _compile(ffi, tmpdir=None, module_name=MODULE_NAME):
     if tmpdir is None:
         tmpdir = tempfile.mkdtemp(prefix="pywincffi-")
 
-    logger.debug(
-        "_compile(%r, tmpdir=%r, module_name=%r)", ffi, tmpdir, module_name)
     pyd_path = ffi.compile(tmpdir=tmpdir)
     module = _import_path(pyd_path, module_name=module_name)
 
