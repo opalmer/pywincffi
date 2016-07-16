@@ -125,3 +125,48 @@ class STARTUPINFO(CFFICDataWrapper):
     def __init__(self):
         ffi, _ = dist.load()
         super(STARTUPINFO, self).__init__("STARTUPINFO *", ffi)
+
+    @property
+    def hStdInput(self):
+        """
+        Returns a :class:`pywincffi.wintypes.objects.HANDLE` instance
+        for the ``hStdInput`` attribute.
+        """
+        return HANDLE(self._cdata.hStdInput)
+
+    # pylint: disable=missing-docstring
+    @hStdInput.setter
+    def hStdInput(self, handle):
+        if not isinstance(handle, HANDLE):
+            raise TypeError("%r must be a HANDLE object" % handle)
+        self._cdata.hStdInput = handle._cdata[0]
+
+    @property
+    def hStdOutput(self):
+        """
+        Returns a :class:`pywincffi.wintypes.objects.HANDLE` instance
+        for the ``hStdOutput`` attribute.
+        """
+        return HANDLE(self._cdata.hStdOutput)
+
+    # pylint: disable=missing-docstring
+    @hStdOutput.setter
+    def hStdOutput(self, handle):
+        if not isinstance(handle, HANDLE):
+            raise TypeError("%r must be a HANDLE object" % handle)
+        self._cdata.hStdOutput = handle._cdata[0]
+
+    @property
+    def hStdError(self):
+        """
+        Returns a :class:`pywincffi.wintypes.objects.HANDLE` instance
+        for the ``hStdError`` attribute.
+        """
+        return HANDLE(self._cdata.hStdError)
+
+    # pylint: disable=missing-docstring
+    @hStdError.setter
+    def hStdError(self, handle):
+        if not isinstance(handle, HANDLE):
+            raise TypeError("%r must be a HANDLE object" % handle)
+        self._cdata.hStdError = handle._cdata[0]
