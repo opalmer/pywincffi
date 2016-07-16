@@ -5,30 +5,12 @@ Checks
 Provides functions that are responsible for internal type checks.
 """
 
-import io
-import os
-import types
-
-import enum
-from six import PY3, string_types
-
 from pywincffi.core import dist
-from pywincffi.core.logger import get_logger
 from pywincffi.exceptions import WindowsAPIError, InputError
 
-logger = get_logger("core.check")
-
 NoneType = type(None)
-Enums = enum.Enum("Enums", """
-NON_ZERO
-UTF8
-PYFILE
-""".strip())
 
-if PY3:
-    FileType = io.IOBase
-else:
-    FileType = types.FileType  # pylint: disable=no-member
+NON_ZERO = "NON_ZERO"
 
 
 def error_check(function, code=None, expected=None):
@@ -45,7 +27,7 @@ def error_check(function, code=None, expected=None):
 
     :keyword int expected:
         The code we expect to have as a result of a successful
-        call.  This can also be passed ``pywincffi.core.checks.Enums.NON_ZERO``
+        call.  This can also be passed ``pywincffi.core.checks.NON_ZERO``
         if ``code`` can be anything but zero.
 
     :raises pywincffi.exceptions.WindowsAPIError:
@@ -54,11 +36,8 @@ def error_check(function, code=None, expected=None):
     ffi, _ = dist.load()
     errno, error_message = ffi.getwinerror()
 
-    logger.debug(
-        "error_check(%r, code=%r, expected=%r)", function, code, expected)
-
     if code is not None:
-        if expected == Enums.NON_ZERO and code == 0:
+        if expected == NON_ZERO and code == 0:
             raise WindowsAPIError(
                 function, error_message, errno,
                 return_code=code, expected_return_code=expected)
@@ -87,9 +66,7 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
         The value we're performing the type check on.
 
     :keyword allowed_types:
-        The allowed type or types for ``value``.  This argument
-        also supports a special value, ``pywincffi.core.checks.Enums.HANDLE``,
-        which will check to ensure ``value`` is a handle object.
+        The allowed type or types for ``value``.
 
     :keyword tuple allowed_values:
         A tuple of allowed values.  When provided ``value`` must
@@ -98,43 +75,19 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
 
     :raises pywincffi.exceptions.InputError:
         Raised if ``value`` is not an instance of ``allowed_types``
+
+    :raises TypeError:
+        Raised if ``allowed_values`` is provided and not a tuple.
     """
-    assert isinstance(name, string_types)
-    assert allowed_values is None or isinstance(allowed_values, tuple)
-    ffi, _ = dist.load()
+    if allowed_values is not None and not isinstance(allowed_values, tuple):
+        raise TypeError("`allowed_values` must be a tuple")
 
-    logger.debug(
-        "input_check(name=%r, value=%r, allowed_types=%r, allowed_values=%r",
-        name, value, allowed_types, allowed_values
-    )
+    if allowed_types is not None and not isinstance(value, allowed_types):
+        ffi, _ = dist.load()
+        raise InputError(
+            name, value, ffi=ffi, allowed_types=allowed_types)
 
-    if allowed_types is None and isinstance(allowed_values, tuple):
-        if value not in allowed_values:
-            raise InputError(
-                name, value, allowed_types,
-                allowed_values=allowed_values, ffi=ffi)
-
-    elif allowed_types is Enums.UTF8:
-        try:
-            value.encode("utf-8")
-        except (ValueError, AttributeError):
-            raise InputError(name, value, allowed_types, ffi=ffi)
-
-    elif allowed_types is Enums.PYFILE:
-        if not isinstance(value, FileType):
-            raise InputError(name, value, "file type", ffi=ffi)
-
-        # Make sure the file descriptor itself is valid.  If it's
-        # not then we may have trouble working with the file
-        # object. Certain operations, such as library.handle_from_fd
-        # may also cause some bad side effects like crashing the
-        # interpreter without this check.
-        try:
-            os.fstat(value.fileno())
-        except (OSError, ValueError):
-            raise InputError(
-                name, value, "file type (with valid file descriptor)", ffi=ffi)
-
-    else:
-        if not isinstance(value, allowed_types):
-            raise InputError(name, value, allowed_types, ffi=ffi)
+    if allowed_values is not None and value not in allowed_values:
+        ffi, _ = dist.load()
+        raise InputError(
+            name, value, None, ffi=ffi, allowed_values=allowed_values)

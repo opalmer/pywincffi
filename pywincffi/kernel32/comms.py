@@ -6,7 +6,7 @@ A module containing Windows functions related to communications.
 """
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import NON_ZERO, input_check, error_check
 from pywincffi.wintypes import HANDLE, wintype_to_cdata
 
 
@@ -39,7 +39,7 @@ def ClearCommError(hFile):
     lpErrors = ffi.new("LPDWORD")
     lpStat = ffi.new("LPCOMSTAT")
     code = library.ClearCommError(wintype_to_cdata(hFile), lpErrors, lpStat)
-    error_check("ClearCommError", code=code, expected=Enums.NON_ZERO)
+    error_check("ClearCommError", code=code, expected=NON_ZERO)
 
     # TODO: Build Python instance of COMSTAT here!
     return lpErrors, lpStat

@@ -8,7 +8,7 @@ A module containing common Windows file functions for working with files.
 from six import integer_types, text_type, binary_type
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check, NoneType
+from pywincffi.core.checks import NON_ZERO, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.wintypes import (
     SECURITY_ATTRIBUTES, OVERLAPPED, HANDLE, wintype_to_cdata
@@ -170,7 +170,7 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
         wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToWrite,
         bytes_written, wintype_to_cdata(lpOverlapped)
     )
-    error_check("WriteFile", code=code, expected=Enums.NON_ZERO)
+    error_check("WriteFile", code=code, expected=NON_ZERO)
 
     return bytes_written[0]
 
@@ -189,7 +189,7 @@ def FlushFileBuffers(hFile):
     input_check("hFile", hFile, HANDLE)
     _, library = dist.load()
     code = library.FlushFileBuffers(wintype_to_cdata(hFile))
-    error_check("FlushFileBuffers", code=code, expected=Enums.NON_ZERO)
+    error_check("FlushFileBuffers", code=code, expected=NON_ZERO)
 
 
 def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
@@ -238,7 +238,7 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToRead, bytes_read,
         wintype_to_cdata(lpOverlapped)
     )
-    error_check("ReadFile", code=code, expected=Enums.NON_ZERO)
+    error_check("ReadFile", code=code, expected=NON_ZERO)
     return ffi.unpack(lpBuffer, bytes_read[0])
 
 
@@ -284,7 +284,7 @@ def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
         lpNewFileName,
         ffi.cast("DWORD", dwFlags)
     )
-    error_check("MoveFileEx", code=code, expected=Enums.NON_ZERO)
+    error_check("MoveFileEx", code=code, expected=NON_ZERO)
 
 
 def LockFileEx(
@@ -344,7 +344,7 @@ def LockFileEx(
         ffi.cast("DWORD", nNumberOfBytesToLockHigh),
         wintype_to_cdata(lpOverlapped)
     )
-    error_check("LockFileEx", code=code, expected=Enums.NON_ZERO)
+    error_check("LockFileEx", code=code, expected=NON_ZERO)
 
 
 def UnlockFileEx(
@@ -397,4 +397,4 @@ def UnlockFileEx(
         ffi.cast("DWORD", nNumberOfBytesToUnlockHigh),
         wintype_to_cdata(lpOverlapped)
     )
-    error_check("UnlockFileEx", code=code, expected=Enums.NON_ZERO)
+    error_check("UnlockFileEx", code=code, expected=NON_ZERO)

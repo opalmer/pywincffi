@@ -10,7 +10,7 @@ from collections import namedtuple
 from six import integer_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check, NoneType
+from pywincffi.core.checks import NON_ZERO, input_check, error_check, NoneType
 from pywincffi.wintypes import SECURITY_ATTRIBUTES, HANDLE, wintype_to_cdata
 
 PeekNamedPipeResult = namedtuple(
@@ -64,7 +64,7 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     hWritePipe = ffi.new("PHANDLE")
 
     code = library.CreatePipe(hReadPipe, hWritePipe, lpPipeAttributes, nSize)
-    error_check("CreatePipe", code=code, expected=Enums.NON_ZERO)
+    error_check("CreatePipe", code=code, expected=NON_ZERO)
 
     return HANDLE(hReadPipe[0]), HANDLE(hWritePipe[0])
 
@@ -129,7 +129,7 @@ def SetNamedPipeHandleState(
         lpMaxCollectionCount,
         lpCollectDataTimeout
     )
-    error_check("SetNamedPipeHandleState", code=code, expected=Enums.NON_ZERO)
+    error_check("SetNamedPipeHandleState", code=code, expected=NON_ZERO)
 
 
 def PeekNamedPipe(hNamedPipe, nBufferSize):
@@ -170,7 +170,7 @@ def PeekNamedPipe(hNamedPipe, nBufferSize):
         lpTotalBytesAvail,
         lpBytesLeftThisMessage
     )
-    error_check("PeekNamedPipe", code=code, expected=Enums.NON_ZERO)
+    error_check("PeekNamedPipe", code=code, expected=NON_ZERO)
 
     return PeekNamedPipeResult(
         lpBuffer=lpBuffer,
