@@ -25,7 +25,7 @@ from pywincffi.kernel32 import (
 # API but we still need to test them.
 from pywincffi.kernel32.process import (
     CreateProcessResult, environment_to_string, module_name)
-from pywincffi.wintypes import HANDLE
+from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO
 
 try:
     IS_ADMIN = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -281,8 +281,7 @@ class TestEnvironmentToString(TestCase):
 
         self.assertEqual(
             environment_to_string(NonDictIterItems()),
-            u"a=b\0c=d\0\0"
-        )
+            u"a=b\0c=d\0\0")
 
     def test_non_dict_items(self):
         class NonDictItems(object):
@@ -292,8 +291,7 @@ class TestEnvironmentToString(TestCase):
 
         self.assertEqual(
             environment_to_string(NonDictItems()),
-            u"e=f\0g=h\0\0"
-        )
+            u"e=f\0g=h\0\0")
 
     def test_type_check_for_environment_key(self):
         with self.assertRaises(InputError):
@@ -306,6 +304,12 @@ class TestEnvironmentToString(TestCase):
     def test_key_cannot_contain_equals(self):
         with self.assertRaisesRegex(InputError, ".*cannot contain the `=`.*"):
             environment_to_string({text_type("3=4"): text_type("")})
+
+    def test_not_a_dictionary(self):
+        with self.assertRaisesRegex(
+            InputError, "Expected a dictionary like object for `environment`"):
+            environment_to_string(None)
+
 
 
 class TestModuleName(TestCase):
@@ -415,6 +419,120 @@ class TestCreateProcess(TestCase):
         self.assertIsInstance(process, CreateProcessResult)
         self.addCleanup(self.cleanup_process, process)
 
+    def test_lpApplicationName_input_handling(self):
+        with mock_library(CreateProcess=self.NoOpCreateProcess):
+            with self.assertRaises(InputError):
+                CreateProcess(
+                    text_type(sys.executable),
+                    lpApplicationName=1,
+                    lpProcessAttributes=None,
+                    lpThreadAttributes=None,
+                    bInheritHandles=True,
+                    dwCreationFlags=None,
+                    lpEnvironment=None,
+                    lpCurrentDirectory=None,
+                    lpStartupInfo=None)
+
+    def test_lpProcessAttributes_input_handling(self):
+        with mock_library(CreateProcess=self.NoOpCreateProcess):
+            with self.assertRaises(InputError):
+                CreateProcess(
+                    text_type(sys.executable),
+                    lpApplicationName=None,
+                    lpProcessAttributes=1,
+                    lpThreadAttributes=None,
+                    bInheritHandles=True,
+                    dwCreationFlags=None,
+                    lpEnvironment=None,
+                    lpCurrentDirectory=None,
+                    lpStartupInfo=None)
+
+            CreateProcess(
+                text_type(sys.executable),
+                lpApplicationName=None,
+                lpProcessAttributes=SECURITY_ATTRIBUTES(),
+                lpThreadAttributes=None,
+                bInheritHandles=True,
+                dwCreationFlags=None,
+                lpEnvironment=None,
+                lpCurrentDirectory=None,
+                lpStartupInfo=None)
+
+    def test_lpThreadAttributes_input_handlingk(self):
+        with mock_library(CreateProcess=self.NoOpCreateProcess):
+            with self.assertRaises(InputError):
+                CreateProcess(
+                    text_type(sys.executable),
+                    lpApplicationName=None,
+                    lpProcessAttributes=None,
+                    lpThreadAttributes=1,
+                    bInheritHandles=True,
+                    dwCreationFlags=None,
+                    lpEnvironment=None,
+                    lpCurrentDirectory=None,
+                    lpStartupInfo=None)
+
+            CreateProcess(
+                text_type(sys.executable),
+                lpApplicationName=None,
+                lpProcessAttributes=None,
+                lpThreadAttributes=SECURITY_ATTRIBUTES(),
+                bInheritHandles=True,
+                dwCreationFlags=None,
+                lpEnvironment=None,
+                lpCurrentDirectory=None,
+                lpStartupInfo=None)
+
+    def test_lpCurrentDirectory_input_handling(self):
+        with mock_library(CreateProcess=self.NoOpCreateProcess):
+            with self.assertRaises(InputError):
+                CreateProcess(
+                    text_type(sys.executable),
+                    lpApplicationName=None,
+                    lpProcessAttributes=None,
+                    lpThreadAttributes=None,
+                    bInheritHandles=True,
+                    dwCreationFlags=None,
+                    lpEnvironment=None,
+                    lpCurrentDirectory=1,
+                    lpStartupInfo=None)
+
+            CreateProcess(
+                text_type(sys.executable),
+                lpApplicationName=None,
+                lpProcessAttributes=None,
+                lpThreadAttributes=None,
+                bInheritHandles=True,
+                dwCreationFlags=None,
+                lpEnvironment=None,
+                lpCurrentDirectory=text_type(os.getcwd()),
+                lpStartupInfo=None)
+
+    def test_lpStartupInfo_input_handling(self):
+        with mock_library(CreateProcess=self.NoOpCreateProcess):
+            with self.assertRaises(InputError):
+                CreateProcess(
+                    text_type(sys.executable),
+                    lpApplicationName=None,
+                    lpProcessAttributes=None,
+                    lpThreadAttributes=None,
+                    bInheritHandles=True,
+                    dwCreationFlags=None,
+                    lpEnvironment=None,
+                    lpCurrentDirectory=None,
+                    lpStartupInfo=1)
+
+            CreateProcess(
+                text_type(sys.executable),
+                lpApplicationName=None,
+                lpProcessAttributes=None,
+                lpThreadAttributes=None,
+                bInheritHandles=True,
+                dwCreationFlags=None,
+                lpEnvironment=None,
+                lpCurrentDirectory=None,
+                lpStartupInfo=STARTUPINFO())
+
     def test_environment_ascii(self):
         fd, remove_file = tempfile.mkstemp(suffix=".txt")
         os.close(fd)
@@ -486,8 +604,7 @@ class TestCreateProcess(TestCase):
             dwCreationFlags=None,
             lpEnvironment=environ,
             lpCurrentDirectory=None,
-            lpStartupInfo=None
-        )
+            lpStartupInfo=None)
 
         self.addCleanup(self.cleanup_process, process)
 
