@@ -6,7 +6,6 @@ Provides functions that are responsible for internal type checks.
 """
 
 import enum
-from six import string_types
 
 from pywincffi.core import dist
 from pywincffi.exceptions import WindowsAPIError, InputError
@@ -70,9 +69,7 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
         The value we're performing the type check on.
 
     :keyword allowed_types:
-        The allowed type or types for ``value``.  This argument
-        also supports a special value, ``pywincffi.core.checks.Enums.HANDLE``,
-        which will check to ensure ``value`` is a handle object.
+        The allowed type or types for ``value``.
 
     :keyword tuple allowed_values:
         A tuple of allowed values.  When provided ``value`` must
@@ -81,17 +78,19 @@ def input_check(name, value, allowed_types=None, allowed_values=None):
 
     :raises pywincffi.exceptions.InputError:
         Raised if ``value`` is not an instance of ``allowed_types``
+
+    :raises TypeError:
+        Raised if ``allowed_values`` is provided and not a tuple.
     """
-    assert isinstance(name, string_types)
-    assert allowed_values is None or isinstance(allowed_values, tuple)
-    ffi, _ = dist.load()
+    if allowed_values is not None and not isinstance(allowed_values, tuple):
+        raise TypeError("`allowed_values` must be a tuple")
 
-    if allowed_types is None and isinstance(allowed_values, tuple):
-        if value not in allowed_values:
-            raise InputError(
-                name, value, allowed_types,
-                allowed_values=allowed_values, ffi=ffi)
+    if allowed_types is not None and not isinstance(value, allowed_types):
+        ffi, _ = dist.load()
+        raise InputError(
+            name, value, ffi=ffi, allowed_types=allowed_types)
 
-    else:
-        if not isinstance(value, allowed_types):
-            raise InputError(name, value, allowed_types, ffi=ffi)
+    if allowed_values is not None and value not in allowed_values:
+        ffi, _ = dist.load()
+        raise InputError(
+            name, value, None, ffi=ffi, allowed_values=allowed_values)
