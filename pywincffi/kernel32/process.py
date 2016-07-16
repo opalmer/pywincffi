@@ -64,19 +64,19 @@ def environment_to_string(environment):
             items = environment.items
         except AttributeError:
             raise InputError(
-                "environment", environment, None,
+                "environment", environment,
                 message="Expected a dictionary like object for `environment`")
 
     converted = []
     for key, value in items():
         if not isinstance(key, text_type):
             raise InputError(
-                "environment key %s" % key, type(key),
+                "environment key %s" % key, key,
                 allowed_types=(text_type, ))
 
         if not isinstance(value, text_type):
             raise InputError(
-                "environment value %s (key: %r)" % (value, key), type(value),
+                "environment value %s (key: %r)" % (value, key), value,
                 allowed_types=(text_type, ))
 
         # From Microsoft's documentation on `lpEnvironment`:
