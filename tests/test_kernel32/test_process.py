@@ -2,11 +2,12 @@
 
 import ctypes
 import os
+import shutil
 import sys
 import time
 import tempfile
 from textwrap import dedent
-from os.path import isfile
+from os.path import isfile, basename
 
 from mock import patch
 from six import PY2, text_type
@@ -306,10 +307,9 @@ class TestEnvironmentToString(TestCase):
             environment_to_string({text_type("3=4"): text_type("")})
 
     def test_not_a_dictionary(self):
-        with self.assertRaisesRegex(
-            InputError, "Expected a dictionary like object for `environment`"):
+        expected = "Expected a dictionary like object for `environment`"
+        with self.assertRaisesRegex(InputError, expected):
             environment_to_string(None)
-
 
 
 class TestModuleName(TestCase):
@@ -379,13 +379,6 @@ class TestCreateProcess(TestCase):
 
         CloseHandle(create_process_result.lpProcessInformation.hProcess)
         CloseHandle(create_process_result.lpProcessInformation.hThread)
-
-    def write_script(self, script):
-        fd, path = tempfile.mkstemp(suffix=".py")
-        with os.fdopen(fd, "w") as file_:
-            file_.wrte(script)
-        self.addCleanup(os.remove, path)
-        return path
 
     def test_lpCommandLine_length_max_command_line(self):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
@@ -618,3 +611,28 @@ class TestCreateProcess(TestCase):
                 self.assertEqual(file_.read(), "\xb5")
             else:
                 self.assertEqual(file_.read(), "µ")
+
+    def test_working_directory(self):
+        tmpdir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmpdir)
+        fd, remove_file = tempfile.mkstemp(dir=tmpdir, suffix=".txt")
+        os.close(fd)
+
+        process = CreateProcess(
+            text_type("cmd.exe /c del %s" % basename(remove_file)),
+            lpApplicationName=None,
+            lpProcessAttributes=None,
+            lpThreadAttributes=None,
+            bInheritHandles=True,
+            dwCreationFlags=None,
+            lpEnvironment=None,
+            lpCurrentDirectory=text_type(tmpdir),
+            lpStartupInfo=None
+        )
+
+        self.addCleanup(self.cleanup_process, process)
+
+        while pid_exists(process.lpProcessInformation.dwProcessId):
+            time.sleep(.1)
+
+        self.assertFalse(isfile(remove_file))
