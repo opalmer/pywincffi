@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import ctypes
 import os
 import sys
@@ -7,7 +9,7 @@ from textwrap import dedent
 from os.path import isfile
 
 from mock import patch
-from six import text_type
+from six import PY2, text_type
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase, mock_library
@@ -451,3 +453,51 @@ class TestCreateProcess(TestCase):
             time.sleep(.1)
 
         self.assertFalse(isfile(remove_file))
+
+    def test_environment_unicode(self):
+        fd, output_file = tempfile.mkstemp(suffix=".txt")
+        os.close(fd)
+        self.addCleanup(os.remove, output_file)
+
+        script = dedent("""
+        import os
+
+        with open(os.environ["OUTPUT_FILE"], "w") as file_:
+            file_.write(os.environ["UNICODE_OUTPUT"])
+        """).strip()
+
+        fd, script_path = tempfile.mkstemp(suffix=".py")
+        with os.fdopen(fd, "w") as file_:
+            file_.write(script)
+
+        environ = {
+            text_type("OUTPUT_FILE"): text_type(output_file),
+            text_type("UNICODE_OUTPUT"): u"µ",
+            text_type("PATH"): text_type(""),
+            text_type("SYSTEMROOT"): text_type(os.environ.get("SYSTEMROOT"))
+        }
+
+        process = CreateProcess(
+            text_type("%s \"%s\"" % (sys.executable, script_path)),
+            lpApplicationName=None,
+            lpProcessAttributes=None,
+            lpThreadAttributes=None,
+            bInheritHandles=True,
+            dwCreationFlags=None,
+            lpEnvironment=environ,
+            lpCurrentDirectory=None,
+            lpStartupInfo=None
+        )
+
+        self.addCleanup(self.cleanup_process, process)
+
+        while pid_exists(process.lpProcessInformation.dwProcessId):
+            time.sleep(.1)
+
+        self.assertTrue(isfile(output_file))
+
+        with open(output_file) as file_:
+            if PY2:
+                self.assertEqual(file_.read(), "\xb5")
+            else:
+                self.assertEqual(file_.read(), "µ")
