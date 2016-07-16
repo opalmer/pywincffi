@@ -20,10 +20,7 @@ class SECURITY_ATTRIBUTES(CFFICDataWrapper):
     """
     def __init__(self):
         ffi, _ = dist.load()
-        super(SECURITY_ATTRIBUTES, self).__init__(
-            "SECURITY_ATTRIBUTES*",
-            ffi,
-        )
+        super(SECURITY_ATTRIBUTES, self).__init__("SECURITY_ATTRIBUTES *", ffi)
         self._cdata.nLength = ffi.sizeof(self._cdata)
         self.lpSecurityDescriptor = ffi.NULL
 
@@ -49,7 +46,7 @@ class OVERLAPPED(CFFICDataWrapper):
     """
     def __init__(self):
         ffi, _ = dist.load()
-        super(OVERLAPPED, self).__init__("OVERLAPPED*", ffi)
+        super(OVERLAPPED, self).__init__("OVERLAPPED *", ffi)
 
     # pylint: disable=missing-docstring
     @property
@@ -73,7 +70,7 @@ class FILETIME(CFFICDataWrapper):
     """
     def __init__(self):
         ffi, _ = dist.load()
-        super(FILETIME, self).__init__("FILETIME*", ffi)
+        super(FILETIME, self).__init__("FILETIME *", ffi)
 
 
 class LPWSANETWORKEVENTS(CFFICDataWrapper):
