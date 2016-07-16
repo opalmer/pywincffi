@@ -294,7 +294,7 @@ class TestEnvironmentToString(TestCase):
         )
 
     def test_type_check_for_environment_key(self):
-        with self.assertRaisesRegex(InputError, ".*for environment key 1.*"):
+        with self.assertRaisesRegex(InputError, "Expected.*unicode.*"):
             environment_to_string({1: 1})
 
     def test_type_check_for_environment_value(self):

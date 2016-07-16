@@ -23,6 +23,8 @@ Notable enhancements and changes are:
     * :func:`pywincffi.kernel32.pid_exists` will no longer result in the
       Windows API error code being set to a non-zero value after exiting the
       function.
+    * General code cleanup in a few of the core modules.
+    * Removed an installation dependency: enum34
 
 0.3.1
 ~~~~~

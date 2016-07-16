@@ -9,7 +9,7 @@ objects.  The functions provided here are part of the ``kernel32`` library.
 from six import integer_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import NON_ZERO, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.wintypes import HANDLE, SOCKET, wintype_to_cdata
 
@@ -62,7 +62,7 @@ def CloseHandle(hObject):
     _, library = dist.load()
 
     code = library.CloseHandle(wintype_to_cdata(hObject))
-    error_check("CloseHandle", code=code, expected=Enums.NON_ZERO)
+    error_check("CloseHandle", code=code, expected=NON_ZERO)
 
 
 def GetHandleInformation(hObject):
@@ -85,7 +85,7 @@ def GetHandleInformation(hObject):
 
     lpdwFlags = ffi.new("LPDWORD")
     code = library.GetHandleInformation(wintype_to_cdata(hObject), lpdwFlags)
-    error_check("GetHandleInformation", code=code, expected=Enums.NON_ZERO)
+    error_check("GetHandleInformation", code=code, expected=NON_ZERO)
 
     return lpdwFlags[0]
 
@@ -117,7 +117,7 @@ def SetHandleInformation(hObject, dwMask, dwFlags):
         ffi.cast("DWORD", dwMask),
         ffi.cast("DWORD", dwFlags)
     )
-    error_check("SetHandleInformation", code=code, expected=Enums.NON_ZERO)
+    error_check("SetHandleInformation", code=code, expected=NON_ZERO)
 
 
 def DuplicateHandle(  # pylint: disable=too-many-arguments
@@ -180,5 +180,5 @@ def DuplicateHandle(  # pylint: disable=too-many-arguments
         ffi.cast("BOOL", bInheritHandle),
         ffi.cast("DWORD", dwOptions)
     )
-    error_check("DuplicateHandle", code, expected=Enums.NON_ZERO)
+    error_check("DuplicateHandle", code, expected=NON_ZERO)
     return HANDLE(lpTargetHandle[0])

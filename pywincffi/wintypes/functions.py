@@ -69,11 +69,11 @@ def handle_from_file(file_):
         fileno = file_.fileno()
     except AttributeError:
         raise InputError(
-            "file_", file_, expected_types=None,
+            "file_", file_, allowed_types=None,
             message="Expected a file like object for `file_`")
     except ValueError:
         raise InputError(
-            "file_", file_, expected_types=None,
+            "file_", file_, allowed_types=None,
             message="Expected an open file like object for `file_`")
     else:
         _, library = dist.load()
@@ -105,11 +105,11 @@ def socket_from_object(sock):
 
     except AttributeError:
         raise InputError(
-            "sock", sock, expected_types=None,
+            "sock", sock, allowed_types=None,
             message="Expected a Python socket object for `sock`")
     except socket.error as error:
         raise InputError(
-            "sock", sock, expected_types=None,
+            "sock", sock, allowed_types=None,
             message="Invalid socket object (error: %s)" % error)
     else:
         ffi, _ = dist.load()
@@ -132,7 +132,7 @@ def text_to_wchar(text):
     """
     if not isinstance(text, text_type):
         raise InputError(
-            "text", text, expected_types=None,
+            "text", text,
             message="Expected %r for `text`" % text_type)
 
     ffi, _ = dist.load()

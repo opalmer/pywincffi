@@ -23,7 +23,7 @@ from tokenize import generate_tokens
 from six import integer_types, text_type
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import NON_ZERO, input_check, error_check
 from pywincffi.exceptions import (
     WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32.handle import CloseHandle
@@ -72,12 +72,12 @@ def environment_to_string(environment):
         if not isinstance(key, text_type):
             raise InputError(
                 "environment key %s" % key, type(key),
-                expected_types=(text_type, ))
+                allowed_types=(text_type, ))
 
         if not isinstance(value, text_type):
             raise InputError(
                 "environment value %s (key: %r)" % (value, key), type(value),
-                expected_types=(text_type, ))
+                allowed_types=(text_type, ))
 
         # From Microsoft's documentation on `lpEnvironment`:
         #   Because the equal sign is used as a separator, it must not be used
@@ -248,7 +248,7 @@ def GetExitCodeProcess(hProcess):
     ffi, library = dist.load()
     lpExitCode = ffi.new("LPDWORD")
     code = library.GetExitCodeProcess(wintype_to_cdata(hProcess), lpExitCode)
-    error_check("GetExitCodeProcess", code=code, expected=Enums.NON_ZERO)
+    error_check("GetExitCodeProcess", code=code, expected=NON_ZERO)
     return lpExitCode[0]
 
 
@@ -352,7 +352,7 @@ def TerminateProcess(hProcess, uExitCode):
         wintype_to_cdata(hProcess),
         ffi.cast("UINT", uExitCode)
     )
-    error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)
+    error_check("TerminateProcess", code=code, expected=NON_ZERO)
 
 
 def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
@@ -562,7 +562,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         wintype_to_cdata(lpStartupInfo),
         wintype_to_cdata(lpProcessInformation)
     )
-    error_check("CreateProcess", code=code, expected=Enums.NON_ZERO)
+    error_check("CreateProcess", code=code, expected=NON_ZERO)
 
     return CreateProcessResult(
         lpCommandLine=lpCommandLine,
