@@ -1,7 +1,8 @@
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.wintypes import (
-    HANDLE, SECURITY_ATTRIBUTES, OVERLAPPED, FILETIME, LPWSANETWORKEVENTS)
+    HANDLE, SECURITY_ATTRIBUTES, OVERLAPPED, FILETIME, LPWSANETWORKEVENTS,
+    PROCESS_INFORMATION, STARTUPINFO)
 
 
 class TestSECURITY_ATTRIBUTES(TestCase):
@@ -93,3 +94,66 @@ class TestLPWSANETWORKEVENTS(TestCase):
         _, library = dist.load()
         events = LPWSANETWORKEVENTS()
         self.assertEqual(events.iErrorCode, tuple([0] * library.FD_MAX_EVENTS))
+
+
+class TestPROCESS_INFORMATION(TestCase):
+    """
+    Tests for :class:`pywincffi.wintypes.PROCESS_INFORMATION`
+    """
+    def test_hProcess(self):
+        events = PROCESS_INFORMATION()
+        self.assertIsInstance(events.hProcess, HANDLE)
+
+    def test_hThread(self):
+        events = PROCESS_INFORMATION()
+        self.assertIsInstance(events.hThread, HANDLE)
+
+
+class TestSTARTUPINFO(TestCase):
+    """
+    Tests for :class:`pywincffi.wintypes.STARTUPINFO`
+    """
+    def test_hStdInput_get(self):
+        info = STARTUPINFO()
+        self.assertIsInstance(info.hStdInput, HANDLE)
+
+    def test_hStdOutput_get(self):
+        info = STARTUPINFO()
+        self.assertIsInstance(info.hStdOutput, HANDLE)
+
+    def test_hStdError_get(self):
+        info = STARTUPINFO()
+        self.assertIsInstance(info.hStdError, HANDLE)
+
+    def test_hStdInput_set(self):
+        info = STARTUPINFO()
+        handle = HANDLE()
+        info.hStdInput = handle
+        self.assertEqual(info.hStdInput, handle)
+
+    def test_hStdOutput_set(self):
+        info = STARTUPINFO()
+        handle = HANDLE()
+        info.hStdOutput = handle
+        self.assertEqual(info.hStdOutput, handle)
+
+    def test_hStdError_set(self):
+        info = STARTUPINFO()
+        handle = HANDLE()
+        info.hStdError = handle
+        self.assertEqual(info.hStdError, handle)
+
+    def test_hStdInput_error(self):
+        info = STARTUPINFO()
+        with self.assertRaises(TypeError):
+            info.hStdInput = 1
+
+    def test_hStdOutput_error(self):
+        info = STARTUPINFO()
+        with self.assertRaises(TypeError):
+            info.hStdOutput = 1
+
+    def test_hStdError_error(self):
+        info = STARTUPINFO()
+        with self.assertRaises(TypeError):
+            info.hStdError = 1

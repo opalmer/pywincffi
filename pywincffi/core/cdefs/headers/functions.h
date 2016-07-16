@@ -210,7 +210,6 @@ BOOL WINAPI ResetEvent(
   _In_ HANDLE hEvent
 );
 
-
 ///////////////////////
 // Communications
 ///////////////////////
@@ -252,6 +251,24 @@ int WSAEnumNetworkEvents(
 ///////////////////////
 HANDLE handle_from_fd(int);
 BOOL wsa_invalid_event(WSAEVENT);
+
+///////////////////////
+// Processes
+///////////////////////
+
+// https://msdn.microsoft.com/en-us/ms682425
+BOOL WINAPI CreateProcess(
+  _In_opt_    LPCTSTR               lpApplicationName,
+  _Inout_opt_ LPTSTR                lpCommandLine,
+  _In_opt_    LPSECURITY_ATTRIBUTES lpProcessAttributes,
+  _In_opt_    LPSECURITY_ATTRIBUTES lpThreadAttributes,
+  _In_        BOOL                  bInheritHandles,
+  _In_        DWORD                 dwCreationFlags,
+  _In_opt_    LPVOID                lpEnvironment,
+  _In_opt_    LPCTSTR               lpCurrentDirectory,
+  _In_        LPSTARTUPINFO         lpStartupInfo,
+  _Out_       LPPROCESS_INFORMATION lpProcessInformation
+);
 
 // Used internally to reset the last error to 0
 // in cases where pywincffi is the cause of the

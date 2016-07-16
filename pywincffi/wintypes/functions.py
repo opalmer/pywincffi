@@ -8,6 +8,8 @@ types.
 
 import socket
 
+from six import text_type
+
 from pywincffi.core import dist
 from pywincffi.exceptions import InputError
 from pywincffi.wintypes.objects import HANDLE, SOCKET, WSAEVENT
@@ -103,14 +105,35 @@ def socket_from_object(sock):
 
     except AttributeError:
         raise InputError(
-            "sock", sock, allowed_types=None,
+            "sock", sock,
             message="Expected a Python socket object for `sock`")
     except socket.error as error:
         raise InputError(
-            "sock", sock, allowed_types=None,
+            "sock", sock,
             message="Invalid socket object (error: %s)" % error)
     else:
         ffi, _ = dist.load()
         sock = SOCKET()
         sock._cdata[0] = ffi.cast("SOCKET", fileno)
         return sock
+
+
+def text_to_wchar(text):
+    """
+    Converts ``text`` to ``wchar_t[len(text)]``.
+
+    :param text:
+        The text convert to ``wchar_t``.
+
+    :raises InputError:
+        Raised if the type of ``text`` is not a text type.  For
+        Python 2 this function expects unicode and for Python 3
+        it expects a string.
+    """
+    if not isinstance(text, text_type):
+        raise InputError(
+            "text", text,
+            message="Expected %r for `text`" % text_type)
+
+    ffi, _ = dist.load()
+    return ffi.new("wchar_t[%d]" % len(text), text)

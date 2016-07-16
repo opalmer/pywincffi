@@ -15,16 +15,127 @@ documentation for the constant names and their purpose:
     Not all constants may be defined
 """
 
-from six import integer_types
+from io import StringIO
+from token import STRING
+from collections import namedtuple
+from tokenize import generate_tokens
+
+from six import integer_types, text_type
 
 from pywincffi.core import dist
 from pywincffi.core.checks import NON_ZERO, input_check, error_check
-from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
+from pywincffi.exceptions import (
+    WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
-from pywincffi.wintypes import HANDLE, wintype_to_cdata
+from pywincffi.wintypes import (
+    HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO, PROCESS_INFORMATION,
+    wintype_to_cdata, text_to_wchar)
 
 RESERVED_PIDS = set([0, 4])
+
+
+def environment_to_string(environment):
+    """
+    This function is used internally by :func:`CreateProcess` to convert
+    the input to ``lpEnvironment`` to a string which the underlying C API
+    call will understand.
+
+    >>> from pywincffi.kernel32.process import environment_to_string
+    >>> environment_to_string({"A": "a", "B": "b"})
+    'A=a\x00B=b'
+
+    :param environment:
+        A dictionary or dictionary like object to convert to a string.
+
+    :raises InputError:
+        Raised if we cannot convert ``environment`` to a string.  This can
+        happen if:
+
+            * ``environment`` is not a dictionary like object.
+            * Not all keys and values in the environment are strings (
+              str in Python 3.x, unicode in Python 2.x)
+            * One or more of the keys contains the `=` symbol.
+    """
+    try:
+        items = environment.iteritems
+    except AttributeError:
+        try:
+            items = environment.items
+        except AttributeError:
+            raise InputError(
+                "environment", environment,
+                message="Expected a dictionary like object for `environment`")
+
+    converted = []
+    for key, value in items():
+        if not isinstance(key, text_type):
+            raise InputError(
+                "environment key %s" % key, key,
+                allowed_types=(text_type, ))
+
+        if not isinstance(value, text_type):
+            raise InputError(
+                "environment value %s (key: %r)" % (value, key), value,
+                allowed_types=(text_type, ))
+
+        # From Microsoft's documentation on `lpEnvironment`:
+        #   Because the equal sign is used as a separator, it must not be used
+        #   in the name of an environment variable.
+        if "=" in key:
+            raise InputError(
+                key, key, None,
+                message="Environment keys cannot contain the `=` symbol.  "
+                        "Offending key: %r" % key)
+
+        converted.append("%s=%s\0" % (key, value))
+
+    return text_type("".join(converted)) + text_type("\0")
+
+
+def module_name(path):
+    """
+    Returns the module name for the given ``path``
+
+        >>> module_name(u"C:\\Python27\\python.exe -c 'print True'")
+        'C:\\Python27\\python.exe'
+        >>> module_name(u"C:\\Program Files (x86)\\Foo\\program.exe -h")
+        'C:\\Program'
+        >>> module_name(u"'C:\\Program Files (x86)\\Foo\\program.exe' -h")
+        'C:\\Program Files (x86)\\Foo\\program.exe'
+
+    This function is used internally by :func:`CreateProcess` to assist in
+    validating input to the ``lpCommandLine`` argument.  When calling
+    :func:`CreateProcess` if ``lpApplicationName`` is not set then
+    ``lpCommandLine``'s module name cannot exceed ``MAX_PATH``.
+
+    :raises TypeError:
+        Raised if ``path`` is not a text type.
+    """
+    # Try to tokenize the input.  In the case of properly quoted strings
+    # the module name should be the first entry.
+    for type_, string, _, _, line in generate_tokens(StringIO(path).readline):
+        if type_ == STRING and line.startswith(string) and line != string:
+            module = string
+            break
+    else:
+        module = path.split(" ", 1)[0]
+
+    if not module:
+        raise InputError(
+            "", None, None,
+            message="Failed to determine module name in %r" % path)
+
+    # Make sure we're just getting the module name
+    # and not any of the original quote characters.
+    quote_characters = ("'", '"')
+    if module[0] in quote_characters:
+        module = module[1:]
+
+    if module[-1] in quote_characters:
+        module = module[:-1]
+
+    return module
 
 
 def pid_exists(pid, wait=0):
@@ -282,3 +393,190 @@ def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
     error_check("CreateToolhelp32Snapshot")
 
     return HANDLE(process_list)
+
+
+CreateProcessResult = namedtuple(
+    "CreateProcessResult",
+    ("lpCommandLine", "lpProcessInformation")
+)
+
+
+def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
+        lpCommandLine, lpApplicationName=None, lpProcessAttributes=None,
+        lpThreadAttributes=None, bInheritHandles=True, dwCreationFlags=None,
+        lpEnvironment=None, lpCurrentDirectory=None, lpStartupInfo=None):
+    """
+    Creates a new process and its primary thread.  The process will be
+    created in the same security context as the original process.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms682425
+
+    :param str lpCommandLine:
+        The command line to be executed.  The maximum length of this parameter
+        is 32768.  If no value is provided for ``lpApplicationName`` then
+        the module name portion of ``lpCommandLine`` cannot exceed
+        ``MAX_PATH``.
+
+    :keyword pywincffi.wintypes.STARTUPINFO lpStartupInfo:
+        See Microsoft's documentation for additional information.
+
+        .. warning::
+
+            The STARTUPINFOEX structure is not currently supported
+            for this input.
+
+    :keyword str lpApplicationName:
+        The name of the module or application to be executed.  This can be
+        either the fully qualified path name or a partial name.  The system
+        path will not be searched.  If no value is provided for this keyword
+        then the input to ``lpCommandLine`` will be used by Windows instead.
+
+    :keyword pywincffi.wintypes.SECUREITY_ATTRIBUTES lpProcessAttributes:
+        Determines whether the returned handle to the new process object
+        can be inherited by child processes.  By default, the handle cannot be
+        inherited.
+
+    :keyword pywincffi.wintypes.SECUREITY_ATTRIBUTES lpThreadAttributes:
+        Determines if the returned handle to the new thread object can
+        be inherited by child processes.  By default, the thread cannot be
+        inherited.
+
+    :keyword bool bInheritHandles:
+        If True (the default) the handles inherited by the calling process
+        are inherited by the new process.
+
+    :keyword int dwCreationFlags:
+        Controls the priority class and creation of the process.  By default
+        the process will flag will default to
+        ``NORMAL_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT``
+
+    :keyword dict lpEnvironment:
+        The environment for the new process.  By default the the process
+        will be created with the same environment as the parent process.
+
+        .. note::
+
+            All keys and values in the environment must be either unicode
+            (Python 2) or strings (Python 3).
+
+        .. note::
+
+            This keyword will completely override the current if you wish to
+            update the current environment instead then you will need to make
+            and update a copy.
+
+        .. warning::
+
+            Excluding certain system environment variables such as ``PATH`` or
+            ``SYSTEMROOT`` may result in crashes or unexpected behaviors
+            depending on the program being run.
+
+
+    :keyword str lpCurrentDirectory:
+        The full path to the current directory for the process.  If not
+         provided then the process will have the same working directory
+         as the parent process.
+
+    :raises InputError:
+        Raised if ``lpCommandLine`` is too long or there are other input
+        problems.
+
+    :rtype: :class:`pywincffi.kernel32.process.CreateProcessResult`
+    :return:
+        Returns a named tuple containing ``lpCommandLine`` and
+        ``lpProcessInformation``.  The ``lpProcessInformation`` will
+        be an instance of
+        :class:`pywincffi.wintypes.structures.PROCESS_INFORMATION`
+    """
+    ffi, library = dist.load()
+
+    if len(lpCommandLine) > library.MAX_COMMAND_LINE:
+        raise InputError(
+            "lpCommandLine", lpCommandLine, text_type,
+            message="lpCommandLine's length "
+                    "cannot exceed %s" % library.MAX_COMMAND_LINE)
+
+    if lpApplicationName is None:
+        lpApplicationName = ffi.NULL
+
+        # If lpApplication name is not set then lpCommandLine's
+        # module name cannot exceed MAX_PATH.  Rather than letting
+        # this hit the Windows API and possibly fail we're check
+        # before hand so we can provide a better exception.
+        module = module_name(text_type(lpCommandLine))
+        if len(module) > library.MAX_PATH:
+            raise InputError(
+                "lpCommandLine", lpCommandLine, text_type,
+                message="lpCommandLine's module name length cannot "
+                        "exceed %s if `lpApplicationName` "
+                        "is not set. Module name was %r" % (
+                            library.MAX_PATH, module))
+    else:
+        input_check(
+            "lpApplicationName", lpApplicationName, allowed_types=(text_type,))
+
+    if lpProcessAttributes is not None:
+        input_check(
+            "lpProcessAttributes", lpProcessAttributes,
+            allowed_types=(SECURITY_ATTRIBUTES, ))
+        lpProcessAttributes = wintype_to_cdata(lpProcessAttributes)
+    else:
+        lpProcessAttributes = ffi.NULL
+
+    if lpThreadAttributes is not None:
+        input_check(
+            "lpThreadAttributes", lpThreadAttributes,
+            allowed_types=(SECURITY_ATTRIBUTES, ))
+        lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
+    else:
+        lpThreadAttributes = ffi.NULL
+
+    input_check(
+        "bInheritHandles", bInheritHandles, allowed_values=(True, False))
+
+    if dwCreationFlags is None:
+        dwCreationFlags = \
+            library.NORMAL_PRIORITY_CLASS | library.CREATE_UNICODE_ENVIRONMENT
+
+    input_check(
+        "dwCreationFlags", dwCreationFlags, allowed_types=(integer_types, ))
+
+    if lpEnvironment is not None:
+        lpEnvironment = text_to_wchar(environment_to_string(lpEnvironment))
+    else:
+        lpEnvironment = ffi.NULL
+
+    if lpCurrentDirectory is not None:
+        input_check(
+            "lpCurrentDirectory", lpCurrentDirectory,
+            allowed_types=(text_type, ))
+    else:
+        lpCurrentDirectory = ffi.NULL
+
+    if lpStartupInfo is not None:
+        # TODO need to add support for STARTUPINFOEX (undocumented)
+        input_check(
+            "lpStartupInfo", lpStartupInfo, allowed_types=(STARTUPINFO, ))
+    else:
+        lpStartupInfo = STARTUPINFO()
+
+    lpProcessInformation = PROCESS_INFORMATION()
+    code = library.CreateProcess(
+        lpApplicationName,
+        lpCommandLine,
+        lpProcessAttributes,
+        lpThreadAttributes,
+        bInheritHandles,
+        dwCreationFlags,
+        lpEnvironment,
+        lpCurrentDirectory,
+        wintype_to_cdata(lpStartupInfo),
+        wintype_to_cdata(lpProcessInformation)
+    )
+    error_check("CreateProcess", code=code, expected=NON_ZERO)
+
+    return CreateProcessResult(
+        lpCommandLine=lpCommandLine,
+        lpProcessInformation=lpProcessInformation)
