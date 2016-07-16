@@ -105,11 +105,11 @@ def socket_from_object(sock):
 
     except AttributeError:
         raise InputError(
-            "sock", sock, allowed_types=None,
+            "sock", sock,
             message="Expected a Python socket object for `sock`")
     except socket.error as error:
         raise InputError(
-            "sock", sock, allowed_types=None,
+            "sock", sock,
             message="Invalid socket object (error: %s)" % error)
     else:
         ffi, _ = dist.load()
