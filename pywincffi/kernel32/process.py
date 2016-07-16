@@ -461,6 +461,19 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
             All keys and values in the environment must be either unicode
             (Python 2) or strings (Python 3).
 
+        .. note::
+
+            This keyword will completely override the current if you wish to
+            update the current environment instead then you will need to make
+            and update a copy.
+
+        .. warning::
+
+            Excluding certain system environment variables such as ``PATH`` or
+            ``SYSTEMROOT`` may result in crashes or unexpected behaviors
+            depending on the program being run.
+
+
     :keyword str lpCurrentDirectory:
         The full path to the current directory for the process.  If not
          provided then the process will have the same working directory

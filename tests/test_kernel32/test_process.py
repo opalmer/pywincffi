@@ -294,16 +294,16 @@ class TestEnvironmentToString(TestCase):
         )
 
     def test_type_check_for_environment_key(self):
-        with self.assertRaisesRegex(InputError, "Expected.*unicode.*"):
-            environment_to_string({1: 1})
+        with self.assertRaises(InputError):
+            environment_to_string({1: text_type("")})
 
     def test_type_check_for_environment_value(self):
         with self.assertRaisesRegex(InputError, ".*environment value 2.*"):
-            environment_to_string({u"2": 2})
+            environment_to_string({text_type("1"): 2})
 
     def test_key_cannot_contain_equals(self):
         with self.assertRaisesRegex(InputError, ".*cannot contain the `=`.*"):
-            environment_to_string({u"3=4": u""})
+            environment_to_string({text_type("3=4"): text_type("")})
 
 
 class TestModuleName(TestCase):
@@ -429,7 +429,8 @@ class TestCreateProcess(TestCase):
         self.addCleanup(os.remove, script_path)
         environ = {
             text_type("REMOVE_FILE"): text_type(remove_file),
-            text_type("PATH"): text_type("")
+            text_type("PATH"): text_type(""),
+            text_type("SYSTEMROOT"): text_type(os.environ.get("SYSTEMROOT"))
         }
 
         process = CreateProcess(
