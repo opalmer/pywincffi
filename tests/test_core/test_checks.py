@@ -22,3 +22,7 @@ class TestInputCheck(TestCase):
     def test_invalid_allowed_types(self):
         with self.assertRaises(InputError):
             input_check("", 1, allowed_types=(str, ))
+
+    def test_allowed_values_failure(self):
+        with self.assertRaises(InputError):
+            input_check("", 1, allowed_values=(2, ))
