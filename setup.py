@@ -30,9 +30,6 @@ requirements = [
     "six"
 ]
 
-if sys.version_info[0:2] < (3, 4):
-    requirements += ["enum34"]
-
 ROOT = dirname(abspath(__file__))
 DISTS = join(ROOT, "dist")
 

@@ -8,7 +8,7 @@ A module containing Windows functions for working with events.
 from six import integer_types, text_type
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check, NoneType
+from pywincffi.core.checks import NON_ZERO, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError
 from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, wintype_to_cdata
 
@@ -124,4 +124,4 @@ def ResetEvent(hEvent):
 
     _, library = dist.load()
     code = library.ResetEvent(wintype_to_cdata(hEvent))
-    error_check("ResetEvent", code=code, expected=Enums.NON_ZERO)
+    error_check("ResetEvent", code=code, expected=NON_ZERO)

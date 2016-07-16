@@ -18,7 +18,7 @@ documentation for the constant names and their purpose:
 from six import integer_types
 
 from pywincffi.core import dist
-from pywincffi.core.checks import Enums, input_check, error_check
+from pywincffi.core.checks import NON_ZERO, input_check, error_check
 from pywincffi.exceptions import WindowsAPIError, PyWinCFFINotImplementedError
 from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
@@ -137,7 +137,7 @@ def GetExitCodeProcess(hProcess):
     ffi, library = dist.load()
     lpExitCode = ffi.new("LPDWORD")
     code = library.GetExitCodeProcess(wintype_to_cdata(hProcess), lpExitCode)
-    error_check("GetExitCodeProcess", code=code, expected=Enums.NON_ZERO)
+    error_check("GetExitCodeProcess", code=code, expected=NON_ZERO)
     return lpExitCode[0]
 
 
@@ -241,7 +241,7 @@ def TerminateProcess(hProcess, uExitCode):
         wintype_to_cdata(hProcess),
         ffi.cast("UINT", uExitCode)
     )
-    error_check("TerminateProcess", code=code, expected=Enums.NON_ZERO)
+    error_check("TerminateProcess", code=code, expected=NON_ZERO)
 
 
 def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):

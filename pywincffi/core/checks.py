@@ -5,15 +5,12 @@ Checks
 Provides functions that are responsible for internal type checks.
 """
 
-import enum
-
 from pywincffi.core import dist
 from pywincffi.exceptions import WindowsAPIError, InputError
 
 NoneType = type(None)
-Enums = enum.Enum("Enums", """
-NON_ZERO
-""".strip())
+
+NON_ZERO = "NON_ZERO"
 
 
 def error_check(function, code=None, expected=None):
@@ -30,7 +27,7 @@ def error_check(function, code=None, expected=None):
 
     :keyword int expected:
         The code we expect to have as a result of a successful
-        call.  This can also be passed ``pywincffi.core.checks.Enums.NON_ZERO``
+        call.  This can also be passed ``pywincffi.core.checks.NON_ZERO``
         if ``code`` can be anything but zero.
 
     :raises pywincffi.exceptions.WindowsAPIError:
@@ -40,7 +37,7 @@ def error_check(function, code=None, expected=None):
     errno, error_message = ffi.getwinerror()
 
     if code is not None:
-        if expected == Enums.NON_ZERO and code == 0:
+        if expected == NON_ZERO and code == 0:
             raise WindowsAPIError(
                 function, error_message, errno,
                 return_code=code, expected_return_code=expected)
