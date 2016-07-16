@@ -25,21 +25,25 @@ class InputError(PyWinCFFIError):
 
 
     :param str name:
-        The name of the parameter being checked
+        The name of the parameter being checked.
 
     :param value:
-        The value of the parameter being checked
+        The value of the parameter being checked.
 
-    :param expected_types:
-        The expected type(s).  This may be either a single value or a
-        tuple/list of types.
+    :keyword allowed_types:
+        The expected type(s). If provided then the exception's message will
+        be tailored to provide information about ``value``'s type and the
+        possible input types.
 
     :keyword allowed_values:
-        An explicit list of values which are allowed for ``value``.
+        The expected value(s).  If provided then the exception's message will
+        be tailored to provide information about what value(s) were allowed
+        for ``value``.
 
     :keyword ffi:
-        If ``value`` is a C object then you may pass in an instance of the
-        FFI instance to help understand the underlying type of ``value``
+        If ``value`` is a C object, ``ffi`` is provided and ``allowed_types``
+        is provided as well then the provided ``ffi`` instance will be used
+        to provide additional context.
 
     :keyword str message:
         A custom error message.  This will override the default error messages
@@ -48,41 +52,53 @@ class InputError(PyWinCFFIError):
         function but it's unrelated to the type of input.
     """
     def __init__(  # pylint: disable=too-many-arguments
-            self, name, value, expected_types, allowed_values=None, ffi=None,
-            message=None):
+            self, name, value,
+            allowed_types=None, allowed_values=None, ffi=None, message=None):
+        if allowed_types is not None and allowed_values is not None:
+            raise ValueError(
+                "Please provide either `allowed_types` or `allowed_values`")
+
+        if (allowed_types is None and allowed_values is None and
+                message is None):
+            raise ValueError(
+                "Please provide `allowed_types`, `allowed_values` or "
+                "`message`")
+
         self.name = name
         self.value = value
-        self.value_repr = value
-        self.expected_types = expected_types
+        self.allowed_types = allowed_types
         self.allowed_values = allowed_values
+        self.message = message
 
-        if ffi is not None:
-            try:
-                exceptions = (TypeError, CDefError, ffi.error)
-            except AttributeError:
-                exceptions = (TypeError, CDefError)
-
-            try:
-                typeof = ffi.typeof(value)
-            except exceptions:
-                self.value_repr = repr(value)
+        if self.message is None and self.allowed_types is not None:
+            if ffi is None:
+                typeof = repr(type(value))
             else:
-                self.value_repr = "%s(kind=%r, cname=%r)" % (
-                    value.__class__.__name__, typeof.kind, typeof.cname)
+                try:
+                    ffi_exceptions = (TypeError, CDefError, ffi.error)
+                except AttributeError:  # pragma: no cover
+                    ffi_exceptions = (TypeError, CDefError)
 
-        if message is not None:
-            self.message = message
+                try:
+                    typeof = ffi.typeof(value)
+                except ffi_exceptions:
+                    typeof = repr(type(value))
+                else:
+                    typeof = "{classname}(kind={kind}, cname={cname})".format(
+                        classname=value.__class__.__name__,
+                        kind=repr(typeof.kind), cname=repr(typeof.cname))
 
-        elif self.allowed_values is None:
-            self.message = "Expected type(s) %r for %s.  Got %s instead." % (
-                self.expected_types, self.name, self.value_repr
-            )
-
-        else:
             self.message = \
-                "Expected value for %s to be in %r. Got %s instead." % (
-                    self.name, self.allowed_values, self.value_repr
-                )
+                "Expected type(s) {expected} for {name}. Type of {name} " \
+                "is {typeof}.".format(
+                    expected=repr(allowed_types), name=repr(name),
+                    typeof=typeof)
+
+        elif self.message is None and self.allowed_values is not None:
+            self.message = \
+                "Expected the value of {name} to be in {values}. Value of " \
+                "{name} is {value}.".format(
+                    name=repr(name), values=allowed_values, value=repr(value))
 
         super(InputError, self).__init__(self.message)
 
