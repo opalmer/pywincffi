@@ -21,12 +21,11 @@ from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
     GetProcessId, TerminateProcess, CreateToolhelp32Snapshot, CreateProcess,
     pid_exists)
-from pywincffi.kernel32.process import _text_to_wchar
 
 # A couple of internal imports.  These are not considered part of the public
 # API but we still need to test them.
 from pywincffi.kernel32.process import (
-    CreateProcessResult, _environment_to_string, module_name)
+    CreateProcessResult, _environment_to_string, _text_to_wchar, module_name)
 from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO
 
 try:
@@ -357,7 +356,7 @@ class TestModuleName(TestCase):
             module_name(u" ")
 
 
-class TestCreateProcessAuxFunctionTextToWideChar(TestCase):
+class TestTextToWideChar(TestCase):
     """
     Tests for private function `pywincffi.kernel32.text_to_wchar`
     """
