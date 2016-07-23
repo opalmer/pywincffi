@@ -578,6 +578,7 @@ class TestCreateProcess(TestCase):
         """).strip()
 
         fd, script_path = tempfile.mkstemp(suffix=".py")
+        self.addCleanup(os.remove, script_path)
         with os.fdopen(fd, "w") as file_:
             file_.write(script)
 
