@@ -30,7 +30,7 @@ from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.wintypes import (
     HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO, PROCESS_INFORMATION,
-    wintype_to_cdata, text_to_wchar)
+    wintype_to_cdata)
 
 RESERVED_PIDS = set([0, 4])
 
@@ -91,6 +91,27 @@ def environment_to_string(environment):
         converted.append("%s=%s\0" % (key, value))
 
     return text_type("".join(converted)) + text_type("\0")
+
+
+def text_to_wchar(text):
+    """
+    Converts ``text`` to ``wchar_t[len(text)]``.
+
+    :param text:
+        The text convert to ``wchar_t``.
+
+    :raises InputError:
+        Raised if the type of ``text`` is not a text type.  For
+        Python 2 this function expects unicode and for Python 3
+        it expects a string.
+    """
+    if not isinstance(text, text_type):
+        raise InputError(
+            "text", text,
+            message="Expected %r for `text`" % text_type)
+
+    ffi, _ = dist.load()
+    return ffi.new("wchar_t[%d]" % len(text), text)
 
 
 def module_name(path):

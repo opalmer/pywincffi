@@ -21,6 +21,7 @@ from pywincffi.kernel32 import (
     CloseHandle, OpenProcess, GetCurrentProcess, GetExitCodeProcess,
     GetProcessId, TerminateProcess, CreateToolhelp32Snapshot, CreateProcess,
     pid_exists)
+from pywincffi.kernel32.process import text_to_wchar
 
 # A couple of internal imports.  These are not considered part of the public
 # API but we still need to test them.
@@ -354,6 +355,29 @@ class TestModuleName(TestCase):
     def test_failed_to_determine_module_name(self):
         with self.assertRaises(InputError):
             module_name(u" ")
+
+
+class TestCreateProcessAuxFunctionTextToWideChar(TestCase):
+    """
+    Tests for private function `pywincffi.kernel32.text_to_wchar`
+    """
+    def test_input_type_check(self):
+        bad_input = "hello, world" if PY2 else b"hello, world"
+        with self.assertRaises(InputError):
+            text_to_wchar(bad_input)
+
+    def test_conversion_output_type(self):
+        text = text_type(self.random_string(6))
+        output = text_to_wchar(text)
+        ffi, _ = dist.load()
+        typeof = ffi.typeof(output)
+        self.assertEqual(typeof.cname, "wchar_t[%d]" % len(text))
+
+    def test_contents_equals_input(self):
+        text = text_type(self.random_string(6))
+        output = text_to_wchar(text)
+        ffi, _ = dist.load()
+        self.assertEqual(ffi.string(output), text)
 
 
 class TestCreateProcess(TestCase):
