@@ -23,7 +23,7 @@ from tokenize import generate_tokens
 from six import integer_types, text_type
 
 from pywincffi.core import dist
-from pywincffi.core.checks import NON_ZERO, input_check, error_check
+from pywincffi.core.checks import NON_ZERO, input_check, error_check, NoneType
 from pywincffi.exceptions import (
     WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32.handle import CloseHandle
@@ -538,21 +538,15 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         input_check(
             "lpApplicationName", lpApplicationName, allowed_types=(text_type,))
 
-    if lpProcessAttributes is not None:
-        input_check(
-            "lpProcessAttributes", lpProcessAttributes,
-            allowed_types=(SECURITY_ATTRIBUTES, ))
-        lpProcessAttributes = wintype_to_cdata(lpProcessAttributes)
-    else:
-        lpProcessAttributes = ffi.NULL
+    input_check(
+        "lpProcessAttributes", lpProcessAttributes,
+        allowed_types=(SECURITY_ATTRIBUTES, NoneType))
+    lpProcessAttributes = wintype_to_cdata(lpProcessAttributes)
 
-    if lpThreadAttributes is not None:
-        input_check(
-            "lpThreadAttributes", lpThreadAttributes,
-            allowed_types=(SECURITY_ATTRIBUTES, ))
-        lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
-    else:
-        lpThreadAttributes = ffi.NULL
+    input_check(
+        "lpThreadAttributes", lpThreadAttributes,
+        allowed_types=(SECURITY_ATTRIBUTES, NoneType))
+    lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
 
     input_check(
         "bInheritHandles", bInheritHandles, allowed_values=(True, False))
