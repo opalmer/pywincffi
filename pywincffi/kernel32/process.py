@@ -35,14 +35,14 @@ from pywincffi.wintypes import (
 RESERVED_PIDS = set([0, 4])
 
 
-def environment_to_string(environment):
+def _environment_to_string(environment):
     """
     This function is used internally by :func:`CreateProcess` to convert
     the input to ``lpEnvironment`` to a string which the underlying C API
     call will understand.
 
-    >>> from pywincffi.kernel32.process import environment_to_string
-    >>> environment_to_string({"A": "a", "B": "b"})
+    >>> from pywincffi.kernel32.process import _environment_to_string
+    >>> _environment_to_string({"A": "a", "B": "b"})
     'A=a\x00B=b'
 
     :param environment:
@@ -93,7 +93,7 @@ def environment_to_string(environment):
     return text_type("".join(converted)) + text_type("\0")
 
 
-def text_to_wchar(text):
+def _text_to_wchar(text):
     """
     Converts ``text`` to ``wchar_t[len(text)]``.
 
@@ -559,7 +559,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         "dwCreationFlags", dwCreationFlags, allowed_types=(integer_types, ))
 
     if lpEnvironment is not None:
-        lpEnvironment = text_to_wchar(environment_to_string(lpEnvironment))
+        lpEnvironment = _text_to_wchar(_environment_to_string(lpEnvironment))
     else:
         lpEnvironment = ffi.NULL
 
