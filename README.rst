@@ -87,6 +87,8 @@ It's generated directly from this library using sphinx::
 The build process also builds the documentation to ensure there are not
 any obvious problems (including broken links).
 
+Note, if you're running Python 2.6 use dev_requirements-2.6.txt instead.
+
 Function Documentation
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -140,6 +142,8 @@ the ``setup.py`` file::
     pip install -r dev_requirements.txt
     pip install -e .
     nosetests tests
+
+Note, if you're running Python 2.6 use dev_requirements-2.6.txt instead.
 
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~

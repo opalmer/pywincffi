@@ -21,6 +21,8 @@ import shutil
 import tempfile
 from errno import ENOENT
 from os.path import join, isfile
+
+# pylint: disable=no-name-in-module
 from pkg_resources import resource_filename
 
 from cffi import FFI
@@ -30,7 +32,7 @@ from pywincffi.exceptions import ResourceNotFoundError, InternalError
 imp = None  # pylint: disable=invalid-name
 ExtensionFileLoader = None  # pylint: disable=invalid-name
 try:
-    # pylint: disable=wrong-import-order,wrong-import-position
+    # pylint: disable=wrong-import-order,wrong-import-position,import-error
     from importlib.machinery import ExtensionFileLoader
 except ImportError:  # pragma: no cover
     import imp  # pylint: disable=wrong-import-position,wrong-import-order
@@ -307,6 +309,7 @@ def load():
         except ImportError:
             pywincffi = _compile(_ffi())
 
+        # pylint: disable=no-member
         Loader.set(pywincffi.ffi, LibraryWrapper(pywincffi.lib))
 
     return Loader.get()

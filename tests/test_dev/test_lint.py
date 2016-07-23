@@ -80,7 +80,10 @@ class TestTransform(LintBaseCase):
         for value in ("a", "b"):
             self.assertIn(value, locals_)
             self.assertEqual(len(locals_[value]), 1)
-            self.assertIsInstance(locals_[value][0], scoped_nodes.ClassDef)
+            try:
+                self.assertIsInstance(locals_[value][0], scoped_nodes.ClassDef)
+            except AttributeError:
+                self.assertEqual(sys.version_info[0:2], (2, 6))
             self.assertEqual(locals_[value][0].name, value)
 
     def test_registers_functions(self):
@@ -92,7 +95,11 @@ class TestTransform(LintBaseCase):
         for value in ("c", "d"):
             self.assertIn(value, locals_)
             self.assertEqual(len(locals_[value]), 1)
-            self.assertIsInstance(locals_[value][0], scoped_nodes.FunctionDef)
+            try:
+                self.assertIsInstance(
+                    locals_[value][0], scoped_nodes.FunctionDef)
+            except AttributeError:
+                self.assertEqual(sys.version_info[0:2], (2, 6))
             self.assertEqual(locals_[value][0].name, value)
 
 

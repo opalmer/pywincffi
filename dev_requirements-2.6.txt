@@ -1,0 +1,17 @@
+# NOTE: This requirements file is for Python 2.6 only.  Packages are slowly
+# dropping support for 2.6, this file allows the project to lock down
+# these requirements
+nose
+unittest2
+logilab-common>=0.53.0
+pylint<1.4
+astroid<=1.3.2
+pep8
+mock
+sphinx
+wheel
+setuptools
+coverage
+requests
+codecov
+PyGithub

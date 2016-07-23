@@ -9,6 +9,7 @@ retrieve new child loggers.
 import logging
 
 try:
+    # pylint: disable=invalid-name,no-member
     NullHandler = logging.NullHandler
 
 except AttributeError:  # pragma: no cover
@@ -25,7 +26,7 @@ except AttributeError:  # pragma: no cover
             pass
 
         def createLock(self):
-            self.lock = None
+            self.lock = None  # pylint: disable=attribute-defined-outside-init
 
 FORMATTER = logging.Formatter(
     "%(asctime)s %(name)s %(levelname)9s %(message)s",

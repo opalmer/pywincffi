@@ -83,7 +83,7 @@ class SharedState(object):  # pylint: disable=too-few-public-methods
     ws2_32 = None
 
 
-class TestCase(_TestCase):
+class TestCase(_TestCase):  # pylint: disable=too-many-public-methods
     """
     A base class for all test cases.  By default the
     core test case just provides some extra functionality.
