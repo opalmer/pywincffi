@@ -8,8 +8,6 @@ types.
 
 import socket
 
-from six import text_type
-
 from pywincffi.core import dist
 from pywincffi.exceptions import InputError
 from pywincffi.wintypes.objects import HANDLE, SOCKET, WSAEVENT
