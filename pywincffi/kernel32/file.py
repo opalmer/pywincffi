@@ -170,7 +170,8 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
         wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToWrite,
         bytes_written, wintype_to_cdata(lpOverlapped)
     )
-    error_check("WriteFile", code=code, expected=NON_ZERO)
+    expected = NON_ZERO if lpOverlapped is None else 0
+    error_check("WriteFile", code=code, expected=expected)
 
     return bytes_written[0]
 
