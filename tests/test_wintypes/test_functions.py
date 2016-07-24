@@ -3,14 +3,12 @@ import socket
 import tempfile
 from errno import EBADF
 
-from six import PY2, text_type
-
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
 from pywincffi.kernel32 import CloseHandle
 from pywincffi.wintypes import (
-    SOCKET, handle_from_file, socket_from_object, text_to_wchar)
+    SOCKET, handle_from_file, socket_from_object)
 
 try:
     WindowsError
@@ -101,26 +99,3 @@ class TestSocketFromObject(TestCase):
 
         self.assertEqual(self.GetLastError()[0], library.WSAENOTSOCK)
         self.SetLastError(0)
-
-
-class TestTextToWideChar(TestCase):
-    """
-    Tests for :func:`pywincffi.wintypes.text_to_wchar`
-    """
-    def test_input_type_check(self):
-        bad_input = "hello, world" if PY2 else b"hello, world"
-        with self.assertRaises(InputError):
-            text_to_wchar(bad_input)
-
-    def test_conversion_output_type(self):
-        text = text_type(self.random_string(6))
-        output = text_to_wchar(text)
-        ffi, _ = dist.load()
-        typeof = ffi.typeof(output)
-        self.assertEqual(typeof.cname, "wchar_t[%d]" % len(text))
-
-    def test_contents_equals_input(self):
-        text = text_type(self.random_string(6))
-        output = text_to_wchar(text)
-        ffi, _ = dist.load()
-        self.assertEqual(ffi.string(output), text)

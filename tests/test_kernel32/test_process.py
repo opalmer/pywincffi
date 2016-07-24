@@ -25,7 +25,7 @@ from pywincffi.kernel32 import (
 # A couple of internal imports.  These are not considered part of the public
 # API but we still need to test them.
 from pywincffi.kernel32.process import (
-    CreateProcessResult, environment_to_string, module_name)
+    CreateProcessResult, _environment_to_string, _text_to_wchar, module_name)
 from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO
 
 try:
@@ -281,7 +281,7 @@ class TestEnvironmentToString(TestCase):
                 yield (u"c", u"d")
 
         self.assertEqual(
-            environment_to_string(NonDictIterItems()),
+            _environment_to_string(NonDictIterItems()),
             u"a=b\0c=d\0\0")
 
     def test_non_dict_items(self):
@@ -291,25 +291,25 @@ class TestEnvironmentToString(TestCase):
                 yield (u"g", u"h")
 
         self.assertEqual(
-            environment_to_string(NonDictItems()),
+            _environment_to_string(NonDictItems()),
             u"e=f\0g=h\0\0")
 
     def test_type_check_for_environment_key(self):
         with self.assertRaises(InputError):
-            environment_to_string({1: text_type("")})
+            _environment_to_string({1: text_type("")})
 
     def test_type_check_for_environment_value(self):
         with self.assertRaisesRegex(InputError, ".*environment value 2.*"):
-            environment_to_string({text_type("1"): 2})
+            _environment_to_string({text_type("1"): 2})
 
     def test_key_cannot_contain_equals(self):
         with self.assertRaisesRegex(InputError, ".*cannot contain the `=`.*"):
-            environment_to_string({text_type("3=4"): text_type("")})
+            _environment_to_string({text_type("3=4"): text_type("")})
 
     def test_not_a_dictionary(self):
         expected = "Expected a dictionary like object for `environment`"
         with self.assertRaisesRegex(InputError, expected):
-            environment_to_string(None)
+            _environment_to_string(None)
 
 
 class TestModuleName(TestCase):
@@ -354,6 +354,29 @@ class TestModuleName(TestCase):
     def test_failed_to_determine_module_name(self):
         with self.assertRaises(InputError):
             module_name(u" ")
+
+
+class TestTextToWideChar(TestCase):
+    """
+    Tests for private function `pywincffi.kernel32.text_to_wchar`
+    """
+    def test_input_type_check(self):
+        bad_input = "hello, world" if PY2 else b"hello, world"
+        with self.assertRaises(InputError):
+            _text_to_wchar(bad_input)
+
+    def test_conversion_output_type(self):
+        text = text_type(self.random_string(6))
+        output = _text_to_wchar(text)
+        ffi, _ = dist.load()
+        typeof = ffi.typeof(output)
+        self.assertEqual(typeof.cname, "wchar_t[%d]" % len(text))
+
+    def test_contents_equals_input(self):
+        text = text_type(self.random_string(6))
+        output = _text_to_wchar(text)
+        ffi, _ = dist.load()
+        self.assertEqual(ffi.string(output), text)
 
 
 class TestCreateProcess(TestCase):
@@ -578,6 +601,7 @@ class TestCreateProcess(TestCase):
         """).strip()
 
         fd, script_path = tempfile.mkstemp(suffix=".py")
+        self.addCleanup(os.remove, script_path)
         with os.fdopen(fd, "w") as file_:
             file_.write(script)
 

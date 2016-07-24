@@ -23,26 +23,26 @@ from tokenize import generate_tokens
 from six import integer_types, text_type
 
 from pywincffi.core import dist
-from pywincffi.core.checks import NON_ZERO, input_check, error_check
+from pywincffi.core.checks import NON_ZERO, input_check, error_check, NoneType
 from pywincffi.exceptions import (
     WindowsAPIError, PyWinCFFINotImplementedError, InputError)
 from pywincffi.kernel32.handle import CloseHandle
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.wintypes import (
     HANDLE, SECURITY_ATTRIBUTES, STARTUPINFO, PROCESS_INFORMATION,
-    wintype_to_cdata, text_to_wchar)
+    wintype_to_cdata)
 
 RESERVED_PIDS = set([0, 4])
 
 
-def environment_to_string(environment):
+def _environment_to_string(environment):
     """
     This function is used internally by :func:`CreateProcess` to convert
     the input to ``lpEnvironment`` to a string which the underlying C API
     call will understand.
 
-    >>> from pywincffi.kernel32.process import environment_to_string
-    >>> environment_to_string({"A": "a", "B": "b"})
+    >>> from pywincffi.kernel32.process import _environment_to_string
+    >>> _environment_to_string({"A": "a", "B": "b"})
     'A=a\x00B=b'
 
     :param environment:
@@ -91,6 +91,27 @@ def environment_to_string(environment):
         converted.append("%s=%s\0" % (key, value))
 
     return text_type("".join(converted)) + text_type("\0")
+
+
+def _text_to_wchar(text):
+    """
+    Converts ``text`` to ``wchar_t[len(text)]``.
+
+    :param text:
+        The text convert to ``wchar_t``.
+
+    :raises InputError:
+        Raised if the type of ``text`` is not a text type.  For
+        Python 2 this function expects unicode and for Python 3
+        it expects a string.
+    """
+    if not isinstance(text, text_type):
+        raise InputError(
+            "text", text,
+            message="Expected %r for `text`" % text_type)
+
+    ffi, _ = dist.load()
+    return ffi.new("wchar_t[%d]" % len(text), text)
 
 
 def module_name(path):
@@ -517,21 +538,15 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         input_check(
             "lpApplicationName", lpApplicationName, allowed_types=(text_type,))
 
-    if lpProcessAttributes is not None:
-        input_check(
-            "lpProcessAttributes", lpProcessAttributes,
-            allowed_types=(SECURITY_ATTRIBUTES, ))
-        lpProcessAttributes = wintype_to_cdata(lpProcessAttributes)
-    else:
-        lpProcessAttributes = ffi.NULL
+    input_check(
+        "lpProcessAttributes", lpProcessAttributes,
+        allowed_types=(SECURITY_ATTRIBUTES, NoneType))
+    lpProcessAttributes = wintype_to_cdata(lpProcessAttributes)
 
-    if lpThreadAttributes is not None:
-        input_check(
-            "lpThreadAttributes", lpThreadAttributes,
-            allowed_types=(SECURITY_ATTRIBUTES, ))
-        lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
-    else:
-        lpThreadAttributes = ffi.NULL
+    input_check(
+        "lpThreadAttributes", lpThreadAttributes,
+        allowed_types=(SECURITY_ATTRIBUTES, NoneType))
+    lpThreadAttributes = wintype_to_cdata(lpThreadAttributes)
 
     input_check(
         "bInheritHandles", bInheritHandles, allowed_values=(True, False))
@@ -544,7 +559,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         "dwCreationFlags", dwCreationFlags, allowed_types=(integer_types, ))
 
     if lpEnvironment is not None:
-        lpEnvironment = text_to_wchar(environment_to_string(lpEnvironment))
+        lpEnvironment = _text_to_wchar(_environment_to_string(lpEnvironment))
     else:
         lpEnvironment = ffi.NULL
 
