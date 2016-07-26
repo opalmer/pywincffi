@@ -7,8 +7,7 @@ from pywincffi.dev.testutil import TestCase
 from pywincffi.core import dist
 
 from pywincffi.kernel32 import (
-    CreateFile, WriteFile, FlushFileBuffers, CloseHandle,
-    CreateEvent, GetOverlappedResult, WaitForSingleObject)
+    CreateFile, WriteFile, CloseHandle, CreateEvent, GetOverlappedResult)
 from pywincffi.wintypes import OVERLAPPED
 
 
@@ -16,31 +15,44 @@ class TestOverlappedWriteFile(TestCase):
     """
     Tests for :func:`pywincffi.kernel32.GetOverlappedResult`
     """
-    def test_overlapped_write_binary(self):
-        base_dir = tempfile.mkdtemp(prefix="pywincffi-test-ovr-")
-        self.addCleanup(shutil.rmtree, base_dir, ignore_errors=True)
-        base_filename = "test-overlapped-write-file"
-        filename = unicode(os.path.join(base_dir, base_filename))
+    def test_overlapped_write_file(self):
+        # Test outline:
+        # - Create a temp dir.
+        # - CreateFile for writing with FILE_FLAG_OVERLAPPED.
+        # - WriteFile in overlapped mode.
+        # - Use GetOverlappedResult to wait for IO completion.
+
+        temp_dir = tempfile.mkdtemp(prefix="pywincffi-test-ovr-")
+        self.addCleanup(shutil.rmtree, temp_dir, ignore_errors=True)
+
+        filename = unicode(os.path.join(temp_dir, "overlapped-write-file"))
+        file_contents = b"hello overlapped world"
 
         _, lib = dist.load()
         handle = CreateFile(
             lpFileName=filename,
             dwDesiredAccess=lib.GENERIC_WRITE,
-            dwShareMode=0,
-            lpSecurityAttributes=None,
             dwCreationDisposition=lib.CREATE_NEW,
             dwFlagsAndAttributes=lib.FILE_FLAG_OVERLAPPED,
-            hTemplateFile=None,
         )
 
-        bytes_to_write = b"hello world"
+        # Prepare overlapped write
         ovr = OVERLAPPED()
-        event = CreateEvent(bManualReset=True, bInitialState=False)
-        ovr.hEvent = event
-        nbw = WriteFile(handle, bytes_to_write, lpOverlapped=ovr)
-        self.assertEqual(nbw, 0)  # async in progress returns 0
+        ovr.hEvent = CreateEvent(bManualReset=True, bInitialState=False)
 
-        nbw = GetOverlappedResult(handle, ovr, bWait=True)
-        self.assertEqual(nbw, len(bytes_to_write))
+        # Go for overlapped WriteFile. Should result in:
+        # - num_bytes_written == 0
+        # - GetLastError() == ERROR_IO_PENDING
+        num_bytes_written = WriteFile(handle, file_contents, lpOverlapped=ovr)
+        self.assertEqual(num_bytes_written, 0)
+        error_code, _ = self.GetLastError()
+        self.assertEqual(error_code, lib.ERROR_IO_PENDING)
+
+        # Reset last error so that TestCase cleanups don't error out.
+        self.SetLastError(0)
+
+        # Block until async write is completed.
+        num_bytes_written = GetOverlappedResult(handle, ovr, bWait=True)
+        self.assertEqual(num_bytes_written, len(file_contents))
 
         CloseHandle(handle)
