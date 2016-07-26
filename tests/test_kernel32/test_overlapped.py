@@ -2,6 +2,8 @@ import os
 import shutil
 import tempfile
 
+from six import text_type
+
 from pywincffi.dev.testutil import TestCase
 
 from pywincffi.core import dist
@@ -25,7 +27,7 @@ class TestOverlappedWriteFile(TestCase):
         temp_dir = tempfile.mkdtemp(prefix="pywincffi-test-ovr-")
         self.addCleanup(shutil.rmtree, temp_dir, ignore_errors=True)
 
-        filename = unicode(os.path.join(temp_dir, "overlapped-write-file"))
+        filename = text_type(os.path.join(temp_dir, "overlapped-write-file"))
         file_contents = b"hello overlapped world"
 
         _, lib = dist.load()
