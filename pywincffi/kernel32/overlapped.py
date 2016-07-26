@@ -53,7 +53,7 @@ def GetOverlappedResult(hFile, lpOverlapped, bWait):
 
     ffi, library = dist.load()
 
-    lpNumberOfBytesTransferred = ffi.new("LPDWORD[1]")
+    lpNumberOfBytesTransferred = ffi.new("DWORD[1]")
 
     result = library.GetOverlappedResult(
         wintype_to_cdata(hFile),
