@@ -27,6 +27,18 @@
     static const int STARTF_TITLEISLINKNAME = 0x00000800;
 #endif
 
+#if !defined(CREATE_PROTECTED_PROCESS)
+    static const int CREATE_PROTECTED_PROCESS 0x00040000;
+#endif
+
+#if !defined(EXTENDED_STARTUPINFO_PRESENT)
+    static const int EXTENDED_STARTUPINFO_PRESENT = 0x00080000;
+#endif
+
+#if !defined(INHERIT_PARENT_AFFINITY)
+    static const int INHERIT_PARENT_AFFINITY = 0x00010000;
+#endif
+
 HANDLE handle_from_fd(int fd) {
     return (HANDLE)_get_osfhandle(fd);
 }
