@@ -299,5 +299,4 @@ class TestCase(_TestCase):  # pylint: disable=too-many-public-methods
         """
         last_error, _ = self.GetLastError()
         self.assertIn(last_error, (0, errno))
-        if last_error != 0:
-            self.SetLastError(0)
+        self.SetLastError(0)
