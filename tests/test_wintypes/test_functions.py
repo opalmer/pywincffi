@@ -97,5 +97,4 @@ class TestSocketFromObject(TestCase):
         # Socket is already closed so closesocket should fail.
         self.assertEqual(library.closesocket(sock._cdata[0]), -1)
 
-        self.assertEqual(self.GetLastError()[0], library.WSAENOTSOCK)
-        self.SetLastError(0)
+        self.assert_last_error(library.WSAENOTSOCK)
