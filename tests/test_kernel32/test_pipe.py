@@ -61,6 +61,9 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
             ReadFile(reader, bytes_written),
             b"hello world")
 
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
+
 
 # TODO: tests for lpBuffer from the result
 class TestPeekNamedPipe(PipeBaseTestCase):
@@ -70,6 +73,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     def test_return_type(self):
         reader, _ = self.create_anonymous_pipes()
         self.assertIsInstance(PeekNamedPipe(reader, 0), PeekNamedPipeResult)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_peek_does_not_remove_data(self):
         reader, writer = self.create_anonymous_pipes()
@@ -79,6 +84,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         PeekNamedPipe(reader, 0)
         self.assertEqual(ReadFile(reader, data_written), data)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_bytes_read_less_than_bytes_written(self):
         reader, writer = self.create_anonymous_pipes()
@@ -88,6 +95,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         result = PeekNamedPipe(reader, 1)
         self.assertEqual(result.lpBytesRead, 1)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_bytes_read_greater_than_bytes_written(self):
         reader, writer = self.create_anonymous_pipes()
@@ -97,6 +106,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         result = PeekNamedPipe(reader, bytes_written * 2)
         self.assertEqual(result.lpBytesRead, bytes_written)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_total_bytes_avail(self):
         reader, writer = self.create_anonymous_pipes()
@@ -106,6 +117,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(result.lpTotalBytesAvail, bytes_written)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_total_bytes_avail_after_read(self):
         reader, writer = self.create_anonymous_pipes()
@@ -119,6 +132,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(
             result.lpTotalBytesAvail, bytes_written - read_bytes)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
 
 class TestSetNamedPipeHandleState(PipeBaseTestCase):
