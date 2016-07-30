@@ -35,16 +35,14 @@ class CreatePipeTest(TestCase):
             CloseHandle(writer)
 
         _, library = dist.load()
-        self.assertEqual(self.GetLastError()[0], library.ERROR_INVALID_HANDLE)
-        self.SetLastError(0)
+        self.assert_last_error(library.ERROR_INVALID_HANDLE)
 
         # Second attempt should fail
         CloseHandle(reader)
         with self.assertRaises(WindowsAPIError):
             CloseHandle(reader)
 
-        self.assertEqual(self.GetLastError()[0], library.ERROR_INVALID_HANDLE)
-        self.SetLastError(0)
+        self.assert_last_error(library.ERROR_INVALID_HANDLE)
 
 
 class AnonymousPipeReadWriteTest(PipeBaseTestCase):
@@ -61,6 +59,9 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
             ReadFile(reader, bytes_written),
             b"hello world")
 
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
+
 
 # TODO: tests for lpBuffer from the result
 class TestPeekNamedPipe(PipeBaseTestCase):
@@ -70,6 +71,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
     def test_return_type(self):
         reader, _ = self.create_anonymous_pipes()
         self.assertIsInstance(PeekNamedPipe(reader, 0), PeekNamedPipeResult)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_peek_does_not_remove_data(self):
         reader, writer = self.create_anonymous_pipes()
@@ -79,6 +82,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         PeekNamedPipe(reader, 0)
         self.assertEqual(ReadFile(reader, data_written), data)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_bytes_read_less_than_bytes_written(self):
         reader, writer = self.create_anonymous_pipes()
@@ -88,6 +93,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         result = PeekNamedPipe(reader, 1)
         self.assertEqual(result.lpBytesRead, 1)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_bytes_read_greater_than_bytes_written(self):
         reader, writer = self.create_anonymous_pipes()
@@ -97,6 +104,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         result = PeekNamedPipe(reader, bytes_written * 2)
         self.assertEqual(result.lpBytesRead, bytes_written)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_total_bytes_avail(self):
         reader, writer = self.create_anonymous_pipes()
@@ -106,6 +115,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(result.lpTotalBytesAvail, bytes_written)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
     def test_total_bytes_avail_after_read(self):
         reader, writer = self.create_anonymous_pipes()
@@ -119,6 +130,8 @@ class TestPeekNamedPipe(PipeBaseTestCase):
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(
             result.lpTotalBytesAvail, bytes_written - read_bytes)
+        _, library = dist.load()
+        self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
 
 class TestSetNamedPipeHandleState(PipeBaseTestCase):
@@ -142,9 +155,7 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
         with self.assertRaises(WindowsAPIError):
             self._set_mode(lib.PIPE_READMODE_MESSAGE)
 
-        self.assertEqual(
-            self.GetLastError()[0], lib.ERROR_INVALID_PARAMETER)
-        self.SetLastError(0)
+        self.assert_last_error(lib.ERROR_INVALID_PARAMETER)
 
     def test_mode_wait(self):
         _, lib = dist.load()
@@ -167,9 +178,7 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
             self._set_max_collection_count(10)
 
         _, library = dist.load()
-        self.assertEqual(
-            self.GetLastError()[0], library.ERROR_INVALID_PARAMETER)
-        self.SetLastError(0)
+        self.assert_last_error(library.ERROR_INVALID_PARAMETER)
 
     def _set_collect_data_timeout(self, timeout):
         reader, _ = self.create_anonymous_pipes()
@@ -184,6 +193,4 @@ class TestSetNamedPipeHandleState(PipeBaseTestCase):
             self._set_collect_data_timeout(500)
 
         _, library = dist.load()
-        self.assertEqual(
-            self.GetLastError()[0], library.ERROR_INVALID_PARAMETER)
-        self.SetLastError(0)
+        self.assert_last_error(library.ERROR_INVALID_PARAMETER)

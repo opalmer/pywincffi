@@ -278,3 +278,25 @@ class TestCase(_TestCase):  # pylint: disable=too-many-public-methods
             output += choice(ascii_lowercase + ascii_uppercase + "0123456789")
 
         return output
+
+    def assert_last_error(self, errno):
+        """
+        This function will assert that the last unhandled error
+        was ``errno``.  After the check the last error will be reset to
+        zero.
+
+        :param int errno:
+            The expected value from GetLastError.
+        """
+        last_error, _ = self.GetLastError()
+        self.assertEqual(last_error, errno)
+        self.SetLastError(0)
+
+    def maybe_assert_last_error(self, errno):
+        """
+        This function is similar to :meth:`assert_last_error` except
+        it won't fail if the current error number is already 0.
+        """
+        last_error, _ = self.GetLastError()
+        self.assertIn(last_error, (0, errno))
+        self.SetLastError(0)
