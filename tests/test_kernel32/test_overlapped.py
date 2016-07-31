@@ -45,10 +45,20 @@ class TestOverlappedWriteFile(TestCase):
         # Go for overlapped WriteFile. Should result in:
         # - num_bytes_written == 0
         # - GetLastError() == ERROR_IO_PENDING
-        num_bytes_written = WriteFile(handle, file_contents, lpOverlapped=ovr)
-        self.assertEqual(num_bytes_written, 0)
+
+        # HOWEVER, https://msdn.microsoft.com/en-us/library/aa365683 states:
+        # "Further, the WriteFile function will sometimes return TRUE with a
+        # GetLastError value of ERROR_SUCCESS, even though it is using an
+        # asynchronous handle (which can also return FALSE with
+        # ERROR_IO_PENDING).
+        # Test strategy:
+        # - Disregard WriteFile return result.
+        # - Assert GetLastError is either ERROR_IO_PENDING or ERROR_SUCCESS.
+        # - Later validate that the correct number of bytes was written.
+
+        _ = WriteFile(handle, file_contents, lpOverlapped=ovr)
         error_code, _ = self.GetLastError()
-        self.assertEqual(error_code, lib.ERROR_IO_PENDING)
+        self.assertIn(error_code, (lib.ERROR_IO_PENDING, 0))
 
         # Reset last error so that TestCase cleanups don't error out.
         self.SetLastError(0)
