@@ -21,14 +21,14 @@ def GetOverlappedResult(hFile, lpOverlapped, bWait):
 
         https://msdn.microsoft.com/en-us/library/ms683209
 
-    :param HANDLE hFile:
+    :param pywincffi.wintypes.HANDLE hFile:
         A handle to the file, named pipe, or communications device.
         This is the same handle that was specified when the overlapped
         operation was started by a call to the ReadFile, WriteFile,
         ConnectNamedPipe, TransactNamedPipe, DeviceIoControl, or WaitCommEvent
         function.
 
-    :param OVERLAPPED lpOverlapped:
+    :param pywincffi.wintypes.OVERLAPPED lpOverlapped:
         The an OVERLAPPED object that was specified when the overlapped
         operation was started
 
@@ -49,7 +49,7 @@ def GetOverlappedResult(hFile, lpOverlapped, bWait):
     """
     input_check("hFile", hFile, HANDLE)
     input_check("lpOverlapped", lpOverlapped, OVERLAPPED)
-    input_check("bWait", bWait, bool)
+    input_check("bWait", bWait, allowed_values=(True, False))
 
     ffi, library = dist.load()
 
