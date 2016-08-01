@@ -13,7 +13,8 @@ latest
 
 Notable enhancements and changes are:
 
-    * Addition of the :func:`pywincffi.kernel32.process.CreateProcess` and
+    * Addition of :func:`pywincffi.kernel32.process.CreateProcess`,
+      :func:`pywincffi.kernel32.overlapped.GetOverlappedResult` and
       several structures.  Implemented for :issue:`69`.
     * Reworked the test setup steps so they're more consistent.
     * Added a cleanup step to the tests to track down cases that were not
