@@ -270,6 +270,20 @@ BOOL WINAPI CreateProcess(
   _Out_       LPPROCESS_INFORMATION lpProcessInformation
 );
 
+
+///////////////////////
+// Overlapped
+///////////////////////
+
+// https://msdn.microsoft.com/en-us/ms683209
+BOOL WINAPI GetOverlappedResult(
+  _In_  HANDLE       hFile,
+  _In_  LPOVERLAPPED lpOverlapped,
+  _Out_ LPDWORD      lpNumberOfBytesTransferred,
+  _In_  BOOL         bWait
+);
+
+
 // Used internally to reset the last error to 0
 // in cases where pywincffi is the cause of the
 // error and we choose to ignore the error.
