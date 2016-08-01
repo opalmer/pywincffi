@@ -57,11 +57,7 @@ class TestOverlappedWriteFile(TestCase):
         # - Later validate that the correct number of bytes was written.
 
         _ = WriteFile(handle, file_contents, lpOverlapped=ovr)
-        error_code, _ = self.GetLastError()
-        self.assertIn(error_code, (lib.ERROR_IO_PENDING, 0))
-
-        # Reset last error so that TestCase cleanups don't error out.
-        self.SetLastError(0)
+        self.maybe_assert_last_error(lib.ERROR_IO_PENDING)
 
         # Block until async write is completed.
         num_bytes_written = GetOverlappedResult(handle, ovr, bWait=True)

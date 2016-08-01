@@ -62,10 +62,6 @@ def GetOverlappedResult(hFile, lpOverlapped, bWait):
         ffi.cast("BOOL", bWait),
     )
 
-    try:
-        error_check("GetOverlappedResult", result, NON_ZERO)
-    except WindowsAPIError as error:
-        if error.errno != library.ERROR_ALREADY_EXISTS:
-            raise
+    error_check("GetOverlappedResult", result, NON_ZERO)
 
     return int(lpNumberOfBytesTransferred[0])
