@@ -7,7 +7,6 @@ A module containing Windows functions for working with OVERLAPPED objects.
 
 from pywincffi.core import dist
 from pywincffi.core.checks import NON_ZERO, input_check, error_check
-from pywincffi.exceptions import WindowsAPIError
 from pywincffi.wintypes import HANDLE, OVERLAPPED, wintype_to_cdata
 
 
