@@ -173,7 +173,6 @@ class TestCreateFile(TestCase):
 
         path = text_type(path)  # pylint: disable=redefined-variable-type
         handle = CreateFile(path, 0)
-        self.SetLastError(0)
         self.addCleanup(os.remove, path)
         self.addCleanup(CloseHandle, handle)
         self.assertTrue(isfile(path))
@@ -193,8 +192,7 @@ class TestCreateFile(TestCase):
         self.addCleanup(CloseHandle, handle)
 
         _, library = dist.load()
-        self.assertEqual(self.GetLastError()[0], library.ERROR_ALREADY_EXISTS)
-        self.SetLastError(0)
+        self.assert_last_error(library.ERROR_ALREADY_EXISTS)
 
         with open(path, "r") as file_:
             self.assertEqual(file_.read(), "")
@@ -225,7 +223,7 @@ class TestCreateFile(TestCase):
                 u"", 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(CloseHandle, handle)
 
-        self.SetLastError(0)
+        self.assert_last_error(library.ERROR_PATH_NOT_FOUND)
         self.assertEqual(error.exception.errno, library.ERROR_PATH_NOT_FOUND)
 
 
@@ -239,7 +237,7 @@ class LockFileCase(TestCase):
         _, library = dist.load()
         path = text_type(path)  # pylint: disable=redefined-variable-type
         self.handle = CreateFile(path, library.GENERIC_WRITE)
-        self.SetLastError(0)
+        self.assert_last_error(library.ERROR_ALREADY_EXISTS)
         self.addCleanup(CloseHandle, self.handle)
 
         WriteFile(self.handle, b"hello")

@@ -46,39 +46,13 @@ environment:
       PYTHON_ARCH: "64"
 
 build: false  # Not a C# project, build stuff at the test step instead.
-clone_folder: c:\\project
-
-install:
-  # If there is a newer build queued for the same PR, cancel this one.
-  # The AppVeyor 'rollout builds' option is supposed to serve the same
-  # purpose but it is problematic because it tends to cancel builds pushed
-  # directly to master instead of just PR builds (or the converse).
-  # credits: JuliaLang developers.
-  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
-        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
-        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
-          throw "There are newer queued builds for this pull request, failing early." }
-
-  - ps: cd C:\\project
-
-  # Install some additional Python modules which will be required by
-  # the tests.  These can't be installed as part of the setup.py due
-  # to file locking issues.  These are also requirements that are not
-  # required outside of development.
-  - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install -r dev_requirements.txt --upgrade"
+clone_folder: C:\\project
 
 test_script:
   - ps: cd C:\\project
-  - "%WITH_COMPILER% %PYTHON%\\python.exe setup.py sdist bdist_wheel bdist_msi"
-  - "%WITH_COMPILER% %PYTHON%\\Scripts\\pip.exe install ."
-  - ps: cd ..
-  - "%WITH_COMPILER% %PYTHON%\\Scripts\\nosetests.exe --with-coverage --cover-package pywincffi -v C:\\project\\tests"
-
-  # Covearge processing
-  - "move .coverage C:\\project"
-  - ps: cd C:\\project
-  - "%PYTHON%\\Scripts\\coverage.exe xml"
-  - "%PYTHON%\\Scripts\\codecov.exe --required"
+  - "C:\\project\\.ci\\appveyor\\install.cmd"
+  - "C:\\project\\.ci\\appveyor\\test.cmd"
+  - "C:\\project\\.ci\\appveyor\\lint.cmd"
 
 artifacts:
   - path: dist\*.whl

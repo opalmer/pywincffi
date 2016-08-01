@@ -39,8 +39,7 @@ Pre-Merge Requirements
 The following are required before a pull request can normally be merged:
 
     * All conflicts with the target branch should be resolved.
-    * The unittests, which are executed on AppVeyor, must pass
-    * The style checks, which are executed in Travis, must pass
+    * The unittests, linters and other checks run on AppVeyor must pass.
     * There should not be any major drops in coverage.  If there are it will
       be up to the reviewer(s) if the pull request should merge.
     * A brief description of the changes should be included in
