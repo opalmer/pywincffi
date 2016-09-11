@@ -8,8 +8,8 @@ versions are shown first.
 Versions
 --------
 
-latest
-~~~~~~
+0.4.0
+~~~~~
 
 Notable enhancements and changes are:
 
