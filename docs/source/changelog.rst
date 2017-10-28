@@ -23,6 +23,8 @@ Notable enhancements and changes are:
     * Various improvements to the tests and build including replacement of
       nosetests with pytest, transition from pep8 to pycodestyle and upgrading
       tools and libraries to more modern versions.
+    * Changed ordering of arguments for
+      :func:`pywincffi.kernel32.events.CreateEvent` to mirror the Windows API.
 
 0.4.0
 ~~~~~

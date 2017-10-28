@@ -14,7 +14,8 @@ from pywincffi.wintypes import HANDLE, SECURITY_ATTRIBUTES, wintype_to_cdata
 
 
 def CreateEvent(
-        bManualReset, bInitialState, lpEventAttributes=None, lpName=None):
+        lpEventAttributes=None, bManualReset=True, bInitialState=False,
+        lpName=None):
     """
     Creates or opens an named or unnamed event object.
 
@@ -22,17 +23,21 @@ def CreateEvent(
 
         https://msdn.microsoft.com/en-us/library/ms682396
 
-    :param bool bManualReset:
+    :keyword :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES` lpEventAttributes:
+        If not provided then, by default, the handle cannot be inherited
+        by a subprocess.
+
+    :keyword bool bManualReset:
         If True then this function will create a manual reset
         event which must be manually reset with :func:`ResetEvent`.  Refer
         to the msdn documentation for full information.
 
-    :param bool bInitialState:
+        **Default:** ``True``
+
+    :keyword bool bInitialState:
         If True the initial state will be 'signaled'.
 
-    :keyword :class:`pywincffi.wintypes.SECURITY_ATTRIBUTES` lpEventAttributes:
-        If not provided then, by default, the handle cannot be inherited
-        by a subprocess.
+        **Default:** ``False``
 
     :keyword str lpName:
         Type is ``unicode`` on Python 2, ``str`` on Python 3.

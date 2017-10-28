@@ -34,18 +34,18 @@ class TestCreateEvent(TestCase):
             self.skipTest("Skipped on Python 3.4, see comments.")
 
     def test_create_event_valid_handle(self):
-        handle = CreateEvent(False, False)
+        handle = CreateEvent(bManualReset=False, bInitialState=False)
         CloseHandle(handle)  # will raise exception if the handle is invalid
 
     def test_non_signaled(self):
-        handle = CreateEvent(False, False)
+        handle = CreateEvent(bManualReset=False, bInitialState=False)
         self.addCleanup(CloseHandle, handle)
         _, library = dist.load()
         self.assertEqual(
             WaitForSingleObject(handle, 0), library.WAIT_TIMEOUT)
 
     def test_signaled(self):
-        handle = CreateEvent(False, True)
+        handle = CreateEvent(bManualReset=False, bInitialState=True)
         self.addCleanup(CloseHandle, handle)
         _, library = dist.load()
         self.assertEqual(
@@ -60,9 +60,11 @@ class TestCreateEvent(TestCase):
         # pywincffi API ignores this error and returns the handle
         # object.
         name = u"pywincffi-%s" % self.random_string(5)
-        handle1 = CreateEvent(False, False, lpName=name)
+        handle1 = CreateEvent(
+            bManualReset=False, bInitialState=False, lpName=name)
         self.addCleanup(CloseHandle, handle1)
-        handle2 = CreateEvent(False, False, lpName=name)
+        handle2 = CreateEvent(
+            bManualReset=False, bInitialState=False, lpName=name)
         self.addCleanup(CloseHandle, handle2)
 
         _, library = dist.load()
@@ -74,7 +76,7 @@ class TestCreateEvent(TestCase):
 
         with patch.object(events, "error_check", side_effect=raise_):
             with self.assertRaises(WindowsAPIError):
-                CreateEvent(False, False)
+                CreateEvent(bManualReset=False, bInitialState=False)
 
     def test_can_retrieve_named_event(self):
         if sys.version_info[0:2] == (3, 4):
@@ -82,14 +84,16 @@ class TestCreateEvent(TestCase):
 
         _, library = dist.load()
         name = u"pywincffi-%s" % self.random_string(5)
-        handle = CreateEvent(False, False, lpName=name)
+        handle = CreateEvent(
+            bManualReset=False, bInitialState=False, lpName=name)
         self.addCleanup(CloseHandle, handle)
         opened_event = OpenEvent(library.EVENT_ALL_ACCESS, True, name)
         self.addCleanup(CloseHandle, opened_event)
 
     def test_check_lpeventattributes_type(self):
         with self.assertRaises(InputError):
-            CreateEvent(False, False, lpEventAttributes="")
+            CreateEvent(
+                bManualReset=False, bInitialState=False, lpEventAttributes="")
 
 
 class TestResetEvent(TestCase):
@@ -97,12 +101,12 @@ class TestResetEvent(TestCase):
     Tests for :func:`pywincffi.kernel32.ResetEvent`
     """
     def test_basic_reset(self):
-        handle = CreateEvent(True, True)
+        handle = CreateEvent(bManualReset=True, bInitialState=True)
         self.addCleanup(CloseHandle, handle)
         ResetEvent(handle)
 
     def test_resets_event(self):
-        handle = CreateEvent(True, True)
+        handle = CreateEvent(bManualReset=True, bInitialState=True)
         self.addCleanup(CloseHandle, handle)
         ResetEvent(handle)
 
