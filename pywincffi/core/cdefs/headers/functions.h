@@ -165,6 +165,12 @@ BOOL WINAPI SetHandleInformation(
   _In_ DWORD  dwFlags
 );
 
+// https://msdn.microsoft.com/en-us/aa364992
+DWORD WINAPI GetTempPath(
+  _In_  DWORD  nBufferLength,
+  _Out_ LPTSTR lpBuffer
+);
+
 // https://msdn.microsoft.com/en-us/ms724251
 BOOL WINAPI DuplicateHandle(
   _In_  HANDLE   hSourceProcessHandle,
