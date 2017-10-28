@@ -381,8 +381,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
                 draft=True, prerelease=prerelease
             )
 
-        else:
-            return message
+        return message
 
 
 AppVeyorArtifact = namedtuple(
