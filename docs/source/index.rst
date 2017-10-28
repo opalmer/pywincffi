@@ -11,7 +11,7 @@ The core objectives and design principles behind this project are:
 
     * It should be easier to to use Windows API functions both in terms of
       implementation and distribution.
-    * Python 2.6, 2.7 and 3.x should be supported from a single code base and
+    * Python 2.7 and 3.x should be supported from a single code base and
       not require a consumer of pywincffi to worry about how they use the
       library.
     * Type conversion, error checking and other 'C like' code should be the

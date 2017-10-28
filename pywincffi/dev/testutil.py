@@ -156,7 +156,6 @@ class TestCase(_TestCase):  # pylint: disable=too-many-public-methods
             # pylint: disable=broad-except
             except Exception as error:  # pragma: no cover
                 if os.name == "nt":
-                    # pylint: disable=redefined-variable-type
                     SharedState.ffi = error
 
         cls.HAS_INTERNET = SharedState.HAS_INTERNET

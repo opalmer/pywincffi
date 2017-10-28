@@ -330,6 +330,7 @@ class TestGitHubAPICommit(GitHubAPICase):
         # pylint: disable=no-member
         api.repo.get_branch.assert_called_with(api.branch)
 
+
 FakeLabel = namedtuple("FakeLabel", ("name", ))
 
 

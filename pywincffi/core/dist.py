@@ -200,6 +200,7 @@ def _import_path(path, module_name=MODULE_NAME):
 
     elif ExtensionFileLoader is not None:
         loader = ExtensionFileLoader(module_name, path)
+        # pylint: disable=deprecated-method
         return loader.load_module(module_name)
 
     elif imp is not None:  # pragma: no cover

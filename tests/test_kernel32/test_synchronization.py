@@ -21,6 +21,7 @@ class TestWaitForSingleObject(TestCase):
 
         with self.assertRaises(WindowsAPIError) as exec_:
             WaitForSingleObject(hProcess, 3)
+            # pylint: disable=no-member
             self.assertEqual(exec_.code, library.WAIT_FAILED)
 
         self.assertEqual(self.GetLastError()[0], library.ERROR_ACCESS_DENIED)

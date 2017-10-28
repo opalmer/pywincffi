@@ -84,6 +84,7 @@ class AppVeyorArtifactUpload(upload):
                 filename = join(root, filename)
                 self.upload_file(command, pyversion, filename)
 
+
 setup_keywords = dict(
     name="pywincffi",
     version=".".join(map(str, __version__)),
@@ -101,15 +102,14 @@ setup_keywords = dict(
     long_description=long_description,
     setup_requires=requirements,
     install_requires=requirements,
-    test_suite="nose.collector",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Environment :: Win32 (MS Windows)",
         "Operating System :: Microsoft :: Windows",
-        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",

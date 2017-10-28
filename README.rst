@@ -28,7 +28,7 @@ The core objectives and design principles behind this project are:
 
     * It should be easier to to use Windows API functions both in terms of
       implementation and distribution.
-    * Python 2.6, 2.7 and 3.x should be supported from a single code base and
+    * Python 2.7 and 3.x should be supported from a single code base and
       not require a consumer of pywincffi to worry about how they use the
       library.
     * Type conversion, error checking and other 'C like' code should be the
@@ -64,7 +64,7 @@ help:
 Python Version Support
 ----------------------
 
-This project supports Python 2.6 and up including Python 3.x.  PRs, patches,
+This project supports Python 2.7 and up including Python 3.x.  PRs, patches,
 tests etc that don't include support for both 2.x and 3.x will not be
 merged.  The aim is also the support both major versions of Python within
 the same code base rather than rely on tools such as 2to3, six or other
@@ -86,8 +86,6 @@ It's generated directly from this library using sphinx::
 
 The build process also builds the documentation to ensure there are not
 any obvious problems (including broken links).
-
-Note, if you're running Python 2.6 use dev_requirements-2.6.txt instead.
 
 Function Documentation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -131,20 +129,6 @@ Adding new functions is covered in greater detail
 Testing
 -------
 
-Nosetests
-~~~~~~~~~
-Tests are located in the ``tests/`` directory.  The tests
-themselves are run using ``nosetests`` either manually or using
-the ``setup.py`` file::
-
-    virtualenv env
-    env/bin/activate
-    pip install -r dev_requirements.txt
-    pip install -e .
-    nosetests tests
-
-Note, if you're running Python 2.6 use dev_requirements-2.6.txt instead.
-
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -173,38 +157,14 @@ run ``test.bat``:
 
 .. code-block:: console
 
-    > test.bat
-    ========================================================================================
-    pep8 pywincffi
-    ========================================================================================
-    ========================================================================================
-    pep8 tests
-    ========================================================================================
-    ========================================================================================
-    pylint pywincffi
-    ========================================================================================
-    ========================================================================================
-    pylint tests
-    ========================================================================================
-    ========================================================================================
-    sphinx-build -q -b html -W -E -a -d docs/build/doctrees docs/source docs/build/html
-    ========================================================================================
-    ========================================================================================
-    sphinx-build -q -b linkcheck -W -E -a -d docs/build/doctrees docs/source docs/build/html
-    ========================================================================================
-    ========================================================================================
-    setup.py bdist_wheel
-    ========================================================================================
-    RuntimeWarning: Config variable 'Py_DEBUG' is unset, Python ABI tag may be incorrect
-      warn=(impl == 'cp')):
-    RuntimeWarning: Config variable 'WITH_PYMALLOC' is unset, Python ABI tag may be incorrect
-      warn=(impl == 'cp')):
-    ========================================================================================
-    nosetests -sv tests
-    ========================================================================================
-    [ omitted ]
-    ========================================================================================
+    > check.bat
 
+This will:
+
+* Check code style for both the library and tests.
+* Run all unittests.
+* Build the wheel file.
+* Build the documentation and treat warnings as errors.
 
 Keep in mind that this will not setup the virtualenv or build environment for
 you.  So if you can't build the library or are missing a dependency then

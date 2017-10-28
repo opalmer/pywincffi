@@ -195,6 +195,7 @@ class Session(object):
 
         return path
 
+
 Issue = namedtuple(
     "Issue", ("issue", "closed", "labels", "type", "number", "url", "title"))
 
@@ -380,8 +381,7 @@ class GitHubAPI(object):  # pylint: disable=too-many-instance-attributes
                 draft=True, prerelease=prerelease
             )
 
-        else:
-            return message
+        return message
 
 
 AppVeyorArtifact = namedtuple(

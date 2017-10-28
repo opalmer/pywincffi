@@ -103,8 +103,8 @@ class TestMoveFileEx(TestCase):
         self.addCleanup(os.remove, path2)
         os.close(fd)
 
-        path1 = text_type(path1)  # pylint: disable=redefined-variable-type
-        path2 = text_type(path2)  # pylint: disable=redefined-variable-type
+        path1 = text_type(path1)
+        path2 = text_type(path2)
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -129,8 +129,8 @@ class TestMoveFileEx(TestCase):
         with os.fdopen(fd, "w") as file_:
             file_.write(file_contents)
 
-        path1 = text_type(path1)  # pylint: disable=redefined-variable-type
-        path2 = text_type(path2)  # pylint: disable=redefined-variable-type
+        path1 = text_type(path1)
+        path2 = text_type(path2)
         MoveFileEx(path1, path2)
 
         with open(path2, "r") as file_:
@@ -142,7 +142,7 @@ class TestMoveFileEx(TestCase):
         fd, path = tempfile.mkstemp('-removed-on-next-reboot')
         os.close(fd)
 
-        path = text_type(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)
 
         _, library = dist.load()
         try:
@@ -171,7 +171,7 @@ class TestCreateFile(TestCase):
         os.close(fd)
         os.remove(path)
 
-        path = text_type(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)
         handle = CreateFile(path, 0)
         self.addCleanup(os.remove, path)
         self.addCleanup(CloseHandle, handle)
@@ -186,7 +186,7 @@ class TestCreateFile(TestCase):
             file_.flush()
             os.fsync(file_.fileno())
 
-        path = text_type(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)
         handle = CreateFile(path, 0)
         self.addCleanup(os.remove, path)
         self.addCleanup(CloseHandle, handle)
@@ -207,7 +207,7 @@ class TestCreateFile(TestCase):
             raise WindowsAPIError("", "", library.ERROR_ALREADY_EXISTS)
 
         with patch.object(_file, "error_check", side_effect=raise_):
-            path = text_type(path)  # pylint: disable=redefined-variable-type
+            path = text_type(path)
             handle = CreateFile(
                 path, 0, dwCreationDisposition=library.CREATE_ALWAYS)
             self.addCleanup(os.remove, path)
@@ -235,7 +235,7 @@ class LockFileCase(TestCase):
         os.close(fd)
         self.addCleanup(os.remove, path)
         _, library = dist.load()
-        path = text_type(path)  # pylint: disable=redefined-variable-type
+        path = text_type(path)
         self.handle = CreateFile(path, library.GENERIC_WRITE)
         self.assert_last_error(library.ERROR_ALREADY_EXISTS)
         self.addCleanup(CloseHandle, self.handle)
