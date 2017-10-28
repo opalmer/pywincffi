@@ -6,8 +6,9 @@
 /*.egg-info/
 /docs/build/
 /.tox/
-/.coverage.*
 /.coverage
+/.coverage.*
+/coverage.*
 /docs/source/modules/
 /.vagrant
 /.provision
