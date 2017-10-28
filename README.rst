@@ -129,20 +129,6 @@ Adding new functions is covered in greater detail
 Testing
 -------
 
-Nosetests
-~~~~~~~~~
-Tests are located in the ``tests/`` directory.  The tests
-themselves are run using ``nosetests`` either manually or using
-the ``setup.py`` file::
-
-    virtualenv env
-    env/bin/activate
-    pip install -r dev_requirements.txt
-    pip install -e .
-    nosetests tests
-
-Note, if you're running Python 2.6 use dev_requirements-2.6.txt instead.
-
 Continuous Integration
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -175,10 +161,10 @@ run ``test.bat``:
 
 This will:
 
-    * Check code style for both the library and tests.
-    * Run all unittests.
-    * Build the wheel file.
-    * Build the documentation and treat warnings as errors.
+* Check code style for both the library and tests.
+* Run all unittests.
+* Build the wheel file.
+* Build the documentation and treat warnings as errors.
 
 Keep in mind that this will not setup the virtualenv or build environment for
 you.  So if you can't build the library or are missing a dependency then
