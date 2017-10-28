@@ -1,8 +1,8 @@
 pytest
 pytest-cov
 unittest2
-pylint==1.5.2
-astroid==1.4.1
+pylint==1.7.4
+astroid==1.5.3
 pycodestyle
 mock
 sphinx
