@@ -1,7 +1,8 @@
 # NOTE: This requirements file is for Python 2.6 only.  Packages are slowly
 # dropping support for 2.6, this file allows the project to lock down
 # these requirements
-nose
+pytest
+pytest-cov
 unittest2
 logilab-common>=0.53.0
 pylint<1.4
