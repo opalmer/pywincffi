@@ -28,7 +28,7 @@ The core objectives and design principles behind this project are:
 
     * It should be easier to to use Windows API functions both in terms of
       implementation and distribution.
-    * Python 2.6, 2.7 and 3.x should be supported from a single code base and
+    * Python 2.7 and 3.x should be supported from a single code base and
       not require a consumer of pywincffi to worry about how they use the
       library.
     * Type conversion, error checking and other 'C like' code should be the
@@ -64,7 +64,7 @@ help:
 Python Version Support
 ----------------------
 
-This project supports Python 2.6 and up including Python 3.x.  PRs, patches,
+This project supports Python 2.7 and up including Python 3.x.  PRs, patches,
 tests etc that don't include support for both 2.x and 3.x will not be
 merged.  The aim is also the support both major versions of Python within
 the same code base rather than rely on tools such as 2to3, six or other
@@ -86,8 +86,6 @@ It's generated directly from this library using sphinx::
 
 The build process also builds the documentation to ensure there are not
 any obvious problems (including broken links).
-
-Note, if you're running Python 2.6 use dev_requirements-2.6.txt instead.
 
 Function Documentation
 ~~~~~~~~~~~~~~~~~~~~~~
