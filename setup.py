@@ -26,7 +26,7 @@ except (OSError, IOError, WindowsError) as error:
         raise
 
 requirements = [
-    "cffi>=1.6.0",
+    "cffi>=1.7.0",
     "six"
 ]
 
