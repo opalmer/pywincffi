@@ -8,6 +8,22 @@ versions are shown first.
 Versions
 --------
 
+0.5.0
+~~~~~
+
+Notable enhancements and changes are:
+
+    * **Python 2.6 support has been dropped**. Many projects have already moved
+      on from Python 2.6 including Twisted which this project was initially
+      intended to support. Additionally many libraries or tools that pywincffi
+      no longer have direct support for Python 2.6 or simply break in later
+      versions. This leads to having to maintain and support older libraries
+      in ths build which is going to become increasing difficult. Pull requests
+      to support Python 2.6 will be evaluated on a case-by-case basis.
+    * Various improvements to the tests and build including replacement of
+      nosetests with pytest, transition from pep8 to pycodestyle and upgrading
+      tools and libraries to more modern versions.
+
 0.4.0
 ~~~~~
 
