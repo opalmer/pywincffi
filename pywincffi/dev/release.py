@@ -195,6 +195,7 @@ class Session(object):
 
         return path
 
+
 Issue = namedtuple(
     "Issue", ("issue", "closed", "labels", "type", "number", "url", "title"))
 

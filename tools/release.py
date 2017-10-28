@@ -166,5 +166,6 @@ def main():
     if not docs_built(version):
         logger.error("Documentation not built for %s", version)
 
+
 if __name__ == "__main__":
     main()
