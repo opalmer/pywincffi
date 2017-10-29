@@ -580,7 +580,7 @@ class TestCreateProcess(TestCase):
         process = CreateProcess(
             lpCommandLine=text_type(
                 "%s \"%s\"" % (sys.executable, script_path)),
-            lpApplicationName=None,
+            lpApplicationName=text_type(sys.executable),
             lpProcessAttributes=None,
             lpThreadAttributes=None,
             bInheritHandles=True,
@@ -624,7 +624,7 @@ class TestCreateProcess(TestCase):
         process = CreateProcess(
             lpCommandLine=text_type(
                 "%s \"%s\"" % (sys.executable, script_path)),
-            lpApplicationName=None,
+            lpApplicationName=text_type(sys.executable),
             lpProcessAttributes=None,
             lpThreadAttributes=None,
             bInheritHandles=True,
