@@ -2,8 +2,7 @@
 // This file contains constants which can be used either internally or
 // by users of pywincffi.
 //
-// NOTE: The tests for this file, tests/test_core/test_cdefs/test_constants.py
-//       depend on a constant's names to follow this format:
+// NOTE: Each constant must be defined using the following format:
 //           #define NAME ...
 //
 
