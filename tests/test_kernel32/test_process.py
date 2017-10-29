@@ -10,7 +10,7 @@ from textwrap import dedent
 from os.path import isfile, basename
 
 from mock import patch
-from six import PY2, text_type
+from six import text_type
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase, mock_library
@@ -361,7 +361,7 @@ class TestTextToWideChar(TestCase):
     Tests for private function `pywincffi.kernel32.text_to_wchar`
     """
     def test_input_type_check(self):
-        bad_input = "hello, world" if PY2 else b"hello, world"
+        bad_input = b"hello, world"
         with self.assertRaises(InputError):
             _text_to_wchar(bad_input)
 
@@ -639,10 +639,11 @@ class TestCreateProcess(TestCase):
         self.assertTrue(isfile(output_file))
 
         with open(output_file) as file_:
-            if PY2:
-                self.assertEqual(file_.read(), "\xb5")
+            content = file_.read()
+            if isinstance(content, text_type):
+                self.assertEqual(content, u"µ")
             else:
-                self.assertEqual(file_.read(), "µ")
+                self.assertEqual(content, b"\xb5")
 
     def test_working_directory(self):
         tmpdir = tempfile.mkdtemp()
