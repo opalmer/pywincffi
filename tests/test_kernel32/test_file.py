@@ -3,6 +3,7 @@ import ctypes
 import tempfile
 import subprocess
 import sys
+from errno import EEXIST
 from os.path import isfile
 
 from mock import patch
@@ -15,7 +16,7 @@ from pywincffi.exceptions import WindowsAPIError
 from pywincffi.kernel32 import file as _file  # used for mocks
 from pywincffi.kernel32 import (
     CreateFile, CloseHandle, MoveFileEx, WriteFile, FlushFileBuffers,
-    LockFileEx, UnlockFileEx, ReadFile)
+    LockFileEx, UnlockFileEx, ReadFile, GetTempPath)
 from pywincffi.wintypes import handle_from_file
 
 
@@ -294,3 +295,12 @@ class TestUnlockFileEx(LockFileCase):
 
         subprocess.check_call([
             sys.executable, "-c", "open(%r, 'r').read()" % self.path])
+
+
+class TestGetTempPath(TestCase):
+    def test_call(self):
+        path = GetTempPath()
+        try:
+            os.makedirs(path)
+        except OSError as err:
+            self.assertEqual(err.errno, EEXIST)

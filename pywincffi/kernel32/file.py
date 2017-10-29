@@ -414,7 +414,7 @@ def GetTempPath():
         C function.
     """
     ffi, library = dist.load()
-    lpBuffer = ffi.new("wchar_t *")
-    code = library.GetTempPath(library.MAX_PATH, lpBuffer)
+    lpBuffer = ffi.new("TCHAR[{}]".format(library.MAX_PATH + 1))
+    code = library.GetTempPath(library.MAX_PATH + 1, lpBuffer)
     error_check("GetTempPath", code=code, expected=NON_ZERO)
     return ffi.string(lpBuffer)
