@@ -198,7 +198,7 @@ class TestPidExists(TestCase):
     def test_returns_false_for_process_with_exit_code_259(self):
         _, library = dist.load()
         process = self.create_python_process(
-            "import sys; sys.exit(%d)" % library.STILL_ACTIVE)
+            "import sys; sys.exit({0})".format(library.STILL_ACTIVE))
         process.communicate()
         self.assertFalse(pid_exists(process.pid))
 
@@ -370,7 +370,7 @@ class TestTextToWideChar(TestCase):
         output = _text_to_wchar(text)
         ffi, _ = dist.load()
         typeof = ffi.typeof(output)
-        self.assertEqual(typeof.cname, "wchar_t[%d]" % len(text))
+        self.assertEqual(typeof.cname, "wchar_t[{0}]".format(len(text)))
 
     def test_contents_equals_input(self):
         text = text_type(self.random_string(6))
