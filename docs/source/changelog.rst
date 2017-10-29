@@ -36,6 +36,13 @@ Notable enhancements and changes are:
         * :issue:`131` - :func:`pywincffi.kernel32.pipe.CreatePipe`
         * :issue:`133` - :func:`pywincffi.kernel32.process.CreateProcess`
 
+    * :issue:`134` / :issue:`137` - Use str.format(), and unicode string
+      literals in a few places.
+    * :issue:`138` - Improvements to :class:`pywincffi.exceptions.WindowsAPIError`
+      to better facilitate debugging.
+    * :issue:`140` - Added constant ``ERROR_BAD_EXE_FORMAT``, a required
+      constant by Twisted.
+
 0.4.0
 ~~~~~
 
