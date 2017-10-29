@@ -28,6 +28,7 @@ Notable enhancements and changes are:
 
         * :issue:`130` - :func:`pywincffi.kernel32.events.CreateEvent`
         * :issue:`131` - :func:`pywincffi.kernel32.pipe.CreatePipe`
+        * :issue:`132` - :func:`pywincffi.kernel32.process.CreateProcess`
 
 0.4.0
 ~~~~~

@@ -423,7 +423,7 @@ CreateProcessResult = namedtuple(
 
 
 def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
-        lpCommandLine, lpApplicationName=None, lpProcessAttributes=None,
+        lpApplicationName=None, lpCommandLine=None, lpProcessAttributes=None,
         lpThreadAttributes=None, bInheritHandles=True, dwCreationFlags=None,
         lpEnvironment=None, lpCurrentDirectory=None, lpStartupInfo=None):
     """
@@ -434,12 +434,6 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
 
         https://msdn.microsoft.com/en-us/library/ms682425
 
-    :param str lpCommandLine:
-        The command line to be executed.  The maximum length of this parameter
-        is 32768.  If no value is provided for ``lpApplicationName`` then
-        the module name portion of ``lpCommandLine`` cannot exceed
-        ``MAX_PATH``.
-
     :keyword pywincffi.wintypes.STARTUPINFO lpStartupInfo:
         See Microsoft's documentation for additional information.
 
@@ -447,6 +441,12 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
 
             The STARTUPINFOEX structure is not currently supported
             for this input.
+
+    :keyword str lpCommandLine:
+        The command line to be executed.  The maximum length of this parameter
+        is 32768.  If no value is provided for ``lpApplicationName`` then
+        the module name portion of ``lpCommandLine`` cannot exceed
+        ``MAX_PATH``.
 
     :keyword str lpApplicationName:
         The name of the module or application to be executed.  This can be
@@ -511,6 +511,12 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         be an instance of
         :class:`pywincffi.wintypes.structures.PROCESS_INFORMATION`
     """
+    if lpCommandLine is None:
+        raise InputError(
+            "lpCommandLine", None,
+            message="lpCommandLine in call to CreateProcess() may not be "
+                    "None.")
+
     ffi, library = dist.load()
 
     if len(lpCommandLine) > library.MAX_COMMAND_LINE:

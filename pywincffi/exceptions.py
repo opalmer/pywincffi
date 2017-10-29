@@ -23,7 +23,6 @@ class InputError(PyWinCFFIError):
     to be sure that the input(s) being provided are what we're expecting so
     we fail early and provide better error messages.
 
-
     :param str name:
         The name of the parameter being checked.
 
