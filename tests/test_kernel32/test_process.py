@@ -10,7 +10,7 @@ from textwrap import dedent
 from os.path import isfile, basename
 
 from mock import patch
-from six import text_type
+from six import iteritems, text_type
 
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase, mock_library
@@ -437,6 +437,37 @@ class TestCreateProcess(TestCase):
             bInheritHandles=True,
             dwCreationFlags=None,
             lpEnvironment=None,
+            lpCurrentDirectory=None,
+            lpStartupInfo=None
+        )
+        self.assertIsInstance(process, CreateProcessResult)
+        self.addCleanup(self.cleanup_process, process)
+
+    def test_dwCreationFlags_CREATE_NO_WINDOW(self):
+        """
+        If we call CreateProcess() with dwCreationFlags set and
+        pass in an environmnet, internally it must internally add
+        CREATE_UNICODE_ENVIRONMENT to dwCreationFlags.  Otherwise it
+        will fail due to an invalid parameter.
+        """
+        _, library = dist.load()
+
+        env = {}
+        for key, val in iteritems(os.environ):
+            if isinstance(key, bytes):
+                key = key.decode(sys.getfilesystemencoding())
+            if isinstance(val, bytes):
+                val = val.decode(sys.getfilesystemencoding())
+            env[key] = val
+
+        process = CreateProcess(
+            lpCommandLine=u"{0} -c \"\"".format(sys.executable),
+            lpApplicationName=None,
+            lpProcessAttributes=None,
+            lpThreadAttributes=None,
+            bInheritHandles=True,
+            dwCreationFlags=library.CREATE_NO_WINDOW,
+            lpEnvironment=env,
             lpCurrentDirectory=None,
             lpStartupInfo=None
         )
