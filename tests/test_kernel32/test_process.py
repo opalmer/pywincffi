@@ -296,15 +296,15 @@ class TestEnvironmentToString(TestCase):
 
     def test_type_check_for_environment_key(self):
         with self.assertRaises(InputError):
-            _environment_to_string({1: text_type("")})
+            _environment_to_string({1: u""})
 
     def test_type_check_for_environment_value(self):
         with self.assertRaisesRegex(InputError, ".*environment value 2.*"):
-            _environment_to_string({text_type("1"): 2})
+            _environment_to_string({u"1": 2})
 
     def test_key_cannot_contain_equals(self):
         with self.assertRaisesRegex(InputError, ".*cannot contain the `=`.*"):
-            _environment_to_string({text_type("3=4"): text_type("")})
+            _environment_to_string({u"3=4": u""})
 
     def test_not_a_dictionary(self):
         expected = "Expected a dictionary like object for `environment`"
@@ -413,7 +413,7 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             _, library = dist.load()
 
-            match = ".*cannot exceed %s.*" % library.MAX_COMMAND_LINE
+            match = ".*cannot exceed {0}.*".format(library.MAX_COMMAND_LINE)
             with self.assertRaisesRegex(InputError, match):
                 CreateProcess(lpCommandLine=u" " * (
                     library.MAX_COMMAND_LINE + 1))
@@ -422,15 +422,15 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             _, library = dist.load()
 
-            match = ".*cannot exceed %s.*" % library.MAX_PATH
+            match = ".*cannot exceed {0}.*".format(library.MAX_PATH)
             with self.assertRaisesRegex(InputError, match):
                 CreateProcess(
-                    lpCommandLine=u"'%s' arg1" % self.random_string(
-                        library.MAX_PATH + 1))
+                    lpCommandLine=u"'{0}' arg1".format(self.random_string(
+                        library.MAX_PATH + 1)))
 
     def test_return_type(self):
         process = CreateProcess(
-            lpCommandLine=text_type("%s -c \"\"" % sys.executable),
+            lpCommandLine=u"{0} -c \"\"".format(sys.executable),
             lpApplicationName=None,
             lpProcessAttributes=None,
             lpThreadAttributes=None,
@@ -447,7 +447,7 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             with self.assertRaises(InputError):
                 CreateProcess(
-                    lpCommandLine=text_type(sys.executable),
+                    lpCommandLine=u"{0}".format(sys.executable),
                     lpApplicationName=1,
                     lpProcessAttributes=None,
                     lpThreadAttributes=None,
@@ -572,14 +572,13 @@ class TestCreateProcess(TestCase):
 
         self.addCleanup(os.remove, script_path)
         environ = {
-            text_type("REMOVE_FILE"): text_type(remove_file),
-            text_type("PATH"): text_type(""),
-            text_type("SYSTEMROOT"): text_type(os.environ.get("SYSTEMROOT"))
+            u"REMOVE_FILE": text_type(remove_file),
+            u"PATH": u"",
+            u"SYSTEMROOT": text_type(os.environ.get("SYSTEMROOT"))
         }
 
         process = CreateProcess(
-            lpCommandLine=text_type(
-                "%s \"%s\"" % (sys.executable, script_path)),
+            lpCommandLine=u"{0} \"{1}\"".format(sys.executable, script_path),
             lpApplicationName=text_type(sys.executable),
             lpProcessAttributes=None,
             lpThreadAttributes=None,
@@ -615,15 +614,14 @@ class TestCreateProcess(TestCase):
             file_.write(script)
 
         environ = {
-            text_type("OUTPUT_FILE"): text_type(output_file),
-            text_type("UNICODE_OUTPUT"): u"µ",
-            text_type("PATH"): text_type(""),
-            text_type("SYSTEMROOT"): text_type(os.environ.get("SYSTEMROOT"))
+            u"OUTPUT_FILE": text_type(output_file),
+            u"UNICODE_OUTPUT": u"µ",
+            u"PATH": u"",
+            u"SYSTEMROOT": text_type(os.environ.get("SYSTEMROOT"))
         }
 
         process = CreateProcess(
-            lpCommandLine=text_type(
-                "%s \"%s\"" % (sys.executable, script_path)),
+            lpCommandLine=u"{0} \"{1}\"".format(sys.executable, script_path),
             lpApplicationName=text_type(sys.executable),
             lpProcessAttributes=None,
             lpThreadAttributes=None,
@@ -653,15 +651,14 @@ class TestCreateProcess(TestCase):
         os.close(fd)
 
         process = CreateProcess(
-            lpCommandLine=text_type(
-                "cmd.exe /c del %s" % basename(remove_file)),
+            lpCommandLine=u"cmd.exe /c del {0}".format(basename(remove_file)),
             lpApplicationName=None,
             lpProcessAttributes=None,
             lpThreadAttributes=None,
             bInheritHandles=True,
             dwCreationFlags=None,
             lpEnvironment=None,
-            lpCurrentDirectory=text_type(tmpdir),
+            lpCurrentDirectory=u"{0}".format(tmpdir),
             lpStartupInfo=None
         )
 
