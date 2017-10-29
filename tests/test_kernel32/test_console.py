@@ -33,14 +33,18 @@ class TestGetConsoleScreenBufferInfo(TestCase):
         )
         self.addCleanup(CloseHandle, handle)
 
-        # We should get ERROR_ACCESS_DENIED here because we didn't
-        # include the GENERIC_READ permission in the call to
-        # CreateConsoleScreenBuffer above.
+        # We can get ERROR_ACCESS_DENIED or ERROR_INVALID_HANDLE here. If
+        # we're operating inside of a console then we should get
+        # ERROR_ACCESS_DENIED. However if we're not inside of a console,
+        # such as the case when running on AppVeyor, then we'll get
+        # ERROR_INVALID_HANDLE instead.
         try:
             GetConsoleScreenBufferInfo(handle)
         except WindowsAPIError as err:
             self.addCleanup(self.SetLastError, 0)
-            self.assertEqual(err.errno, library.ERROR_ACCESS_DENIED)
+            self.assertIn(
+                err.errno,
+                (library.ERROR_ACCESS_DENIED, library.ERROR_INVALID_HANDLE))
 
 
 class TestCreateConsoleScreenBuffer(TestCase):
