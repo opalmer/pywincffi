@@ -75,7 +75,8 @@ def CreateConsoleScreenBuffer(
 
         https://docs.microsoft.com/en-us/windows/console/createconsolescreenbuffer
 
-    :param int dwDesiredAccess:
+    :type dwDesiredAccess: int or None
+    :param dwDesiredAccess:
          The access to the console screen buffer. If `None` is provided
          then the Windows APIs will use a default security descriptor.
 
