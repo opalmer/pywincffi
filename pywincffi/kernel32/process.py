@@ -567,6 +567,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
 
     if lpEnvironment is not None:
         lpEnvironment = _text_to_wchar(_environment_to_string(lpEnvironment))
+        dwCreationFlags = dwCreationFlags | library.CREATE_UNICODE_ENVIRONMENT
     else:
         lpEnvironment = ffi.NULL
 
