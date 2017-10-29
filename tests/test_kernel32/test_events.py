@@ -120,7 +120,7 @@ class TestSetEvent(TestCase):
     Tests for :func:`pywincffi.kernel32.SetEvent`
     """
     def test_signaled(self):
-        handle = CreateEvent(True, False)
+        handle = CreateEvent(bManualReset=True, bInitialState=False)
         self.addCleanup(CloseHandle, handle)
         _, library = dist.load()
         SetEvent(handle)
@@ -128,7 +128,7 @@ class TestSetEvent(TestCase):
             WaitForSingleObject(handle, 0), library.WAIT_OBJECT_0)
 
     def test_not_signaled(self):
-        handle = CreateEvent(True, False)
+        handle = CreateEvent(bManualReset=True, bInitialState=False)
         self.addCleanup(CloseHandle, handle)
         _, library = dist.load()
         self.assertEqual(
