@@ -136,15 +136,15 @@ class WindowsAPIError(PyWinCFFIError):
 
         if return_code is None and expected_return_code is None:
             self.message = \
-                "Error when calling %s. Message from Windows API was " \
-                "%r (errno: %s)." % (self.function, self.error, errno)
+                "Error when calling {0}. Message from Windows API was " \
+                "{1!r} (errno: {2}).".format(self.function, self.error, errno)
 
         elif return_code is not None and expected_return_code is not None:
             self.message = (
-                "Error when calling %s.  Expected to receive %r from %s "
-                "but got %r instead." % (
+                "Error when calling {0}.  Expected to receive {1!r} from {2} "
+                "but got {3!r} instead. (error: {4!r})".format(
                     self.function, self.return_code, self.function,
-                    self.expected_return_code
+                    self.expected_return_code, self.error
                 )
             )
 
@@ -153,8 +153,8 @@ class WindowsAPIError(PyWinCFFIError):
         else:  # pragma: no cover
             warnings.warn(Warning(), "Pre-formatting not available")
             self.message = (
-                "Error when calling %s. (error: %s, errno: %s, "
-                "return_code: %r, expected_return_code: %r)" % (
+                "Error when calling {0}. (error: {1}, errno: {2}, "
+                "return_code: {3!r}, expected_return_code: {4!r})".format(
                     self.function, self.error, self.errno, self.return_code,
                     self.expected_return_code
                 )
@@ -163,10 +163,11 @@ class WindowsAPIError(PyWinCFFIError):
         super(WindowsAPIError, self).__init__(self.message)
 
     def __repr__(self):
-        return "%s(%r, %r, %r, return_code=%r, expected_return_code=%r)" % (
-            self.__class__.__name__, self.function, self.error, self.errno,
-            self.return_code, self.expected_return_code
-        )
+        return (
+            "{0}({1!r}, {2!r}, {3!r}, return_code={4!r}, "
+            "expected_return_code={5!r})".format(
+                self.__class__.__name__, self.function, self.error,
+                self.errno, self.return_code, self.expected_return_code))
 
 
 class InternalError(PyWinCFFIError):
