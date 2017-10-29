@@ -210,6 +210,11 @@ BOOL WINAPI ResetEvent(
   _In_ HANDLE hEvent
 );
 
+// https://msdn.microsoft.com/en-us/library/ms686211
+BOOL WINAPI SetEvent(
+  _In_ HANDLE hEvent
+);
+
 ///////////////////////
 // Communications
 ///////////////////////

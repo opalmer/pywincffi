@@ -125,3 +125,22 @@ def ResetEvent(hEvent):
     _, library = dist.load()
     code = library.ResetEvent(wintype_to_cdata(hEvent))
     error_check("ResetEvent", code=code, expected=NON_ZERO)
+
+
+def SetEvent(hEvent):
+    """
+    Sets the specified event object to the signaled state.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/library/ms686211
+
+    :param pywincffi.wintypes.HANDLE hEvent:
+        A handle to the event object. The handle must have the
+        ``EVENT_MODIFY_STATE`` access right.
+    """
+    input_check("hEvent", hEvent, HANDLE)
+
+    _, library = dist.load()
+    code = library.SetEvent(wintype_to_cdata(hEvent))
+    error_check("SetEvent", code=code, expected=NON_ZERO)
