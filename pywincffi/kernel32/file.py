@@ -408,9 +408,13 @@ def GetTempPath():
     .. seealso::
 
         https://msdn.microsoft.com/en-us/aa364992
+
+    :returns:
+        Returns a string containing the value produced by the underlying
+        C function.
     """
     ffi, library = dist.load()
-    lpBuffer = ffi.new("char []", library.MAX_PATH)
+    lpBuffer = ffi.new("wchar_t *")
     code = library.GetTempPath(library.MAX_PATH, lpBuffer)
     error_check("GetTempPath", code=code, expected=NON_ZERO)
-    return lpBuffer[0]
+    return ffi.string(lpBuffer)
