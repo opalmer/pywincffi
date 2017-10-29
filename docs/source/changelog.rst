@@ -25,6 +25,12 @@ Notable enhancements and changes are:
       tools and libraries to more modern versions.
     * :issue:`124` - Implemented :func:`pywincffi.kernel32.file.GetTempPath`
     * :issue:`123` - Implemented :func:`pywincffi.kernel32.event.SetEvent`
+    * Changed ordering of arguments for the following functions as they
+      did not match the underlying C function signatures:
+
+        * :issue:`130` - :func:`pywincffi.kernel32.events.CreateEvent`
+        * :issue:`131` - :func:`pywincffi.kernel32.pipe.CreatePipe`
+        * :issue:`133` - :func:`pywincffi.kernel32.process.CreateProcess`
 
 0.4.0
 ~~~~~

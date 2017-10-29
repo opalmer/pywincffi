@@ -203,7 +203,7 @@ class TestDuplicateHandle(TestCase):
     Integration tests for :func:`pywincffi.kernel32.DuplicateHandle`
     """
     def test_duplication(self):
-        event = CreateEvent(False, False)
+        event = CreateEvent(bManualReset=False, bInitialState=False)
         self.addCleanup(CloseHandle, event)
 
         _, library = dist.load()

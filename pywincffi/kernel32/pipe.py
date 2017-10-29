@@ -20,7 +20,7 @@ PeekNamedPipeResult = namedtuple(
 )
 
 
-def CreatePipe(nSize=0, lpPipeAttributes=None):
+def CreatePipe(lpPipeAttributes=None, nSize=0):
     """
     Creates an anonymous pipe and returns the read and write handles.
 
@@ -36,15 +36,15 @@ def CreatePipe(nSize=0, lpPipeAttributes=None):
     >>> lpPipeAttributes.bInheritHandle = True
     >>> reader, writer = CreatePipe(lpPipeAttributes=lpPipeAttributes)
 
-    :keyword int nSize:
-        The size of the buffer in bytes.  Passing in 0, which is the default
-        will cause the system to use the default buffer size.
-
     :keyword pywincffi.wintypes.SECURITY_ATTRIBUTES lpPipeAttributes:
         The security attributes to apply to the handle. By default
         ``NULL`` will be passed in, meaning the handle we create
         cannot be inherited.  For more detailed information see the links
         below.
+
+    :keyword int nSize:
+        The size of the buffer in bytes.  Passing in 0, which is the default
+        will cause the system to use the default buffer size.
 
     :return:
         Returns a tuple of :class:`pywincffi.wintype.HANDLE` containing the

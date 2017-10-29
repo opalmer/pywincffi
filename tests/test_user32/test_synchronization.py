@@ -11,9 +11,9 @@ class TestMsgWaitForMultipleObjects(TestCase):
     """
     def test_timeout(self):
         _, library = dist.load()
-        e1 = CreateEvent(True, False)
+        e1 = CreateEvent(bManualReset=True, bInitialState=False)
         self.addCleanup(CloseHandle, e1)
-        e2 = CreateEvent(True, False)
+        e2 = CreateEvent(bManualReset=True, bInitialState=False)
         self.addCleanup(CloseHandle, e2)
         result = MsgWaitForMultipleObjects(
             [e1, e2], False, 0, library.QS_ALLEVENTS)
@@ -21,9 +21,9 @@ class TestMsgWaitForMultipleObjects(TestCase):
 
     def test_triggered(self):
         _, library = dist.load()
-        e1 = CreateEvent(True, False)
+        e1 = CreateEvent(bManualReset=True, bInitialState=False)
         self.addCleanup(CloseHandle, e1)
-        e2 = CreateEvent(True, True)
+        e2 = CreateEvent(bManualReset=False, bInitialState=True)
         self.addCleanup(CloseHandle, e2)
 
         # The result here should be 1 because the e2
@@ -34,7 +34,7 @@ class TestMsgWaitForMultipleObjects(TestCase):
 
     def test_type_check_on_pHandles_input_not_list(self):
         _, library = dist.load()
-        e1 = CreateEvent(True, False)
+        e1 = CreateEvent(bManualReset=False, bInitialState=True)
         self.addCleanup(CloseHandle, e1)
 
         with self.assertRaises(InputError):
@@ -51,7 +51,7 @@ class TestMsgWaitForMultipleObjects(TestCase):
 
         events = []
         for _ in range(library.MAXIMUM_WAIT_OBJECTS + 1):
-            event = CreateEvent(True, False)
+            event = CreateEvent(bManualReset=False, bInitialState=True)
             self.addCleanup(CloseHandle, event)
             events.append(event)
 

@@ -25,7 +25,7 @@ def wintype_to_cdata(wintype):
     >>> from pywincffi.wintypes import wintype_to_cdata
     >>> ffi, lib = dist.load()
     >>> # Get an event HANDLE, using the wrapper: it's a Python HANDLE object.
-    >>> hEvent = CreateEvent(False, False)
+    >>> hEvent = CreateEvent(bManualReset=False, bInitialState=False)
     >>> # Call ResetEvent directly without going through the wrapper:
     >>> hEvent_cdata = wintype_to_cdata(hEvent)
     >>> result = lib.ResetEvent(hEvent_cdata)
