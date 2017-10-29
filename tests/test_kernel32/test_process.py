@@ -403,13 +403,20 @@ class TestCreateProcess(TestCase):
         CloseHandle(create_process_result.lpProcessInformation.hProcess)
         CloseHandle(create_process_result.lpProcessInformation.hThread)
 
+    def test_lpCommandLine_None(self):
+        match = \
+            r".*lpCommandLine in call to CreateProcess\(\) may not be None.*"
+        with self.assertRaisesRegex(InputError, match):
+            CreateProcess(lpCommandLine=None)
+
     def test_lpCommandLine_length_max_command_line(self):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             _, library = dist.load()
 
             match = ".*cannot exceed %s.*" % library.MAX_COMMAND_LINE
             with self.assertRaisesRegex(InputError, match):
-                CreateProcess(u" " * (library.MAX_COMMAND_LINE + 1))
+                CreateProcess(lpCommandLine=u" " * (
+                    library.MAX_COMMAND_LINE + 1))
 
     def test_lpCommandLine_length_max_path(self):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
@@ -418,11 +425,12 @@ class TestCreateProcess(TestCase):
             match = ".*cannot exceed %s.*" % library.MAX_PATH
             with self.assertRaisesRegex(InputError, match):
                 CreateProcess(
-                    u"'%s' arg1" % self.random_string(library.MAX_PATH + 1))
+                    lpCommandLine=u"'%s' arg1" % self.random_string(
+                        library.MAX_PATH + 1))
 
     def test_return_type(self):
         process = CreateProcess(
-            text_type("%s -c \"\"" % sys.executable),
+            lpCommandLine=text_type("%s -c \"\"" % sys.executable),
             lpApplicationName=None,
             lpProcessAttributes=None,
             lpThreadAttributes=None,
@@ -439,7 +447,7 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             with self.assertRaises(InputError):
                 CreateProcess(
-                    text_type(sys.executable),
+                    lpCommandLine=text_type(sys.executable),
                     lpApplicationName=1,
                     lpProcessAttributes=None,
                     lpThreadAttributes=None,
@@ -453,7 +461,7 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             with self.assertRaises(InputError):
                 CreateProcess(
-                    text_type(sys.executable),
+                    lpCommandLine=text_type(sys.executable),
                     lpApplicationName=None,
                     lpProcessAttributes=1,
                     lpThreadAttributes=None,
@@ -464,7 +472,7 @@ class TestCreateProcess(TestCase):
                     lpStartupInfo=None)
 
             CreateProcess(
-                text_type(sys.executable),
+                lpCommandLine=text_type(sys.executable),
                 lpApplicationName=None,
                 lpProcessAttributes=SECURITY_ATTRIBUTES(),
                 lpThreadAttributes=None,
@@ -478,7 +486,7 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             with self.assertRaises(InputError):
                 CreateProcess(
-                    text_type(sys.executable),
+                    lpCommandLine=text_type(sys.executable),
                     lpApplicationName=None,
                     lpProcessAttributes=None,
                     lpThreadAttributes=1,
@@ -489,7 +497,7 @@ class TestCreateProcess(TestCase):
                     lpStartupInfo=None)
 
             CreateProcess(
-                text_type(sys.executable),
+                lpCommandLine=text_type(sys.executable),
                 lpApplicationName=None,
                 lpProcessAttributes=None,
                 lpThreadAttributes=SECURITY_ATTRIBUTES(),
@@ -503,7 +511,7 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             with self.assertRaises(InputError):
                 CreateProcess(
-                    text_type(sys.executable),
+                    lpCommandLine=text_type(sys.executable),
                     lpApplicationName=None,
                     lpProcessAttributes=None,
                     lpThreadAttributes=None,
@@ -514,7 +522,7 @@ class TestCreateProcess(TestCase):
                     lpStartupInfo=None)
 
             CreateProcess(
-                text_type(sys.executable),
+                lpCommandLine=text_type(sys.executable),
                 lpApplicationName=None,
                 lpProcessAttributes=None,
                 lpThreadAttributes=None,
@@ -528,7 +536,7 @@ class TestCreateProcess(TestCase):
         with mock_library(CreateProcess=self.NoOpCreateProcess):
             with self.assertRaises(InputError):
                 CreateProcess(
-                    text_type(sys.executable),
+                    lpCommandLine=text_type(sys.executable),
                     lpApplicationName=None,
                     lpProcessAttributes=None,
                     lpThreadAttributes=None,
@@ -539,7 +547,7 @@ class TestCreateProcess(TestCase):
                     lpStartupInfo=1)
 
             CreateProcess(
-                text_type(sys.executable),
+                lpCommandLine=text_type(sys.executable),
                 lpApplicationName=None,
                 lpProcessAttributes=None,
                 lpThreadAttributes=None,
@@ -570,8 +578,9 @@ class TestCreateProcess(TestCase):
         }
 
         process = CreateProcess(
-            text_type("%s \"%s\"" % (sys.executable, script_path)),
-            lpApplicationName=None,
+            lpCommandLine=text_type(
+                "%s \"%s\"" % (sys.executable, script_path)),
+            lpApplicationName=text_type(sys.executable),
             lpProcessAttributes=None,
             lpThreadAttributes=None,
             bInheritHandles=True,
@@ -613,8 +622,9 @@ class TestCreateProcess(TestCase):
         }
 
         process = CreateProcess(
-            text_type("%s \"%s\"" % (sys.executable, script_path)),
-            lpApplicationName=None,
+            lpCommandLine=text_type(
+                "%s \"%s\"" % (sys.executable, script_path)),
+            lpApplicationName=text_type(sys.executable),
             lpProcessAttributes=None,
             lpThreadAttributes=None,
             bInheritHandles=True,
@@ -643,7 +653,8 @@ class TestCreateProcess(TestCase):
         os.close(fd)
 
         process = CreateProcess(
-            text_type("cmd.exe /c del %s" % basename(remove_file)),
+            lpCommandLine=text_type(
+                "cmd.exe /c del %s" % basename(remove_file)),
             lpApplicationName=None,
             lpProcessAttributes=None,
             lpThreadAttributes=None,
