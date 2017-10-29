@@ -142,9 +142,9 @@ class WindowsAPIError(PyWinCFFIError):
         elif return_code is not None and expected_return_code is not None:
             self.message = (
                 "Error when calling {0}.  Expected to receive {1!r} from {2} "
-                "but got {3!r} instead.".format(
+                "but got {3!r} instead. (error: {4!r})".format(
                     self.function, self.return_code, self.function,
-                    self.expected_return_code
+                    self.expected_return_code, self.error
                 )
             )
 
