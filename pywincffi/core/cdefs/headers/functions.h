@@ -295,6 +295,31 @@ BOOL WINAPI GetOverlappedResult(
 );
 
 
+///////////////////////
+// Console
+///////////////////////
+
+// https://docs.microsoft.com/en-us/windows/console/setconsoletextattribute
+BOOL WINAPI SetConsoleTextAttribute(
+  _In_ HANDLE hConsoleOutput,
+  _In_ WORD   wAttributes
+);
+
+// https://docs.microsoft.com/en-us/windows/console/getconsolescreenbufferinfo
+BOOL WINAPI GetConsoleScreenBufferInfo(
+  _In_  HANDLE                      hConsoleOutput,
+  _Out_ PCONSOLE_SCREEN_BUFFER_INFO lpConsoleScreenBufferInfo
+);
+
+// https://docs.microsoft.com/en-us/windows/console/createconsolescreenbuffer
+HANDLE WINAPI CreateConsoleScreenBuffer(
+  _In_             DWORD               dwDesiredAccess,
+  _In_             DWORD               dwShareMode,
+  _In_opt_   const SECURITY_ATTRIBUTES *lpSecurityAttributes,
+  _In_             DWORD               dwFlags,
+  _Reserved_       LPVOID              lpScreenBufferData
+);
+
 // Used internally to reset the last error to 0
 // in cases where pywincffi is the cause of the
 // error and we choose to ignore the error.

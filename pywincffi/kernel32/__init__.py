@@ -23,5 +23,8 @@ from pywincffi.kernel32.process import (
 from pywincffi.kernel32.events import (
     CreateEvent, OpenEvent, ResetEvent, SetEvent)
 from pywincffi.kernel32.comms import ClearCommError
+from pywincffi.kernel32.console import (
+    SetConsoleTextAttribute, GetConsoleScreenBufferInfo,
+    CreateConsoleScreenBuffer)
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.kernel32.overlapped import GetOverlappedResult

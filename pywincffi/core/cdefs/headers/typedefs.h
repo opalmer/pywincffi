@@ -11,3 +11,25 @@
 
 typedef int... SOCKET;
 typedef HANDLE WSAEVENT;  // according to winsock2.h
+
+// https://docs.microsoft.com/en-us/windows/console/coord-str
+typedef struct _COORD {
+  SHORT X;
+  SHORT Y;
+} COORD, *PCOORD;
+
+// https://docs.microsoft.com/en-us/windows/console/small-rect-str
+typedef struct _SMALL_RECT {
+  SHORT Left;
+  SHORT Top;
+  SHORT Right;
+  SHORT Bottom;
+} SMALL_RECT;
+
+typedef struct _CHAR_INFO {
+  union {
+    WCHAR UnicodeChar;
+    CHAR  AsciiChar;
+  } Char;
+  WORD  Attributes;
+} CHAR_INFO, *PCHAR_INFO;

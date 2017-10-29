@@ -81,3 +81,12 @@ typedef struct _PROCESS_INFORMATION {
   DWORD  dwProcessId;
   DWORD  dwThreadId;
 } PROCESS_INFORMATION, *LPPROCESS_INFORMATION;
+
+// https://docs.microsoft.com/en-us/windows/console/console-screen-buffer-info-str
+typedef struct _CONSOLE_SCREEN_BUFFER_INFO {
+  COORD      dwSize;
+  COORD      dwCursorPosition;
+  WORD       wAttributes;
+  SMALL_RECT srWindow;
+  COORD      dwMaximumWindowSize;
+} CONSOLE_SCREEN_BUFFER_INFO, *PCONSOLE_SCREEN_BUFFER_INFO;
