@@ -23,6 +23,8 @@ Notable enhancements and changes are:
     * Various improvements to the tests and build including replacement of
       nosetests with pytest, transition from pep8 to pycodestyle and upgrading
       tools and libraries to more modern versions.
+    * :issue:`124` - Implemented :func:`pywincffi.kernel32.file.GetTempPath`
+    * :issue:`123` - Implemented :func:`pywincffi.kernel32.event.SetEvent`
     * Changed ordering of arguments for the following functions as they
       did not match the underlying C function signatures:
 

@@ -11,7 +11,7 @@ Provides functions, constants and utilities that wrap functions provided by
 # it's close to the way Windows would present them (as a single module)
 from pywincffi.kernel32.file import (
     ReadFile, WriteFile, FlushFileBuffers, MoveFileEx, CreateFile, LockFileEx,
-    UnlockFileEx)
+    UnlockFileEx, GetTempPath)
 from pywincffi.kernel32.handle import (
     CloseHandle, GetStdHandle, GetHandleInformation, SetHandleInformation,
     DuplicateHandle)
@@ -20,7 +20,8 @@ from pywincffi.kernel32.pipe import (
 from pywincffi.kernel32.process import (
     GetProcessId, GetCurrentProcess, OpenProcess, GetExitCodeProcess,
     TerminateProcess, CreateToolhelp32Snapshot, CreateProcess, pid_exists)
-from pywincffi.kernel32.events import CreateEvent, OpenEvent, ResetEvent
+from pywincffi.kernel32.events import (
+    CreateEvent, OpenEvent, ResetEvent, SetEvent)
 from pywincffi.kernel32.comms import ClearCommError
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.kernel32.overlapped import GetOverlappedResult

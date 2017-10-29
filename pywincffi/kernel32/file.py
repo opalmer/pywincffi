@@ -399,3 +399,22 @@ def UnlockFileEx(
         wintype_to_cdata(lpOverlapped)
     )
     error_check("UnlockFileEx", code=code, expected=NON_ZERO)
+
+
+def GetTempPath():
+    """
+    Retrieves the path of the directory designated for temporary files.
+
+    .. seealso::
+
+        https://msdn.microsoft.com/en-us/aa364992
+
+    :returns:
+        Returns a string containing the value produced by the underlying
+        C function.
+    """
+    ffi, library = dist.load()
+    lpBuffer = ffi.new("TCHAR[{}]".format(library.MAX_PATH + 1))
+    code = library.GetTempPath(library.MAX_PATH + 1, lpBuffer)
+    error_check("GetTempPath", code=code, expected=NON_ZERO)
+    return ffi.string(lpBuffer)

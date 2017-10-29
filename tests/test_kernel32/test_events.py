@@ -7,7 +7,8 @@ from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import WindowsAPIError, InputError
 from pywincffi.kernel32 import events  # used by mocks
 from pywincffi.kernel32 import (
-    CloseHandle, CreateEvent, OpenEvent, ResetEvent, WaitForSingleObject)
+    CloseHandle, CreateEvent, OpenEvent, ResetEvent, WaitForSingleObject,
+    SetEvent)
 
 
 # These tests cause TestPidExists and others to fail under Python 3.4 so for
@@ -112,3 +113,23 @@ class TestResetEvent(TestCase):
 
         _, library = dist.load()
         self.assertEqual(WaitForSingleObject(handle, 0), library.WAIT_TIMEOUT)
+
+
+class TestSetEvent(TestCase):
+    """
+    Tests for :func:`pywincffi.kernel32.SetEvent`
+    """
+    def test_signaled(self):
+        handle = CreateEvent(True, False)
+        self.addCleanup(CloseHandle, handle)
+        _, library = dist.load()
+        SetEvent(handle)
+        self.assertEqual(
+            WaitForSingleObject(handle, 0), library.WAIT_OBJECT_0)
+
+    def test_not_signaled(self):
+        handle = CreateEvent(True, False)
+        self.addCleanup(CloseHandle, handle)
+        _, library = dist.load()
+        self.assertEqual(
+            WaitForSingleObject(handle, 0), library.WAIT_TIMEOUT)
