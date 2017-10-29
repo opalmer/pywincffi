@@ -71,26 +71,26 @@ def _environment_to_string(environment):
     for key, value in items():
         if not isinstance(key, text_type):
             raise InputError(
-                "environment key %s" % key, key,
+                u"environment key {0}".format(key), key,
                 allowed_types=(text_type, ))
 
         if not isinstance(value, text_type):
             raise InputError(
-                "environment value %s (key: %r)" % (value, key), value,
-                allowed_types=(text_type, ))
+                u"environment value {0} (key: {1!r})".format(value, key),
+                value, allowed_types=(text_type, ))
 
         # From Microsoft's documentation on `lpEnvironment`:
         #   Because the equal sign is used as a separator, it must not be used
         #   in the name of an environment variable.
-        if "=" in key:
+        if u"=" in key:
             raise InputError(
                 key, key, None,
-                message="Environment keys cannot contain the `=` symbol.  "
-                        "Offending key: %r" % key)
+                message=u"Environment keys cannot contain the `=` symbol.  "
+                        u"Offending key: {0}".format(key))
 
-        converted.append("%s=%s\0" % (key, value))
+        converted.append(u"{0}={1}\0".format(key, value))
 
-    return text_type("".join(converted)) + text_type("\0")
+    return u"".join(converted) + u"\0"
 
 
 def _text_to_wchar(text):
@@ -108,10 +108,10 @@ def _text_to_wchar(text):
     if not isinstance(text, text_type):
         raise InputError(
             "text", text,
-            message="Expected %r for `text`" % text_type)
+            message="Expected {0!r} for `text`".format(text_type))
 
     ffi, _ = dist.load()
-    return ffi.new("wchar_t[%d]" % len(text), text)
+    return ffi.new("wchar_t[{0}]".format(len(text)), text)
 
 
 def module_name(path):
@@ -145,7 +145,7 @@ def module_name(path):
     if not module:
         raise InputError(
             "", None, None,
-            message="Failed to determine module name in %r" % path)
+            message=u"Failed to determine module name in {0!r}".format(path))
 
     # Make sure we're just getting the module name
     # and not any of the original quote characters.
@@ -228,13 +228,13 @@ def pid_exists(pid, wait=0):
             elif wait_result == library.WAIT_ABANDONED:
                 raise PyWinCFFINotImplementedError(
                     "An unknown error occurred while running "
-                    "pid_exists(%r).  It appears that the call to "
-                    "WaitForSingleObject may be been terminated." % pid)
+                    "pid_exists({0!r}).  It appears that the call to "
+                    "WaitForSingleObject may be been terminated.".format(pid))
 
             else:
                 raise PyWinCFFINotImplementedError(
                     "Unhandled result from "
-                    "WaitForSingleObject(): %r" % wait_result)
+                    "WaitForSingleObject(): {0!r}".format(wait_result))
 
         return False
 
@@ -409,7 +409,8 @@ def CreateToolhelp32Snapshot(dwFlags, th32ProcessID):
         raise WindowsAPIError(
             "CreateToolhelp32Snapshot", "Invalid Handle",
             library.INVALID_HANDLE_VALUE,
-            expected_return_code="not %r" % library.INVALID_HANDLE_VALUE)
+            expected_return_code="not {0!r}".format(
+                library.INVALID_HANDLE_VALUE))
 
     error_check("CreateToolhelp32Snapshot")
 
@@ -523,7 +524,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
         raise InputError(
             "lpCommandLine", lpCommandLine, text_type,
             message="lpCommandLine's length "
-                    "cannot exceed %s" % library.MAX_COMMAND_LINE)
+                    "cannot exceed {0}".format(library.MAX_COMMAND_LINE))
 
     if lpApplicationName is None:
         lpApplicationName = ffi.NULL
@@ -537,8 +538,8 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
             raise InputError(
                 "lpCommandLine", lpCommandLine, text_type,
                 message="lpCommandLine's module name length cannot "
-                        "exceed %s if `lpApplicationName` "
-                        "is not set. Module name was %r" % (
+                        "exceed {0} if `lpApplicationName` "
+                        "is not set. Module name was {1!r}".format(
                             library.MAX_PATH, module))
     else:
         input_check(
@@ -566,6 +567,7 @@ def CreateProcess(  # pylint: disable=too-many-arguments,too-many-branches
 
     if lpEnvironment is not None:
         lpEnvironment = _text_to_wchar(_environment_to_string(lpEnvironment))
+        dwCreationFlags = dwCreationFlags | library.CREATE_UNICODE_ENVIRONMENT
     else:
         lpEnvironment = ffi.NULL
 
