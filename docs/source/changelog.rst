@@ -25,6 +25,11 @@ Notable enhancements and changes are:
       tools and libraries to more modern versions.
     * :issue:`124` - Implemented :func:`pywincffi.kernel32.file.GetTempPath`
     * :issue:`123` - Implemented :func:`pywincffi.kernel32.event.SetEvent`
+    * :issue:`129` - Implemented :func:`pywincffi.kernel32.console.SetConsoleTextAttribute`. Also
+      implemented :func:`pywincffi.kernel32.console.GetConsoleScreenBufferInfo` and
+      :func:`pywincffi.kernel32.console.CreateConsoleScreenBuffer` to properly test
+      the new functionality.
+
 
 0.4.0
 ~~~~~
