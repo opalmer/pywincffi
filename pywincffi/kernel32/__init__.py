@@ -20,7 +20,8 @@ from pywincffi.kernel32.pipe import (
 from pywincffi.kernel32.process import (
     GetProcessId, GetCurrentProcess, OpenProcess, GetExitCodeProcess,
     TerminateProcess, CreateToolhelp32Snapshot, CreateProcess, pid_exists)
-from pywincffi.kernel32.events import CreateEvent, OpenEvent, ResetEvent
+from pywincffi.kernel32.events import (
+    CreateEvent, OpenEvent, ResetEvent, SetEvent)
 from pywincffi.kernel32.comms import ClearCommError
 from pywincffi.kernel32.synchronization import WaitForSingleObject
 from pywincffi.kernel32.overlapped import GetOverlappedResult
