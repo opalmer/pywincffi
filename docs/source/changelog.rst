@@ -8,6 +8,10 @@ versions are shown first.
 Versions
 --------
 
+latest
+~~~~~~
+
+
 0.5.0
 ~~~~~
 
