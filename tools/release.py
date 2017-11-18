@@ -154,10 +154,6 @@ def main():
 
     if not args.skip_pypi:
         subprocess.check_call([
-            sys.executable, "setup.py", "register"],
-            cwd=ROOT
-        )
-        subprocess.check_call([
             sys.executable, "setup.py", "upload_from_appveyor"],
             cwd=ROOT
         )

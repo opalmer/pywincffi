@@ -62,7 +62,7 @@ class AppVeyorArtifactUpload(upload):
             for filename in files:
                 if filename.endswith(".zip"):
                     command = "sdist"
-                    pyversion = "none"
+                    pyversion = "source"
                 elif filename.endswith(".whl"):
                     command = "bdist_wheel"
                     _, _, pyversion, _, _ = filename.rstrip(".whl").split("-")
@@ -103,7 +103,7 @@ setup_keywords = dict(
     setup_requires=requirements,
     install_requires=requirements,
     classifiers=[
-        "Development Status :: 5 - Beta",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
