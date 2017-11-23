@@ -115,3 +115,13 @@ def socket_from_object(sock):
         sock = SOCKET()
         sock._cdata[0] = ffi.cast("SOCKET", fileno)
         return sock
+
+
+def unpack(cdata):
+    """
+    Unpacks the given cdata array into a Python byte array, string or
+    list. This is just a simple wrapper for CFFI's built-in unpack
+    function.
+    """
+    ffi, _ = dist.load()
+    return ffi.unpack(cdata, ffi.sizeof(cdata))
