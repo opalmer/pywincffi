@@ -17,7 +17,7 @@ from pywincffi.kernel32 import file as _file  # used for mocks
 from pywincffi.kernel32 import (
     CreateFile, CloseHandle, MoveFileEx, WriteFile, FlushFileBuffers,
     LockFileEx, UnlockFileEx, ReadFile, GetTempPath)
-from pywincffi.wintypes import handle_from_file
+from pywincffi.wintypes import handle_from_file, unpack
 
 
 class TestWriteFile(TestCase):
@@ -79,13 +79,13 @@ class TestReadFile(TestCase):
         path = self._create_file(b"hello\x00world")
         hFile = self._handle_to_read_file(path)
         contents = ReadFile(hFile, 1024)
-        self.assertEqual(contents, b"hello\x00world")
+        self.assertEqual(unpack(contents), b"hello\x00world")
 
     def test_write_then_read_partial(self):
         path = self._create_file(b"test_write_then_read_partial")
         hFile = self._handle_to_read_file(path)
         contents = ReadFile(hFile, 4)
-        self.assertEqual(contents, b"test")
+        self.assertEqual(unpack(contents), b"test")
 
 
 class TestMoveFileEx(TestCase):

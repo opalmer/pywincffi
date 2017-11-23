@@ -221,8 +221,15 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         ...     hFile, 12, lpOverlapped=lpOverlapped)
 
     :returns:
-        Returns the binary data read from ``hFile``
-        Type is ``str`` on Python 2, ``bytes`` on Python 3.
+        Returns a Python bytearray. If the input ``hFile`` was not
+        opened in overlapped mode then the returned array will contain
+        the resulting data. If ``hFile`` was opened in overlapped mode
+        then the read data will be pushed into returned array when the
+        read has completed.
+
+        When you ready to read the data from the returned buffer the
+        :func:`pywincffi.wintypes.unpack` function may be used to
+        unpack the cdata structure.
     """
     ffi, library = dist.load()
 
@@ -233,14 +240,14 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         allowed_types=(NoneType, OVERLAPPED)
     )
 
-    lpBuffer = ffi.new("char []", nNumberOfBytesToRead)
+    lpBuffer = ffi.from_buffer(bytearray(nNumberOfBytesToRead))
     bytes_read = ffi.new("LPDWORD")
     code = library.ReadFile(
         wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToRead, bytes_read,
         wintype_to_cdata(lpOverlapped)
     )
     error_check("ReadFile", code=code, expected=NON_ZERO)
-    return ffi.unpack(lpBuffer, bytes_read[0])
+    return lpBuffer
 
 
 def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
