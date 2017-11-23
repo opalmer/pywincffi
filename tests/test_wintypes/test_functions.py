@@ -6,6 +6,8 @@ import socket
 import tempfile
 from errno import EBADF
 
+from six import PY2
+
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
@@ -113,8 +115,8 @@ class TestUnpack(TestCase):
 
     def test_bytearray_unicode(self):
         ffi, _ = dist.load()
-        unpacked = unpack(ffi.from_buffer(bytearray("Ʃ", "utf-8")))
-        self.assertEqual(unpacked.decode("utf-8"), "Ʃ")
+        unpacked = unpack(ffi.from_buffer(bytearray(u"Ʃ", "utf-8")))
+        self.assertEqual(unpacked.decode("utf-8"), u"Ʃ")
 
     def test_bytearray_ascii(self):
         ffi, _ = dist.load()
