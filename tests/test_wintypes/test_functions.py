@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import array
 import os
 import socket
@@ -109,7 +111,12 @@ class TestUnpack(TestCase):
             b"\x01\x02\x03\x04"
         )
 
-    def test_bytearray(self):
+    def test_bytearray_unicode(self):
         ffi, _ = dist.load()
         unpacked = unpack(ffi.from_buffer(bytearray("Ʃ", "utf-8")))
         self.assertEqual(unpacked.decode("utf-8"), "Ʃ")
+
+    def test_bytearray_ascii(self):
+        ffi, _ = dist.load()
+        unpacked = unpack(ffi.from_buffer(bytearray("test", "utf-8")))
+        self.assertEqual(unpacked, b"test")
