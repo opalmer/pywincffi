@@ -56,7 +56,7 @@ class TestReadFile(TestCase):
         self.addCleanup(os.remove, path)
         with os.fdopen(fd, "wb") as file_:
             file_.write(contents)
-        return text_type(path)
+        return text_type(path), len(contents)
 
     def _handle_to_read_file(self, path):
         _, library = dist.load()
@@ -70,19 +70,19 @@ class TestReadFile(TestCase):
         return hFile
 
     def test_write_then_read_bytes_ascii(self):
-        path = self._create_file(b"test_write_then_read_bytes_ascii")
+        path, written = self._create_file(b"test_write_then_read_bytes_ascii")
         hFile = self._handle_to_read_file(path)
-        contents = ReadFile(hFile, 1024)
-        self.assertEqual(contents, b"test_write_then_read_bytes_ascii")
+        contents = ReadFile(hFile, written)
+        self.assertEqual(unpack(contents), b"test_write_then_read_bytes_ascii")
 
     def test_write_then_read_null_bytes(self):
-        path = self._create_file(b"hello\x00world")
+        path, written = self._create_file(b"hello\x00world")
         hFile = self._handle_to_read_file(path)
-        contents = ReadFile(hFile, 1024)
+        contents = ReadFile(hFile, written)
         self.assertEqual(unpack(contents), b"hello\x00world")
 
     def test_write_then_read_partial(self):
-        path = self._create_file(b"test_write_then_read_partial")
+        path, _ = self._create_file(b"test_write_then_read_partial")
         hFile = self._handle_to_read_file(path)
         contents = ReadFile(hFile, 4)
         self.assertEqual(unpack(contents), b"test")
