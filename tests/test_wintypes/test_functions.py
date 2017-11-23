@@ -6,8 +6,6 @@ import socket
 import tempfile
 from errno import EBADF
 
-from six import PY2
-
 from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
