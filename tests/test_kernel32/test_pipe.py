@@ -4,7 +4,6 @@ from pywincffi.kernel32 import (
     CreatePipe, PeekNamedPipe, PeekNamedPipeResult, ReadFile, WriteFile,
     CloseHandle, SetNamedPipeHandleState)
 from pywincffi.core import dist
-from pywincffi.wintypes import unpack
 
 # For pylint on non-windows platforms
 try:
@@ -57,7 +56,7 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
         data = b"hello world"
         bytes_written = WriteFile(writer, data)
         self.assertEqual(
-            unpack(ReadFile(reader, bytes_written)),
+            ReadFile(reader, bytes_written),
             b"hello world")
 
         _, library = dist.load()
@@ -82,7 +81,7 @@ class TestPeekNamedPipe(PipeBaseTestCase):
         data_written = WriteFile(writer, data)
 
         PeekNamedPipe(reader, 0)
-        self.assertEqual(unpack(ReadFile(reader, data_written)), data)
+        self.assertEqual(ReadFile(reader, data_written), data)
         _, library = dist.load()
         self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 

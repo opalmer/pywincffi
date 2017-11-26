@@ -226,10 +226,6 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         the resulting data. If ``hFile`` was opened in overlapped mode
         then the read data will be pushed into returned array when the
         read has completed.
-
-        When you ready to read the data from the returned buffer the
-        :func:`pywincffi.wintypes.unpack` function may be used to
-        unpack the cdata structure.
     """
     ffi, library = dist.load()
 
@@ -240,14 +236,15 @@ def ReadFile(hFile, nNumberOfBytesToRead, lpOverlapped=None):
         allowed_types=(NoneType, OVERLAPPED)
     )
 
-    lpBuffer = ffi.from_buffer(bytearray(nNumberOfBytesToRead))
+    readBuffer = bytearray(nNumberOfBytesToRead)
+    lpBuffer = ffi.from_buffer(readBuffer)
     bytes_read = ffi.new("LPDWORD")
     code = library.ReadFile(
         wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToRead, bytes_read,
         wintype_to_cdata(lpOverlapped)
     )
     error_check("ReadFile", code=code, expected=NON_ZERO)
-    return lpBuffer
+    return readBuffer
 
 
 def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):

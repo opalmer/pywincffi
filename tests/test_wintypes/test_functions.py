@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import array
 import os
 import socket
 import tempfile
@@ -10,8 +9,7 @@ from pywincffi.core import dist
 from pywincffi.dev.testutil import TestCase
 from pywincffi.exceptions import InputError
 from pywincffi.kernel32 import CloseHandle
-from pywincffi.wintypes import (
-    SOCKET, handle_from_file, socket_from_object, unpack)
+from pywincffi.wintypes import SOCKET, handle_from_file, socket_from_object
 
 try:
     WindowsError
@@ -101,22 +99,3 @@ class TestSocketFromObject(TestCase):
         self.assertEqual(library.closesocket(sock._cdata[0]), -1)
 
         self.assert_last_error(library.WSAENOTSOCK)
-
-
-class TestUnpack(TestCase):
-    def test_array(self):
-        ffi, _ = dist.load()
-        self.assertEqual(
-            unpack(ffi.from_buffer(array.array("b", [1, 2, 3, 4]))),
-            b"\x01\x02\x03\x04"
-        )
-
-    def test_bytearray_unicode(self):
-        ffi, _ = dist.load()
-        unpacked = unpack(ffi.from_buffer(bytearray(u"Ʃ", "utf-8")))
-        self.assertEqual(unpacked.decode("utf-8"), u"Ʃ")
-
-    def test_bytearray_ascii(self):
-        ffi, _ = dist.load()
-        unpacked = unpack(ffi.from_buffer(bytearray("test", "utf-8")))
-        self.assertEqual(unpacked, b"test")
