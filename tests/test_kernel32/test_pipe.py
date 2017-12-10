@@ -55,10 +55,10 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
 
         data = b"hello world"
         bytes_written = WriteFile(writer, data)
-        buffer = bytearray(bytes_written)
-        read = ReadFile(reader, buffer, bytes_written)
+        buf = bytearray(bytes_written)
+        read = ReadFile(reader, buf, bytes_written)
         self.assertEqual(bytes_written, read)
-        self.assertEqual(buffer, bytearray(b"hello world"))
+        self.assertEqual(buf, bytearray(b"hello world"))
 
         _, library = dist.load()
         self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
