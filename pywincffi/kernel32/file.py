@@ -193,7 +193,6 @@ def FlushFileBuffers(hFile):
     error_check("FlushFileBuffers", code=code, expected=NON_ZERO)
 
 
-# TODO: Currently lpBuffer only supports bytearray. Other types could be?
 def ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped=None):
     """
     Reads data from the specified file or I/O device.
@@ -216,7 +215,7 @@ def ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped=None):
     :param int nNumberOfBytesToRead:
         The maximum number of bytes to be read.
 
-    :keyword OVERLAPPED lpOverlapped:
+    :keyword pywincffi.wintypes.OVERLAPPED lpOverlapped:
         See Microsoft's documentation for intended usage and below for
         an example.
 
