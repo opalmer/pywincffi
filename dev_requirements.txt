@@ -1,4 +1,6 @@
-pytest
+pytest==3.2.5; python_version == '3.3'
+pytest; python_version == '2.7'
+pytest; python_version > '3.3'
 pytest-cov
 unittest2
 pylint==1.7.4
