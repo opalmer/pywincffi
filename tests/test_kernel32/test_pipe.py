@@ -55,9 +55,10 @@ class AnonymousPipeReadWriteTest(PipeBaseTestCase):
 
         data = b"hello world"
         bytes_written = WriteFile(writer, data)
-        self.assertEqual(
-            ReadFile(reader, bytes_written),
-            b"hello world")
+        buffer = bytearray(bytes_written)
+        read = ReadFile(reader, buffer, bytes_written)
+        self.assertEqual(bytes_written, read)
+        self.assertEqual(buffer, bytearray(b"hello world"))
 
         _, library = dist.load()
         self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
@@ -79,9 +80,11 @@ class TestPeekNamedPipe(PipeBaseTestCase):
 
         data = b"hello world"
         data_written = WriteFile(writer, data)
-
+        buf = bytearray(data_written)
+        read = ReadFile(reader, buf, data_written)
+        self.assertEqual(read, data_written)
         PeekNamedPipe(reader, 0)
-        self.assertEqual(ReadFile(reader, data_written), data)
+        self.assertEqual(buf, bytearray(data))
         _, library = dist.load()
         self.maybe_assert_last_error(library.ERROR_INVALID_HANDLE)
 
@@ -125,7 +128,9 @@ class TestPeekNamedPipe(PipeBaseTestCase):
         bytes_written = WriteFile(writer, data)
 
         read_bytes = 7
-        ReadFile(reader, read_bytes)
+        buf = bytearray(read_bytes)
+        read = ReadFile(reader, buf, read_bytes)
+        self.assertEqual(read, read_bytes)
 
         result = PeekNamedPipe(reader, 0)
         self.assertEqual(
