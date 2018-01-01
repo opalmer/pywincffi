@@ -223,10 +223,11 @@ def ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped=None):
         >>> from pywincffi.kernel32 import ReadFile, CreateEvent
         >>> from pywincffi.wintypes import OVERLAPPED
         >>> hEvent = CreateEvent(...)
+        >>> lpBuffer = bytearray(12)
         >>> lpOverlapped = OVERLAPPED()
         >>> lpOverlapped.hEvent = hEvent
-        >>> read_data = ReadFile(  # read 12 bytes from hFile
-        ...     hFile, 12, lpOverlapped=lpOverlapped)
+        >>> read_data = ReadFile(  # read 12 bytes from hFile into lpBuffer
+        ...     hFile, lpBuffer, 12, lpOverlapped=lpOverlapped)
 
     :raises InputError:
         In addition to being raised for type issues :class:`InputError` will
