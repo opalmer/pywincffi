@@ -259,7 +259,9 @@ def ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped=None):
         wintype_to_cdata(hFile), ffi.from_buffer(lpBuffer),
         nNumberOfBytesToRead, bytes_read, wintype_to_cdata(lpOverlapped)
     )
-    error_check("ReadFile", code=code, expected=NON_ZERO)
+    error_check(
+        "ReadFile", code=code,
+        expected=NON_ZERO if lpOverlapped is None else 0)
     return bytes_read[0]
 
 
