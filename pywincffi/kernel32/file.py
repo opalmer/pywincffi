@@ -248,7 +248,7 @@ def ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped=None):
     if len(lpBuffer) < nNumberOfBytesToRead:
         raise InputError(
             "ReadFile", None,
-            message="The length of lpBuffer is {} which is smaller than "
+            message="The length of `lpBuffer` is {} which is smaller than "
                     "`nNumberOfBytesToRead` ({}).".format(
                         len(lpBuffer), nNumberOfBytesToRead))
 
