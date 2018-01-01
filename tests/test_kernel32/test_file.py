@@ -73,7 +73,7 @@ class TestReadFile(TestCase):
         hFile = self._handle_to_read_file(path)
 
         with self.assertRaisesRegex(
-            InputError, r".*The length of lpBuffer is.*"
+            InputError, r".*The length of `lpBuffer` is.*"
         ):
             ReadFile(hFile, bytearray(0), 1)
 
