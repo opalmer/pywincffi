@@ -320,6 +320,12 @@ HANDLE WINAPI CreateConsoleScreenBuffer(
   _Reserved_       LPVOID              lpScreenBufferData
 );
 
+///////////////////////
+// Error Handling
+///////////////////////
+// https://msdn.microsoft.com/en-us/library/ms679360
+DWORD WINAPI GetLastError(void);
+
 // Used internally to reset the last error to 0
 // in cases where pywincffi is the cause of the
 // error and we choose to ignore the error.
