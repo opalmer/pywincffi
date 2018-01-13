@@ -3,8 +3,8 @@ pytest; python_version == '2.7'
 pytest; python_version > '3.3'
 pytest-cov
 unittest2
-pylint==1.7.4
-astroid==1.5.3
+pylint==1.8.1
+astroid==1.6.0
 pycodestyle
 mock
 sphinx
