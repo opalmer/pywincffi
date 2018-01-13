@@ -10,6 +10,7 @@ from six import integer_types, text_type, binary_type
 from pywincffi.core import dist
 from pywincffi.core.checks import NON_ZERO, input_check, error_check, NoneType
 from pywincffi.exceptions import WindowsAPIError, InputError
+from pywincffi.kernel32.error import overlapped_error_check
 from pywincffi.wintypes import (
     SECURITY_ATTRIBUTES, OVERLAPPED, HANDLE, wintype_to_cdata
 )
@@ -170,10 +171,8 @@ def WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite=None, lpOverlapped=None):
         wintype_to_cdata(hFile), lpBuffer, nNumberOfBytesToWrite,
         bytes_written, wintype_to_cdata(lpOverlapped)
     )
-    expected = NON_ZERO if lpOverlapped is None else 0
-    error_check("WriteFile", code=code, expected=expected)
-
-    return bytes_written[0]
+    overlapped_error_check("WriteFile", code, lpOverlapped)
+    return bytes_written[0] if lpOverlapped is None else None
 
 
 def FlushFileBuffers(hFile):
@@ -259,10 +258,9 @@ def ReadFile(hFile, lpBuffer, nNumberOfBytesToRead, lpOverlapped=None):
         wintype_to_cdata(hFile), ffi.from_buffer(lpBuffer),
         nNumberOfBytesToRead, bytes_read, wintype_to_cdata(lpOverlapped)
     )
-    error_check(
-        "ReadFile", code=code,
-        expected=NON_ZERO if lpOverlapped is None else 0)
-    return bytes_read[0]
+
+    overlapped_error_check("ReadFile", code, lpOverlapped)
+    return bytes_read[0] if lpOverlapped is None else None
 
 
 def MoveFileEx(lpExistingFileName, lpNewFileName, dwFlags=None):
