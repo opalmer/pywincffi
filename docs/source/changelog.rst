@@ -8,8 +8,12 @@ versions are shown first.
 Versions
 --------
 
-latest
-~~~~~~
+0.6.0
+~~~~~
+
+Notable enhancements and changes are:
+
+    * PyLint upgrades
 
 
 0.5.0
